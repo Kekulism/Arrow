@@ -1,0 +1,21 @@
+{
+	"id": "ArrowAPI",
+	"name": "Arrow",
+	"author": ["BarrierTrio/Gote", "Keku", "TheWinterComet"],
+	"description": "An lightweight API Mod for Balatro that adds expandable features introduced by Balatro: Cardsauce",
+	"prefix": "arrow",
+	"main_file": "main.lua",
+	"priority": 0,
+	"badge_colour": "ffe5b4",
+	"badge_text_colour": "fd5f55",
+	"display_name": "Arrow",
+	"version": "0.1",
+	"dependencies": [
+		"Steamodded (>=1.0.0~BETA-0419a)"
+	],
+	"conflicts": [
+	], 
+	"provides": [
+	], 
+	"dump_loc": false
+}
