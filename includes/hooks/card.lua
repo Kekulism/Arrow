@@ -2,7 +2,7 @@ local ref_set_ability = Card.set_ability
 function Card:set_ability(center, initial, delay_sprites)
     local ret = ref_set_ability(self, center, initial, delay_sprites)
 
-    if self.ability.set == 'csau_Stand' then
+    if self.ability.set == 'Stand' then
         G.FUNCS.arrow_set_stand_sprites(self)
     end
 
@@ -18,4 +18,60 @@ function Card:set_ability(center, initial, delay_sprites)
     end
 
     return ret
+end
+
+---------------------------
+--------------------------- Stand visual loading
+---------------------------
+
+local ref_card_load = Card.load
+function Card:load(cardTable, other_card)
+    local ret = ref_card_load(self, cardTable, other_card)
+
+    if self.ability.set == 'csau_Stand' then
+        G.FUNCS.arrow_set_stand_sprites(self)
+    end
+
+    return ret
+end
+
+---------------------------
+--------------------------- For stand auras in the collection
+---------------------------
+
+local ref_card_hover = Card.hover
+function Card:hover()
+
+    if G.col_stand_hover and G.col_stand_hover ~= self then
+        G.col_stand_hover.ability.aura_flare_queued = nil
+        G.col_stand_hover.ability.stand_activated = nil
+        G.col_stand_hover = nil
+    end
+
+    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'csau_Stand') then
+        G.col_stand_hover = self
+        self.ability.aura_flare_queued = true
+    end
+
+    return ref_card_hover(self)
+end
+
+local ref_card_stop_hover = Card.stop_hover
+function Card:stop_hover()
+    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'csau_Stand') then
+        self.ability.aura_flare_queued = nil
+        self.ability.stand_activated = nil
+    end
+
+    return ref_card_stop_hover(self)
+end
+
+function love.focus(f)
+    if not f then return end
+
+    if G.col_stand_hover then
+        G.col_stand_hover.ability.aura_flare_queued = nil
+        G.col_stand_hover.ability.stand_activated = nil
+        G.col_stand_hover = nil
+    end
 end

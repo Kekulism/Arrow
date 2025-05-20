@@ -1,14 +1,15 @@
 -- stand pool
 SMODS.ObjectType {
     default = 'c_csau_stardust_star',
-    key = 'StandPool',
+    key = 'arrow_StandPool',
     prefix_config = false,
 }
 
 -- evolved stand pool
 SMODS.ObjectType {
     default = 'c_csau_stardust_star',
-    key = 'EvolvedPool',
+    key = 'arrow_EvolvedPool',
+    prefix_config = false,
 }
 
 SMODS.Rarity {
@@ -33,8 +34,8 @@ SMODS.Rarity {
 SMODS.UndiscoveredSprite {
     key = "Stand",
     atlas = "arrow_undiscovered",
-    pos = { x = 0, y = 0 },
-    overlay_pos = { x = 1, y = 0 }
+    pos = { x = 1, y = 0 },
+    overlay_pos = { x = 2, y = 0 }
 }
 SMODS.ConsumableType {
     key = 'Stand',

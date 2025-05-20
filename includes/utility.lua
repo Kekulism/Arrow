@@ -221,6 +221,27 @@ G.FUNCS.generate_legendary_desc = function(self, info_queue, card, desc_nodes, s
     end
 end
 
+--- x^4 easing function both in and out
+--- @param x number Value to ease (between 0 and 1)
+--- @return number # Eased value between 0 and 1
+function arrow_ease_in_out_quart(x)
+    return x < 0.5 and 8 * x * x * x * x or 1 - (-2 * x + 2)^4 / 2;
+end
+
+--- sin ease out function
+--- @param x number Value to ease (between 0 and 1)
+--- @return number # Eased value between 0 and 1
+function arrow_ease_out_quint(x)
+    return 1 - (1-x)^5;
+end
+
+--- x^4 easing function in
+--- @param x number Value to ease (between 0 and 1)
+--- @return number # Eased value between 0 and 1
+function arrow_ease_in_cubic(x)
+    return x * x * x
+end
+
 --- Formats a numeral for display. Numerals between 0 and 1 are written out fully
 --- @param n number Numeral to format
 --- @param number_type string Type of display number ('number', 'order')

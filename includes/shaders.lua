@@ -1,9 +1,5 @@
 SMODS.Shader({ key = 'stand_aura', path = 'stand_aura.fs' })
-SMODS.Atlas({ key = 'stand_blank', path = 'blank.png', px = 93, py = 179})
-SMODS.Atlas({ key = 'stand_blank_evolved', path = 'blank_evolved.png', px = 93, py = 179})
-SMODS.Atlas({ key = 'stand_noise', path = 'noise.png',  px = 128, py = 128})
-SMODS.Atlas({ key = 'stand_gradient', path = 'gradient.png', px = 64, py = 64})
-SMODS.Shader({key = 'stand_stand_mask', path = 'stand_mask.fs'})
+SMODS.Shader({key = 'stand_mask', path = 'stand_mask.fs'})
 
 local default_aura_target = 0.3
 
@@ -69,9 +65,9 @@ SMODS.DrawStep {
             -- aura flare in gameplay
             local flare_ease = 0
             if self.ability.aura_flare_direction > 0 then
-                flare_ease = csau_ease_in_cubic(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
+                flare_ease = arrow_ease_in_cubic(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
             else
-                flare_ease = csau_ease_out_quint(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
+                flare_ease = arrow_ease_out_quint(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
             end
 
 
@@ -145,7 +141,7 @@ SMODS.DrawStep {
     key = 'stand_mask',
     order = 39,
     func = function(self, layer)
-        if self.config.center.soul_pos and self.ability.set == 'arrow_stand_Stand' and (self.config.center.discovered or self.bypass_discovery_center) then
+        if self.config.center.soul_pos and self.ability.set == 'Stand' and (self.config.center.discovered or self.bypass_discovery_center) then
             local scale_mod = 0.07 + 0.02*math.sin(1.8*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
             local rotate_mod = 0.05*math.sin(1.219*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
 
@@ -191,7 +187,7 @@ SMODS.DrawStep:take_ownership('stickers', {
             }
         end
         if self.sticker and G.shared_stickers[self.sticker] then
-            if self.ability.set == "arrow_Stand" then
+            if self.ability.set == "Stand" then
                 G.arrow_shared_stand_stickers[self.sticker].role.draw_major = self
                 G.arrow_shared_stand_stickers[self.sticker]:draw_shader('dissolve', nil, nil, nil, self.children.center)
                 G.arrow_shared_stand_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
@@ -202,7 +198,7 @@ SMODS.DrawStep:take_ownership('stickers', {
             end
 
         elseif (self.sticker_run and G.shared_stickers[self.sticker_run]) and G.SETTINGS.run_stake_stickers then
-            if self.ability.set == "arrow_Stand" then
+            if self.ability.set == "Stand" then
                 G.arrow_shared_stand_stickers[self.sticker_run].role.draw_major = self
                 G.arrow_shared_stand_stickers[self.sticker_run]:draw_shader('dissolve', nil, nil, nil, self.children.center)
                 G.arrow_shared_stand_stickers[self.sticker_run]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
@@ -218,7 +214,7 @@ SMODS.DrawStep:take_ownership('stickers', {
                 if v and v.draw and type(v.draw) == 'function' then
                     v:draw(self, layer)
                 else
-                    if self.ability.set == "arrow_Stand" then
+                    if self.ability.set == "Stand" then
                         G.arrow_shared_stand_stickers[v.key].role.draw_major = self
                         G.arrow_shared_stand_stickers[v.key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
                         G.arrow_shared_stand_stickers[v.key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
