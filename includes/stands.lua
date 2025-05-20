@@ -1,13 +1,13 @@
 -- stand pool
 SMODS.ObjectType {
-    default = 'c_csau_stardust_star',
+    default = 'c_arrow_stardust_star',
     key = 'arrow_StandPool',
     prefix_config = false,
 }
 
 -- evolved stand pool
 SMODS.ObjectType {
-    default = 'c_csau_stardust_star',
+    default = 'c_arrow_stardust_star',
     key = 'arrow_EvolvedPool',
     prefix_config = false,
 }
@@ -39,11 +39,12 @@ SMODS.UndiscoveredSprite {
 }
 SMODS.ConsumableType {
     key = 'Stand',
+    prefix_config = false,
     primary_colour = G.C.STAND,
     secondary_colour = G.C.STAND,
     collection_rows = { 8, 8 },
     shop_rate = 0,
-    default = "c_csau_diamond_star",
+    default = "c_arrow_diamond_star",
     rarities = {
         {key = 'arrow_StandRarity'},
         {key = 'arrow_EvolvedRarity'},

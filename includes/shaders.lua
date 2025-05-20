@@ -1,6 +1,15 @@
 SMODS.Shader({ key = 'stand_aura', path = 'stand_aura.fs' })
 SMODS.Shader({key = 'stand_mask', path = 'stand_mask.fs'})
 
+local function hashString(input)
+    local hash = 5381  -- Seed value
+    for i = 1, #input do
+        local char = string.byte(input, i)
+        hash = ((hash * 32) + hash + char) % 2^15  -- Wrap to 16-bit integer
+    end
+    return hash
+end
+
 local default_aura_target = 0.3
 
 SMODS.DrawStep {
@@ -60,7 +69,7 @@ SMODS.DrawStep {
                 return
             end
 
-            --self.no_shadow = true
+            self.no_shadow = true
 
             -- aura flare in gameplay
             local flare_ease = 0
@@ -109,7 +118,7 @@ SMODS.DrawStep {
 
 SMODS.DrawStep:take_ownership('floating_sprite', {
     func = function(self, layer)
-        if self.config.center.soul_pos and self.ability.set ~= 'arrow_Stand' and (self.config.center.discovered or self.bypass_discovery_center) then
+        if self.config.center.soul_pos and self.ability.set ~= 'Stand' and (self.config.center.discovered or self.bypass_discovery_center) then
             local scale_mod = 0.07 + 0.02*math.sin(1.8*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
             local rotate_mod = 0.05*math.sin(1.219*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
 

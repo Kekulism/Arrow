@@ -573,6 +573,7 @@ end
 G.FUNCS.arrow_set_stand_sprites = function(stand)
     -- add stand aura
     if stand.ability.aura_colors and #stand.ability.aura_colors == 2 then
+        sendDebugMessage('has aura')
         stand.no_shadow = true
         G.ASSET_ATLAS['arrow_stand_noise'].image:setWrap('repeat', 'repeat', 'clamp')
 
@@ -606,5 +607,7 @@ G.FUNCS.arrow_set_stand_sprites = function(stand)
         })
         stand.children.stand_aura:align_to_major()
         stand.children.stand_aura.custom_draw = true
+
+        sendDebugMessage('has aura: '..tostring(stand.children.stand_aura))
     end
 end

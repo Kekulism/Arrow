@@ -3,6 +3,7 @@ function Card:set_ability(center, initial, delay_sprites)
     local ret = ref_set_ability(self, center, initial, delay_sprites)
 
     if self.ability.set == 'Stand' then
+        sendDebugMessage('setting stand sprites')
         G.FUNCS.arrow_set_stand_sprites(self)
     end
 
@@ -28,7 +29,7 @@ local ref_card_load = Card.load
 function Card:load(cardTable, other_card)
     local ret = ref_card_load(self, cardTable, other_card)
 
-    if self.ability.set == 'csau_Stand' then
+    if self.ability.set == 'Stand' then
         G.FUNCS.arrow_set_stand_sprites(self)
     end
 
@@ -48,7 +49,7 @@ function Card:hover()
         G.col_stand_hover = nil
     end
 
-    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'csau_Stand') then
+    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'Stand') then
         G.col_stand_hover = self
         self.ability.aura_flare_queued = true
     end
@@ -58,7 +59,7 @@ end
 
 local ref_card_stop_hover = Card.stop_hover
 function Card:stop_hover()
-    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'csau_Stand') then
+    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'Stand') then
         self.ability.aura_flare_queued = nil
         self.ability.stand_activated = nil
     end

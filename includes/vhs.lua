@@ -12,7 +12,7 @@ SMODS.ConsumableType{
     collection_rows = { 7, 6 },
     shop_rate = 0,
     loc_txt = {},
-    default = "c_csau_blackspine",
+    default = "c_arrow_blackspine",
     can_stack = false,
     can_divide = false,
 }
