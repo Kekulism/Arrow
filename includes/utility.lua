@@ -1,6 +1,20 @@
 local current_mod = SMODS.current_mod
 local mod_path = SMODS.current_mod.path:match("Mods/[^/]+")..'/'
 
+--- Searches for a value (not a key) within a table
+--- @param table table Table to search for a given value
+--- @param element any Value to search within the table
+--- @return boolean # If the table contains at least one instance of this value
+function table.contains(table, element)
+	for _, value in pairs(table) do
+		if value == element then
+			return true
+		end
+	end
+	return false
+end
+
+
 ---------------------------
 --------------------------- Loading/Debug Functions
 ---------------------------
