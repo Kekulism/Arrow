@@ -9,8 +9,34 @@ G.C.STAND = HEX('B85F8E')
 G.C.VHS = HEX('a2615e')
 
 local includes = {
+	'atlases',
+	'tables',
+	'utility',
 	'ui',
+	'shaders',
+	'smods',
+
+	'hooks/overrides',
+	'hooks/button_callbacks',
+	'hooks/card',
+	'hooks/misc_functions',
+	'hooks/UI_definitions',
+	'hooks/smods',
+	'hooks/game',
+
+	'stands',
+	'vhs',
+	'items',
 }
+
+-- blank function that is run on starting the main menu,
+-- other parts of the mod can hook into this to run code
+-- that needs to be run after the game has initialized
+local ref_ips = function() end
+if G.FUNCS.initPostSplash then ref_ips = G.FUNCS.initPostSplash end
+G.FUNCS.initPostSplash = function()
+	ref_ips()
+end
 
 for _, include in ipairs(includes) do
 	local init, error = SMODS.load_file("includes/" .. include ..".lua")
