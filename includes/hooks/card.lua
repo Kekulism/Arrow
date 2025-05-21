@@ -3,7 +3,6 @@ function Card:set_ability(center, initial, delay_sprites)
     local ret = ref_set_ability(self, center, initial, delay_sprites)
 
     if self.ability.set == 'Stand' then
-        sendDebugMessage('setting stand sprites')
         G.FUNCS.arrow_set_stand_sprites(self)
     end
 

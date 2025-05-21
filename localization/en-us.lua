@@ -11,7 +11,7 @@ return {
             k_vhs = "VHS Tape",
             k_stand = "Stand",
             k_evolved_stand = "Evolved Stand",
-            k_stand_stickers="Stand Stickers",
+            k_stand_stickers = "Stand Stickers",
 
             k_stand_evolved = 'Evolved!',
             k_vhs_destroyed = "Fin!",
@@ -40,7 +40,6 @@ return {
             ba_rlm_j = "Junka",
             ba_rlm_wotw = "Wheel of the Worst",
             ba_rlm_hitb = "Half in the Bag",
-            ba_rlm_r = "Re:View",
             ba_rlm_r = "Re:View",
             ba_jojo = "Jojo's Bizarre Adventure",
             ba_uzumaki = "Uzumaki",
