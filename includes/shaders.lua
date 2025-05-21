@@ -83,9 +83,9 @@ SMODS.DrawStep {
             local aura_spread = (flare_ease * 0.04) + self.ability.aura_spread
 
             -- colors
-            local outline_color = HEX(self.ability.aura_colors[1])
+            local outline_color = SMODS.Gradients[self.ability.aura_colors[1]] or HEX(self.ability.aura_colors[1])
             outline_color[4] = outline_color[4] * flare_ease
-            local base_color = HEX(self.ability.aura_colors[2])
+            local base_color = SMODS.Gradients[self.ability.aura_colors[2]] or HEX(self.ability.aura_colors[2])
             base_color[4] = base_color[4] * flare_ease
 
             -- default tilt behavior
