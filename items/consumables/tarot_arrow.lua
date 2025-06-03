@@ -26,12 +26,12 @@ end
 function consumInfo.use(self, card, area, copier)
     G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
         play_sound('timpani')
-        if next(SMODS.find_card("c_csau_vento_gold")) then
-            local stand = SMODS.find_card("c_csau_vento_gold")[1]
+        if next(SMODS.find_card("c_jojobal_vento_gold")) then
+            local stand = SMODS.find_card("c_jojobal_vento_gold")[1]
             check_for_unlock({ type = "evolve_ger" })
-            G.FUNCS.csau_evolve_stand(stand)
+            G.FUNCS.evolve_stand(stand)
         else
-            G.FUNCS.csau_new_stand(false)
+            G.FUNCS.new_stand(false)
         end
         return true
     end }))
@@ -43,7 +43,7 @@ function consumInfo.can_use(self, card)
         return false
     end
 
-    return G.GAME.unlimited_stands or (to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)) or next(SMODS.find_card("c_csau_vento_gold"))
+    return G.GAME.unlimited_stands or (to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)) or next(SMODS.find_card("c_jojobal_vento_gold"))
 end
 
 return consumInfo

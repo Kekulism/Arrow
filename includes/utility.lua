@@ -480,7 +480,7 @@ G.FUNCS.get_leftmost_stand = function()
 
     local stand = nil
     for i, card in ipairs(G.consumeables.cards) do
-        if card.ability.set == "arrow_Stand" then
+        if card.ability.set == "Stand" then
             stand = card
             break
         end
@@ -496,7 +496,7 @@ G.FUNCS.get_num_stands = function()
 
     local count = 0
     for i, v in ipairs(G.consumeables.cards) do
-        if v.ability.set == "arrow_Stand" then
+        if v.ability.set == "Stand" then
             count = count+1
         end
     end
