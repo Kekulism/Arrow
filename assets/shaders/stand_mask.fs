@@ -22,6 +22,8 @@ extern MY_HIGHP_OR_MEDIUMP float rotate_mod;
 // should be the inverse of the scale factor used for the canvas size
 extern MY_HIGHP_OR_MEDIUMP number output_scale;
 
+extern number vertex_scale_mod = 1.0;
+
 // function defs for required functions later in the code
 vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv);
 number hue(number s, number t, number h);
@@ -231,6 +233,6 @@ vec4 position( mat4 transform_projection, vec4 vertex_position )
     float scale = 0.2*(-0.03 - 0.3*max(0., 0.3-mid_dist))
                 *hovering*(length(mouse_offset)*length(mouse_offset))/(2. -mid_dist);
 
-    return transform_projection * vertex_position + vec4(0,0,0,scale);
+    return transform_projection * vertex_position + vec4(0,0,0,scale*vertex_scale_mod);
 }
 #endif

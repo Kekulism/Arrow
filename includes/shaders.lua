@@ -162,8 +162,10 @@ SMODS.DrawStep {
                 G.SHADERS['arrow_stand_mask']:send("scale_mod",scale_mod)
                 G.SHADERS['arrow_stand_mask']:send("rotate_mod",rotate_mod)
                 G.SHADERS['arrow_stand_mask']:send("output_scale",1+stand_scale_mod)
+                G.SHADERS['arrow_stand_mask']:send("vertex_scale_mod", self.config.center.vertex_scale_mod or 1.0)
 
-                self.children.floating_sprite:draw_shader('arrow_stand_mask', nil, nil, nil, self.children.center, -stand_scale_mod)
+                local draw_center = self.config.center.key ~= 'c_fnwk_bone_king_farewell' and self.children.center
+                self.children.floating_sprite:draw_shader('arrow_stand_mask', nil, nil, nil, draw_center, -stand_scale_mod)
             else
                 self.children.floating_sprite:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
                 self.children.floating_sprite:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
