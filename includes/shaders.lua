@@ -150,12 +150,9 @@ SMODS.DrawStep {
     key = 'stand_mask',
     order = 39,
     func = function(self, layer)
-        if self.config.center.key == 'c_fnwk_streetlight_notorious' then return end
-
         if self.config.center.soul_pos and self.ability.set == 'Stand' and (self.config.center.discovered or self.bypass_discovery_center) then
             local scale_mod = 0.07 + 0.02*math.sin(1.8*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
             local rotate_mod = 0.05*math.sin(1.219*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
-
 
             if self.ability.stand_mask then
                 local stand_scale_mod = 0
@@ -164,8 +161,7 @@ SMODS.DrawStep {
                 G.SHADERS['arrow_stand_mask']:send("output_scale",1+stand_scale_mod)
                 G.SHADERS['arrow_stand_mask']:send("vertex_scale_mod", self.config.center.vertex_scale_mod or 1.0)
 
-                local draw_center = self.config.center.key ~= 'c_fnwk_bone_king_farewell' and self.children.center
-                self.children.floating_sprite:draw_shader('arrow_stand_mask', nil, nil, nil, draw_center, -stand_scale_mod)
+                self.children.floating_sprite:draw_shader('arrow_stand_mask', nil, nil, nil, self.children.center, -stand_scale_mod)
             else
                 self.children.floating_sprite:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
                 self.children.floating_sprite:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
