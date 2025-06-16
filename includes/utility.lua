@@ -307,13 +307,11 @@ end
 
 function G.FUNCS.arrow_consumabletype_has_items(set)
     if SMODS.ConsumableTypes[set] and SMODS.ConsumableTypes[set].no_collection then return false end
-    for k, v in pairs(G.P_CENTERS) do
-        if v.set == set then return true end
+    if set == 'Stand' then 
+        return not not (#G.P_CENTER_POOLS['arrow_StandPool'] > 0 or #G.P_CENTER_POOLS['arrow_EvolvedPool'] > 0)
     end
-    for k, v in pairs(SMODS.Centers) do
-        if v.set == set then return true end
-    end
-    return false
+
+    return #G.P_CENTER_POOLS[set] > 0
 end
 
 -- Based on code from Ortalab

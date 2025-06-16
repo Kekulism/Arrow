@@ -7,9 +7,7 @@ local consumInfo = {
 }
 
 function consumInfo.in_pool(self, args)
-    if not G.FUNCS.arrow_consumabletype_has_items('Stand') then
-        return false
-    end
+    return G.FUNCS.arrow_consumabletype_has_items('Stand')
 end
 
 function consumInfo.loc_vars(self, info_queue, card)
