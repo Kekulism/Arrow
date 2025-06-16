@@ -504,7 +504,7 @@ end
 
 --- Evolves a Stand. A Stand must have an 'evolve_key' field to evolve
 --- @param stand Card Balatro card table representing a Stand consumable
-G.FUNCS.evolve_stand = function(stand)
+G.FUNCS.evolve_stand = function(stand, loc_message)
     if stand.children.stand_aura then
         stand.children.stand_aura.atlas = G.ASSET_ATLAS[stand.ability.evolved and 'arrow_blank_evolved' or 'arrow_blank']
     end
@@ -517,7 +517,7 @@ G.FUNCS.evolve_stand = function(stand)
             check_for_unlock({ type = "evolve_stand" })
 
             attention_text({
-                text = localize('k_stand_evolved'),
+                text = loc_message or localize('k_stand_evolved'),
                 scale = 0.7,
                 hold = 0.55,
                 backdrop_colour = G.C.STAND,
