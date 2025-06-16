@@ -159,7 +159,8 @@ SMODS.DrawStep {
                 G.SHADERS['arrow_stand_mask']:send("scale_mod",scale_mod)
                 G.SHADERS['arrow_stand_mask']:send("rotate_mod",rotate_mod)
                 G.SHADERS['arrow_stand_mask']:send("output_scale",1+stand_scale_mod)
-                G.SHADERS['arrow_stand_mask']:send("vertex_scale_mod", self.config.center.vertex_scale_mod or 1.0)
+                G.SHADERS['arrow_stand_mask']:send("vertex_scale_mod", self.config.center.config.vertex_scale_mod or 1.0)
+                G.SHADERS['arrow_stand_mask']:send("shadow_strength", self.config.center.config.stand_shadow or 0.33)
 
                 self.children.floating_sprite:draw_shader('arrow_stand_mask', nil, nil, nil, self.children.center, -stand_scale_mod)
             else
