@@ -11,7 +11,7 @@ function consumInfo.in_pool(self, args)
 end
 
 function consumInfo.loc_vars(self, info_queue, card)
-    if G.GAME and G.GAME.unlimited_stands then
+    if G.GAME and G.GAME.modifiers.unlimited_stands then
         info_queue[#info_queue+1] = {key = "stand_info_unlimited", set = "Other"}
     else
         if card.area then
@@ -41,7 +41,7 @@ function consumInfo.can_use(self, card)
         return false
     end
 
-    return G.GAME.unlimited_stands or (to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)) or next(SMODS.find_card("c_jojobal_vento_gold"))
+    return G.GAME.modifiers.unlimited_stands or (to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)) or next(SMODS.find_card("c_jojobal_vento_gold"))
 end
 
 return consumInfo

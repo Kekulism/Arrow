@@ -4,6 +4,8 @@ local itemsToLoad = {
         'analog2',
         'analog3',
         'analog4',
+        'spirit_reg',
+        'spirit_jumbo',
     },
 
     Consumable = {

@@ -48,7 +48,7 @@ function Card:hover()
         G.col_stand_hover = nil
     end
 
-    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'Stand') then
+    if self.ability.aura_hover or (self.area and (self.area.config.collection or self.area == G.pack_cards) and self.ability.set == 'Stand') then
         G.col_stand_hover = self
         self.ability.aura_flare_queued = true
     end
@@ -58,7 +58,7 @@ end
 
 local ref_card_stop_hover = Card.stop_hover
 function Card:stop_hover()
-    if self.ability.aura_hover or (self.area and self.area.config.collection and self.ability.set == 'Stand') then
+    if self.ability.aura_hover or (self.area and (self.area.config.collection or self.area == G.pack_cards) and self.ability.set == 'Stand') then
         self.ability.aura_flare_queued = nil
         self.ability.stand_activated = nil
     end

@@ -11,7 +11,7 @@ function consumInfo.in_pool(self, args)
 end
 
 function consumInfo.loc_vars(self, info_queue, card)
-    if G.GAME.unlimited_stands then
+    if G.GAME.modifiers.unlimited_stands then
         info_queue[#info_queue+1] = {key = "stand_info_unlimited", set = "Other"}
     else
         info_queue[#info_queue+1] = {key = "stand_info", set = "Other", vars = { G.GAME.modifiers.max_stands or 1, (card.area.config.collection and localize('k_stand')) or (G.GAME.modifiers.max_stands > 1 and localize('b_stand_cards') or localize('k_stand')) }}
@@ -34,7 +34,7 @@ function consumInfo.can_use(self, card)
         return false
     end
 
-    return G.GAME.unlimited_stands or to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)
+    return G.GAME.modifiers.unlimited_stands or to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)
 end
 
 return consumInfo

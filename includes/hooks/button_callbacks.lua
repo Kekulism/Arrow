@@ -52,7 +52,7 @@ G.FUNCS.check_for_buy_space = function(card)
         return ret
     end
 
-    if card.ability.set == 'Stand' and not G.GAME.stand_unlimited_stands and G.FUNCS.get_leftmost_stand() then
+    if card.ability.set == 'Stand' and not G.GAME.modifiers.unlimited_stands and G.FUNCS.get_leftmost_stand() then
         return false
     end
 

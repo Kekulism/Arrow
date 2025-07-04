@@ -15,6 +15,10 @@ local disable_if = {
         },
     },
     Stand = {
+        Booster = {
+            'p_arrow_spirit_reg',
+            'p_arrow_spirit_jumbo',
+        },
         Consumable = {
             'c_arrow_tarot_arrow',
             'c_arrow_spec_diary',

@@ -505,6 +505,10 @@ end
 --- Evolves a Stand. A Stand must have an 'evolve_key' field to evolve
 --- @param stand Card Balatro card table representing a Stand consumable
 G.FUNCS.evolve_stand = function(stand, loc_message)
+    if not stand.ability.evolve_key or not G.P_CENTERS[stand.ability.evolve_key] or G.GAME.banned_keys[stand.ability.evolve_key] then
+        return
+    end
+
     if stand.children.stand_aura then
         stand.children.stand_aura.atlas = G.ASSET_ATLAS[stand.ability.evolved and 'arrow_blank_evolved' or 'arrow_blank']
     end
