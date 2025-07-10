@@ -304,8 +304,8 @@ return {
             v_arrow_plant = {
                 name = 'Plant Appraiser',
                 text = {
-                    "{C:stand}Evolved Stands{} can be purchased",
-                    "from the {C:attention}shop{}"
+                    "{C:stand}Evolved Stands{} can be",
+                    "purchased from the {C:attention}shop{}"
                 },
                 unlock = {
                     "Buy a total of",
