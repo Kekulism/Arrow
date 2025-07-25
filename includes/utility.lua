@@ -319,7 +319,8 @@ end
 --- @param card Card Balatro card table of the card to replace
 --- @param to_key string string key (including prefixes) to replace the given card
 --- @param evolve boolean boolean for stand evolution
-G.FUNCS.transform_card = function(card, to_key, evolve)
+--- @param silent boolean boolean for transform juice/sound
+G.FUNCS.transform_card = function(card, to_key, evolve, silent)
     evolve = evolve or false
     local old_card = card
     local new_card = G.P_CENTERS[to_key]
@@ -345,10 +346,10 @@ G.FUNCS.transform_card = function(card, to_key, evolve)
         card.children.floating_sprite.states.click.can = false
     end
 
-    if not card.edition then
+    if not card.edition and not silent then
         card:juice_up()
         play_sound('generic1')
-    else
+    elseif not silent then
         card:juice_up(1, 0.5)
         if card.edition.foil then play_sound('foil1', 1.2, 0.4) end
         if card.edition.holo then play_sound('holo1', 1.2*1.58, 0.4) end
