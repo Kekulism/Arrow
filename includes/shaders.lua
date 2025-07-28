@@ -1,6 +1,7 @@
 SMODS.Shader({ key = 'stand_aura', path = 'stand_aura.fs' })
 SMODS.Shader({key = 'stand_mask', path = 'stand_mask.fs'})
 
+
 local function hashString(input)
     local hash = 5381  -- Seed value
     for i = 1, #input do
@@ -186,18 +187,18 @@ SMODS.DrawStep:take_ownership('stickers', {
     func = function(self, layer)
         if not G.arrow_shared_stand_stickers then
             G.arrow_shared_stand_stickers = {
-                white = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 0,y = 0}),
-                red = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 1,y = 0}),
-                green = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 2,y = 0}),
-                black = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 3,y = 0}),
-                blue = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 4,y = 0}),
-                purple = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 5,y = 0}),
-                orange = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 6,y = 0}),
-                gold = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 7,y = 0})
+                White = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 0,y = 0}),
+                Red = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 1,y = 0}),
+                Green = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 2,y = 0}),
+                Black = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 3,y = 0}),
+                Blue = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 4,y = 0}),
+                Purple = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 5,y = 0}),
+                Orange = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 6,y = 0}),
+                Gold = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 7,y = 0})
             }
         end
         if self.sticker and G.shared_stickers[self.sticker] then
-            if self.ability.set == "Stand" then
+            if self.ability.set == "Stand" and G.arrow_shared_stand_stickers[self.sticker] then
                 G.arrow_shared_stand_stickers[self.sticker].role.draw_major = self
                 G.arrow_shared_stand_stickers[self.sticker]:draw_shader('dissolve', nil, nil, nil, self.children.center)
                 G.arrow_shared_stand_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
@@ -208,7 +209,7 @@ SMODS.DrawStep:take_ownership('stickers', {
             end
 
         elseif (self.sticker_run and G.shared_stickers[self.sticker_run]) and G.SETTINGS.run_stake_stickers then
-            if self.ability.set == "Stand" then
+            if self.ability.set == "Stand" and G.arrow_shared_stand_stickers[self.sticker_run] then
                 G.arrow_shared_stand_stickers[self.sticker_run].role.draw_major = self
                 G.arrow_shared_stand_stickers[self.sticker_run]:draw_shader('dissolve', nil, nil, nil, self.children.center)
                 G.arrow_shared_stand_stickers[self.sticker_run]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
@@ -224,7 +225,7 @@ SMODS.DrawStep:take_ownership('stickers', {
                 if v and v.draw and type(v.draw) == 'function' then
                     v:draw(self, layer)
                 else
-                    if self.ability.set == "Stand" then
+                    if self.ability.set == "Stand" and G.arrow_shared_stand_stickers[self.sticker_run] then
                         G.arrow_shared_stand_stickers[v.key].role.draw_major = self
                         G.arrow_shared_stand_stickers[v.key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
                         G.arrow_shared_stand_stickers[v.key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)

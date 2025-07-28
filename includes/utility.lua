@@ -324,26 +324,20 @@ G.FUNCS.transform_card = function(card, to_key, evolve, silent)
     evolve = evolve or false
     local old_card = card
     local new_card = G.P_CENTERS[to_key]
-    card.children.center = Sprite(card.T.x, card.T.y, G.CARD_W, G.CARD_H, G.ASSET_ATLAS[new_card.atlas], new_card.pos)
-    card.children.center.scale = {
-        x = 71,
-        y = 95
-    }
-    card.children.center.states.hover = card.states.hover
-    card.children.center.states.click = card.states.click
-    card.children.center.states.drag = card.states.drag
-    card.children.center.states.collide.can = false
-    card.children.center:set_role({major = card, role_type = 'Glued', draw_major = card})
+
+    card.T.w = G.CARD_W
+    card.T.h = G.CARD_H
+    card.original_T = copy_table(card.T)
+
+    for _, v in pairs(card.children) do
+        v:remove()
+    end
+
     card:set_ability(new_card)
     card:set_cost()
+
     if evolve and old_card.on_evolve and type(old_card.on_evolve) == 'function' then
         old_card:on_evolve(old_card, card)
-    end
-    if new_card.soul_pos then
-        card.children.floating_sprite = Sprite(card.T.x, card.T.y, card.T.w, card.T.h, G.ASSET_ATLAS[new_card.atlas], new_card.soul_pos)
-        card.children.floating_sprite.role.draw_major = card
-        card.children.floating_sprite.states.hover.can = false
-        card.children.floating_sprite.states.click.can = false
     end
 
     if not card.edition and not silent then
@@ -352,7 +346,7 @@ G.FUNCS.transform_card = function(card, to_key, evolve, silent)
     elseif not silent then
         card:juice_up(1, 0.5)
         if card.edition.foil then play_sound('foil1', 1.2, 0.4) end
-        if card.edition.holo then play_sound('holo1', 1.2*1.58, 0.4) end
+        if card.edition.holo then play_sound('holo1', 1.2 * 1.58, 0.4) end
         if card.edition.polychrome then play_sound('polychrome1', 1.2, 0.7) end
         if card.edition.negative then play_sound('negative', 1.5, 0.4) end
     end
