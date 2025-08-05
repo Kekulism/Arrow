@@ -21,8 +21,6 @@ G.sticker_map['arrow_Stand_Purple'] = 'Purple'
 G.sticker_map['arrow_Stand_Orange'] = 'Orange'
 G.sticker_map['arrow_Stand_Gold'] = 'Gold'
 
-G.PROFILES[G.SETTINGS.profile].stand_usage = G.PROFILES[G.SETTINGS.profile].stand_usage or {}
-
 -- stand pool
 SMODS.ObjectType {
     default = 'c_arrow_stardust_star',
