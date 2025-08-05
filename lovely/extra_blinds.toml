@@ -195,11 +195,12 @@ times = 1
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
-pattern = '''
-if G.GAME.blind:get_type() == 'Boss' then'''
+pattern = '''if G.GAME.blind:get_type() == 'Boss' then
+    local _handname, _played, _order = 'High Card', -1, 100'''
 position = "at"
 payload = '''
-if true then'''
+if true then
+    local _handname, _played, _order = 'High Card', -1, 100'''
 match_indent = true
 times = 1
 

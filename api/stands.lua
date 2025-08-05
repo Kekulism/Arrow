@@ -1,7 +1,6 @@
 SMODS.Atlas({key = 'stand_blank', path = 'blank.png', px = 93, py = 179})
 SMODS.Atlas({key = 'stand_blank_evolved', path = 'blank_evolved.png', px = 93, py = 179})
-local sticker_atlas = SMODS.Atlas({key = 'stand_stickers', path = "stand_stickers.png", px = 71, py = 95})
-print(sticker_atlas)
+SMODS.Atlas({key = 'stand_stickers', path = "stand_stickers.png", px = 71, py = 95})
 
 SMODS.Sticker{key = "Stand_White", atlas = 'arrow_stand_stickers', pos = { x = 0, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
 SMODS.Sticker{key = "Stand_Red", atlas = 'arrow_stand_stickers', pos = { x = 1, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}

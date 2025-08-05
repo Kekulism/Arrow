@@ -161,7 +161,6 @@ ArrowAPI.loading = {
     --- Returns whether an SMODS.ConsumableType has any added items, excluding items set as no_collection
     --- @param set string Set string for a ConsumableType
     consumeable_has_items = function(set)
-        if SMODS.ConsumableTypes[set] and SMODS.ConsumableTypes[set].no_collection then return false end
         if set == 'Stand' then 
             return not not (#G.P_CENTER_POOLS['StandPool'] > 0 or #G.P_CENTER_POOLS['EvolvedPool'] > 0)
         end
