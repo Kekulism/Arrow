@@ -28,8 +28,19 @@ function level_up_hand_bypass(card, hand, instant, amount, bypass_event)
             end
         }))
     end
-    
+
     return ret
+end
+
+local function game_over_handler(win)
+    G.GAME.won = win or false
+    G.STATE = G.STATES.GAME_OVER
+    if not G.GAME.won and not G.GAME.seeded and not G.GAME.challenge then 
+        G.PROFILES[G.SETTINGS.profile].high_scores.current_streak.amt = 0
+    end
+    G:save_settings()
+    G.FILE_HANDLER.force = true
+    G.STATE_COMPLETE = false
 end
 
 --- General card helpers
@@ -262,5 +273,24 @@ ArrowAPI.game = {
         end
 
         G.GAME.modifiers.consumable_selection_mod = G.GAME.modifiers.consumable_selection_mod + mod
+    end,
+
+    --- Sets the game over state outside of dedicated game over conditions
+    --- @param win boolean | nil Whether to win or lose, default is lose
+    --- @param instant boolean | nil Delay game over in an event
+    game_over = function(win, instant)
+        if instant then
+            game_over_handler(win)
+            return
+        end
+        
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.2,
+            func = function()
+                    game_over_handler(win)
+                return true
+            end
+        }))
     end
 }

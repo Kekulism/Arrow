@@ -146,6 +146,14 @@ game_rules[#game_rules+1] = {n=G.UIT.R, config={align = "cl"}, nodes = localize{
 match_indent = true
 times = 1
 
+
+
+
+
+#
+# Function support and alternate win condition for challenges
+#
+
 [[patches]]
 [patches.pattern]
 target = "game.lua"
@@ -153,9 +161,33 @@ pattern = '''if v.id == 'no_reward' then'''
 position = "at"
 payload = '''if v.func then
     v.func()
+elseif v.alt_lose then
+    G.GAME.modifiers.alt_lose_condition = true
+    G.GAME.modifiers[v.id] = {func = v.func, alt_lose = true}
+elseif v.alt_win then
+    G.GAME.modifiers.alt_win_condition = true
+    G.GAME.modifiers[v.id] = {func = v.func, alt_win = true, type = v.type or 'modify_deck' }
 elseif v.id == 'no_reward' then '''
 match_indent = true
 times = 1
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then'''
+position = "at"
+payload = '''if G.GAME.modifiers.alt_lose_condition then
+    for _, v in pairs(G.GAME.modifiers) do
+        if type(v) == 'table' and v.alt_lose then
+            local lose = v.func()
+            if lose then ArrowAPI.game.game_over(false, true) end
+        end
+    end
+elseif not G.GAME.modifiers.alt_win_condition and G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then'''
+match_indent = true
+times = 1
+
+
 
 
 

@@ -200,3 +200,25 @@ function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, h
 
     return ref_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...)
 end
+
+
+
+
+
+---------------------------
+--------------------------- Alternate win conditions
+---------------------------
+
+local ref_check_unlock = check_for_unlock
+function check_for_unlock(args)
+    local ret = ref_check_unlock(args)
+
+    for _, v in pairs(G.GAME.modifiers) do
+        if type(v) == 'table' and v.alt_win and v.type == args.type then
+            local win = v.func()
+            if win then ArrowAPI.game.game_over(true) end
+        end
+    end
+
+    return ret
+end
