@@ -9,7 +9,8 @@ local packInfo = {
     kind = 'Stand',
     group_key = "k_mega_spirit_pack",
     select_card = 'consumeables',
-    part = 'jojo'
+    origin = 'jojo',
+    requires_type = 'Stand',
 }
 
 function packInfo.loc_vars(self, info_queue, card)
@@ -17,7 +18,7 @@ function packInfo.loc_vars(self, info_queue, card)
 end
 
 function packInfo.create_card(self, card)
-    return {set = "Stand", area = G.pack_cards, skip_materialize = true, soulable = false, key_append = 'fnwk_stand1'}
+    return {set = "Stand", area = G.pack_cards, skip_materialize = true, soulable = false, key_append = 'stand1'}
 end
 
 packInfo.ease_background_colour = function(self)

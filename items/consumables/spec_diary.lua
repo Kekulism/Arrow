@@ -3,11 +3,19 @@ local consumInfo = {
     set = "Spectral",
     cost = 4,
     alerted = true,
-    part = 'stone',
+    origin = {
+        category = 'jojo',
+        sub_origins = {
+            'stone',
+        },
+        custom_color = 'stone',
+    },
+    artist = 'cejai',
+    requires_type = 'Stand',
 }
 
 function consumInfo.in_pool(self, args)
-    return G.FUNCS.arrow_consumabletype_has_items('Stand')
+    return ArrowAPI.loading.consumeable_has_items('Stand')
 end
 
 function consumInfo.loc_vars(self, info_queue, card)
@@ -16,14 +24,12 @@ function consumInfo.loc_vars(self, info_queue, card)
     else
         info_queue[#info_queue+1] = {key = "stand_info", set = "Other", vars = { G.GAME.modifiers.max_stands or 1, (card.area.config.collection and localize('k_stand')) or ((G.GAME.modifiers.max_stands or 1) > 1 and localize('b_stand_cards') or localize('k_stand')) }}
     end
-
-    info_queue[#info_queue+1] = {key = "artistcredit", set = "Other", vars = { G.arrow_team.cejai } }
 end
 
 function consumInfo.use(self, card, area, copier)
     G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
         play_sound('timpani')
-        G.FUNCS.new_stand(true)
+        ArrowAPI.stands.new_stand(true)
         return true
     end }))
     delay(0.6)
@@ -34,7 +40,7 @@ function consumInfo.can_use(self, card)
         return false
     end
 
-    return G.GAME.modifiers.unlimited_stands or to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)
+    return G.GAME.modifiers.unlimited_stands or to_big(ArrowAPI.stands.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)
 end
 
 return consumInfo

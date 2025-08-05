@@ -1,15 +1,7 @@
 SMODS.Shader({ key = 'stand_aura', path = 'stand_aura.fs' })
-SMODS.Shader({key = 'stand_mask', path = 'stand_mask.fs'})
-
-
-local function hashString(input)
-    local hash = 5381  -- Seed value
-    for i = 1, #input do
-        local char = string.byte(input, i)
-        hash = ((hash * 32) + hash + char) % 2^15  -- Wrap to 16-bit integer
-    end
-    return hash
-end
+SMODS.Shader({ key = 'stand_mask', path = 'stand_mask.fs' })
+SMODS.Atlas({ key = 'stand_noise', path = 'noise.png',  px = 128, py = 128})
+SMODS.Atlas({ key = 'stand_gradient', path = 'gradient.png', px = 64, py = 64})
 
 local default_aura_target = 0.3
 
@@ -75,9 +67,9 @@ SMODS.DrawStep {
             -- aura flare in gameplay
             local flare_ease = 0
             if self.ability.aura_flare_direction > 0 then
-                flare_ease = arrow_ease_in_cubic(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
+                flare_ease = ArrowAPI.math.ease_funcs.in_cubic(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
             else
-                flare_ease = arrow_ease_out_quint(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
+                flare_ease = ArrowAPI.math.ease_funcs.out_quint(self.ability.aura_flare_lerp/(self.ability.aura_flare_target or default_aura_target))
             end
 
 
@@ -95,7 +87,7 @@ SMODS.DrawStep {
             cursor_pos[2] = self.tilt_var and self.tilt_var.my*G.CANV_SCALE or G.CONTROLLER.cursor_position.y*G.CANV_SCALE
             local screen_scale = G.TILESCALE*G.TILESIZE*(self.children.center.mouse_damping or 1)*G.CANV_SCALE
             local hovering = (self.hover_tilt or 0)
-            local seed = hashString(self.config.center.key..'_'..self.ID)
+            local seed = ArrowAPI.math.hash_string(self.config.center.key..'_'..self.ID)
 
             G.SHADERS['arrow_stand_aura']:send('step_size', {0.021, 0.021})
             G.SHADERS['arrow_stand_aura']:send('time', G.TIMERS.REAL)
@@ -183,57 +175,36 @@ SMODS.DrawStep {
     conditions = { vortex = false, facing = 'front' },
 }
 
+local old_sticker_func = SMODS.DrawSteps.stickers.func
 SMODS.DrawStep:take_ownership('stickers', {
     func = function(self, layer)
-        if not G.arrow_shared_stand_stickers then
-            G.arrow_shared_stand_stickers = {
-                White = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 0,y = 0}),
-                Red = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 1,y = 0}),
-                Green = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 2,y = 0}),
-                Black = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 3,y = 0}),
-                Blue = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 4,y = 0}),
-                Purple = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 5,y = 0}),
-                Orange = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 6,y = 0}),
-                Gold = Sprite(0, 0, G.CARD_W, G.CARD_H, G.ASSET_ATLAS["arrow_stickers"], {x = 7,y = 0})
-            }
-        end
-        if self.sticker and G.shared_stickers[self.sticker] then
-            if self.ability.set == "Stand" and G.arrow_shared_stand_stickers[self.sticker] then
-                G.arrow_shared_stand_stickers[self.sticker].role.draw_major = self
-                G.arrow_shared_stand_stickers[self.sticker]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-                G.arrow_shared_stand_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-            else
-                G.shared_stickers[self.sticker].role.draw_major = self
-                G.shared_stickers[self.sticker]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-                G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-            end
-
-        elseif (self.sticker_run and G.shared_stickers[self.sticker_run]) and G.SETTINGS.run_stake_stickers then
-            if self.ability.set == "Stand" and G.arrow_shared_stand_stickers[self.sticker_run] then
-                G.arrow_shared_stand_stickers[self.sticker_run].role.draw_major = self
-                G.arrow_shared_stand_stickers[self.sticker_run]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-                G.arrow_shared_stand_stickers[self.sticker_run]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-            else
-                G.shared_stickers[self.sticker_run].role.draw_major = self
-                G.shared_stickers[self.sticker_run]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-                G.shared_stickers[self.sticker_run]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-            end
+        if self.ability.set ~= 'Stand' then
+            return old_sticker_func(self, layer)
         end
 
-        for k, v in pairs(SMODS.Stickers) do
+        if self.sticker then
+            G.shared_stickers[self.sticker].role.draw_major = self
+            G.shared_stickers[self.sticker]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+            G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
+        end
+
+        if G.SETTINGS.run_stake_stickers and self.sticker_run and G.shared_stickers[self.sticker_run] then
+            local key = G.shared_stickers['arrow_Stand_'..self.sticker_run] and 'arrow_Stand_'..self.sticker_run or self.sticker_run
+            G.shared_stickers[key].role.draw_major = self
+            G.shared_stickers[key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+            G.shared_stickers[key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
+        end
+        
+
+        for _, v in pairs(SMODS.Stickers) do
             if self.ability[v.key] then
                 if v and v.draw and type(v.draw) == 'function' then
                     v:draw(self, layer)
                 else
-                    if self.ability.set == "Stand" and G.arrow_shared_stand_stickers[self.sticker_run] then
-                        G.arrow_shared_stand_stickers[v.key].role.draw_major = self
-                        G.arrow_shared_stand_stickers[v.key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-                        G.arrow_shared_stand_stickers[v.key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-                    else
-                        G.shared_stickers[v.key].role.draw_major = self
-                        G.shared_stickers[v.key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-                        G.shared_stickers[v.key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-                    end
+                    local mod_key = G.shared_stickers['arrow_Stand_'..v.key] and 'arrow_Stand_'..v.key or v.key
+                    G.shared_stickers[mod_key].role.draw_major = self
+                    G.shared_stickers[mod_key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+                    G.shared_stickers[mod_key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
                 end
             end
         end

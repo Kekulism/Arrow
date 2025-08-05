@@ -11,20 +11,19 @@ local packInfo = {
     group_key = "k_jumbo_analog_pack",
     select_card = 'consumeables',
     origin = {
-        'rlm',
-        'rlm_wotw',
-        color = 'rlm'
-    }
+        category = 'rlm',
+        sub_origins = {'rlm_wotw'},
+        custom_color = 'rlm',
+    },
+    artist = 'yunkie',
+    requires_type = 'VHS',
 }
 
 function packInfo.in_pool(self, args)
-    if not G.FUNCS.arrow_consumabletype_has_items('VHS') then
-        return false
-    end
+    return ArrowAPI.loading.consumeable_has_items('VHS')
 end
 
 packInfo.loc_vars = function(self, info_queue, card)
-    info_queue[#info_queue+1] = {key = "artistcredit", set = "Other", vars = { G.arrow_team.yunkie } }
     return { vars = {card.ability.choose, card.ability.extra} }
 end
 

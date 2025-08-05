@@ -5,20 +5,18 @@ local voucherInfo = {
         rate = 4,
     },
     origin = {
-        'rlm',
-        'rlm_botw',
-        color = 'rlm'
-    }
+        category = 'rlm',
+        sub_origins = {
+            'rlm_botw',
+        },
+        custom_color = 'rlm',
+    },
+    artist = 'joey',
+    requires_type = 'VHS',
 }
 
 function voucherInfo.in_pool(self, args)
-    if not G.FUNCS.arrow_consumabletype_has_items('VHS') then
-        return false
-    end
-end
-
-function voucherInfo.loc_vars(self, info_queue, card)
-    info_queue[#info_queue+1] = {key = "artistcredit", set = "Other", vars = { G.arrow_team.joey } }
+    return ArrowAPI.loading.consumeable_has_items('Stand')
 end
 
 function voucherInfo.redeem(self, card, area, copier)

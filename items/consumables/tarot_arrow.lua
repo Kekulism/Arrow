@@ -3,11 +3,19 @@ local consumInfo = {
     set = 'Tarot',
     cost = 3,
     alerted = true,
-    part = 'diamond',
+    origin = {
+        category = 'jojo',
+        sub_origins = {
+            'diamond',
+        },
+        custom_color = 'diamond',
+    },
+    artist = 'gote',
+    requires_type = 'Stand',
 }
 
 function consumInfo.in_pool(self, args)
-    return G.FUNCS.arrow_consumabletype_has_items('Stand')
+    return ArrowAPI.loading.consumeable_has_items('Stand')
 end
 
 function consumInfo.loc_vars(self, info_queue, card)
@@ -15,10 +23,9 @@ function consumInfo.loc_vars(self, info_queue, card)
         info_queue[#info_queue+1] = {key = "stand_info_unlimited", set = "Other"}
     else
         if card.area then
-            info_queue[#info_queue+1] = {key = "stand_info", set = "Other", vars = { G.GAME and G.GAME.modifiers.max_stands or 1, (card.area.config.collection and localize('k_stand')) or (G.GAME.modifiers.max_stands > 1 and localize('b_stand_cards') or localize('k_stand')) }}
+            info_queue[#info_queue+1] = {key = "stand_info", set = "Other", vars = { G.GAME and G.GAME.modifiers.max_stands or 1, (card.area.config.collection and localize('k_stand')) or ((G.GAME.modifiers.max_stands or 1) > 1 and localize('b_stand_cards') or localize('k_stand')) }}
         end
     end
-    info_queue[#info_queue+1] = {key = "artistcredit", set = "Other", vars = { G.arrow_team.gote } }
 end
 
 function consumInfo.use(self, card, area, copier)
@@ -27,9 +34,9 @@ function consumInfo.use(self, card, area, copier)
         if next(SMODS.find_card("c_jojobal_vento_gold")) then
             local stand = SMODS.find_card("c_jojobal_vento_gold")[1]
             check_for_unlock({ type = "evolve_ger" })
-            G.FUNCS.evolve_stand(stand)
+            ArrowAPI.stands.evolve_stand(stand)
         else
-            G.FUNCS.new_stand(false)
+            ArrowAPI.stands.new_stand(false)
         end
         return true
     end }))
@@ -41,7 +48,7 @@ function consumInfo.can_use(self, card)
         return false
     end
 
-    return G.GAME.modifiers.unlimited_stands or (to_big(G.FUNCS.get_num_stands()) < to_big(G.GAME.modifiers.max_stands)) or next(SMODS.find_card("c_jojobal_vento_gold"))
+    return G.GAME.modifiers.unlimited_stands or (ArrowAPI.stands.get_num_stands() < to_big(G.GAME.modifiers.max_stands)) or next(SMODS.find_card("c_jojobal_vento_gold"))
 end
 
 return consumInfo

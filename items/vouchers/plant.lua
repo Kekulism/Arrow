@@ -7,19 +7,21 @@ local voucherInfo = {
             rate = 0.12,
         }
     },
-    part = 'lion',
     unlocked = false,
     unlock_condition = {type = 'c_stands_bought', extra = 25},
+    origin = {
+        category = 'jojo',
+        sub_origins = {
+            'lion',
+        },
+        custom_color = 'lion',
+    },
+    artist = 'gote',
+    requires_type = 'Stand',
 }
 
 function voucherInfo.in_pool(self, args)
-    if not G.FUNCS.arrow_consumabletype_has_items('Stand') then
-        return false
-    end
-end
-
-function voucherInfo.loc_vars(self, info_queue, card)
-    info_queue[#info_queue+1] = {key = "artistcredit", set = "Other", vars = { G.arrow_team.gote } }
+    return ArrowAPI.loading.consumeable_has_items('Stand')
 end
 
 function voucherInfo.locked_loc_vars(self, info_queue, card)

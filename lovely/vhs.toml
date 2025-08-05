@@ -26,21 +26,3 @@ payload = "button_contents = {n=G.UIT.T, config={text = args.card.ability.set ==
 match_indent = true
 times = 1
 
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = '''for i=1, hand_space do --draw cards from deckL
-        if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK then
-            draw_card(G.deck,G.hand, i*100/hand_space,'up', true)
-        else
-            draw_card(G.deck,G.hand, i*100/hand_space,'up', true)
-        end
-    end
-'''
-position = "at"
-payload = '''
-SMODS.draw_cards_from_deck(hand_space)
-'''
-match_indent = true
-times = 1
-

@@ -1,47 +1,64 @@
-UsableModPath = SMODS.current_mod.path:match("Mods/[^/]+")
-PathPatternReplace = UsableModPath:gsub("(%W)","%%%1")  -- shoot me in the foot, why doesn't lua just have a str.replace
-arrow_config = SMODS.current_mod.config
-arrow_enabled = copy_table(arrow_config)
-
-SMODS.current_mod.DT = {}
+ArrowAPI = SMODS.current_mod
+ArrowAPI.current_config = copy_table(ArrowAPI.config)
+ArrowAPI.startup_item_check = false
+ArrowAPI.col_stand_hover = nil
 
 G.C.STAND = HEX('B85F8E')
 G.C.VHS = HEX('a2615e')
 
-local includes = {
-	'atlases',
-	'tables',
-	'utility',
-	'ui',
-	'shaders',
-	'smods',
+if not G.ARGS.LOC_COLOURS then loc_colour() end
+G.ARGS.LOC_COLOURS['stand'] = G.C.STAND
+G.ARGS.LOC_COLOURS['vhs'] = G.C.VHS
 
-	'hooks/overrides',
+local includes = {
+	-- data types
+	'math',
+	'logging',
+	'string',
+	'table',
+	'pseudorandom',
+	'ui',
+	'credits',
+	'shaders',
+	'loading',
+
+	'hooks/node',
+	'hooks/blind',
 	'hooks/button_callbacks',
 	'hooks/card',
-	'hooks/misc_functions',
-	'hooks/UI_definitions',
-	'hooks/smods',
+	'hooks/cardarea',
 	'hooks/game',
+	'hooks/back',
+	'hooks/smods',
+	'hooks/UI_definitions',
 
+	'overrides',
 	'stands',
 	'vhs',
-	'items',
+	'game',
+	'misc',
 }
 
--- blank function that is run on starting the main menu,
--- other parts of the mod can hook into this to run code
--- that needs to be run after the game has initialized
-local ref_ips = function() end
-if G.FUNCS.initPostSplash then ref_ips = G.FUNCS.initPostSplash end
-G.FUNCS.initPostSplash = function()
-	ref_ips()
-end
-
 for _, include in ipairs(includes) do
-	local init, error = SMODS.load_file("includes/" .. include ..".lua")
+	local init, error = SMODS.load_file("api/" .. include ..".lua")
 	if error then sendErrorMessage("[Arrow] Failed to load "..include.." with error "..error) else
 		local data = init()
 		sendDebugMessage("[Arrow] Loaded hook: " .. include)
 	end
+end
+
+-- blank function that is run on starting the main menu,
+-- other parts of the mod can hook into this to run code
+-- that needs to be run after the game has initialized
+local ref_post_splash = function() end
+if G.FUNCS.initPostSplash then ref_post_splash = G.FUNCS.initPostSplash end
+G.FUNCS.initPostSplash = function()
+	local ret = ref_post_splash()
+	ArrowAPI.loading.disable_empty()
+
+	for _, v in ipairs(G.CHALLENGES) do
+		ArrowAPI.misc.run_challenge_functions(v)
+	end
+
+	return ret
 end

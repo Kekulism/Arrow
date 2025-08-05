@@ -1,3 +1,28 @@
+local enhance_text = {
+	singular = {
+		"Enhances {C:attention}#1#{} selected",
+		"card into a {C:attention}#2#{}"
+	},
+	multi = {
+		"Enhances up to {C:attention}#1#{}",
+		"selected cards into",
+		"{C:attention}#2#s{}"
+	}
+}
+
+local seal_text = {
+	singular = {
+		"Add a {C:attention}#1#{} to",
+		"{C:attention}#2#{} selected card",
+		"in your hand"
+	},
+	multi = {
+		"Add {C:attention}#1#s{} to up",
+		"to {C:attention}#2#{} selected cards",
+		"in your hand"
+	}
+}
+
 return {
     misc = {
         labels = {
@@ -20,44 +45,29 @@ return {
             b_deactivate = "PAUSE",
             b_and_activate = "& PLAY",
 
-            -- badge titles
-            ba_vinny = "Vinesauce",
-            ba_vinny_wotw = "Wheel of the Weird",
-            ba_vinny_pa = "Public Access",
-            co_vinny = "32A852",
-            te_vinny = "FFFFFF",
-            ba_joel = "Vargskelethor",
-            ba_mike = "Jabroni Mike",
-            co_mike = "8867a5",
-            te_mike = "FFFF00",
-            ba_redvox = "Red Vox",
-            co_redvox = "841f20",
-            te_redvox = "cac5b7",
+            -- vhs related badges
             ba_rlm = "RedLetterMedia",
             ba_rlm_botw = "Best of the Worst",
             ba_rlm_p = "Plinketto",
-            ba_rlm_bs = "Black Spine",
-            ba_rlm_j = "Junka",
             ba_rlm_wotw = "Wheel of the Worst",
             ba_rlm_hitb = "Half in the Bag",
             ba_rlm_r = "Re:View",
+
+            -- jojo related badges
             ba_jojo = "Jojo's Bizarre Adventure",
-            ba_uzumaki = "Uzumaki",
-            ba_monkeywrench = "Monkey Wrench",
-
-            -- badge colors for jojo parts
-            ba_phantom = 'Phantom Blood',
-            ba_battle = 'Battle Tendency',
-            ba_stardust = 'Stardust Crusaders',
             ba_diamond = 'Diamond is Unbreakable',
-            ba_vento = 'Golden Wind',
             ba_stone = 'Stone Ocean',
-            ba_steel = 'Steel Ball Run',
             ba_lion = 'JoJolion',
-            ba_lands = 'The JOJOLands',
-
-            ba_feedback = 'Purple Haze Feedback',
         },
+        v_text = {
+			-- general behavior
+			banned_except = {"{C:attention}All Jokers{} and {C:stand}all Stands{} {C:attention}banned{} except:"},
+			blinds_except = {"{C:attention}All Blinds banned{} except:"},
+            ch_c_max_stands = {"You may have up to {C:attention}#1#{} {C:stand}Stands{}"},
+            ch_c_all_bosses = {"{C:attention}Small{} and {C:attention}Big Blinds{} are {C:attention}Boss Blinds{}"},
+			ch_c_all_showdown = {"{C:attention}Boss Blinds{} are {C:attention}Final Boss Blinds{}"},
+            ch_c_all_scores_hidden = {"{C:attention}Blind requirements{} are {C:dark_edition}hidden{}"},
+		},
     },
     descriptions = {
         Other = {
@@ -87,15 +97,15 @@ return {
                 },
             },
 
-            undiscovered_vhs={
-                name="Not Discovered",
-                text={
+            undiscovered_vhs = {
+                name = "Not Discovered",
+                text = {
                     "Purchase this card in",
                     "an unseeded run to",
                     "learn what it does",
                 },
             },
-            undiscovered_stand={
+            undiscovered_stand = {
                 name = "Not Discovered",
                 text = {
                     "Purchase this card in",
@@ -104,7 +114,7 @@ return {
                 },
             },
 
-            white_sticker={
+            white_sticker = {
                 name="White Sticker",
                 text={
                     "Used this #1#",
@@ -112,7 +122,7 @@ return {
                     "{C:attention}Stake{} difficulty",
                 },
             },
-            red_sticker={
+            red_sticker = {
                 name="Red Sticker",
                 text={
                     "Used this #1#",
@@ -120,66 +130,56 @@ return {
                     "{C:attention}Stake{} difficulty",
                 },
             },
-            green_sticker={
-                name="Green Sticker",
-                text={
+            green_sticker = {
+                name = "Green Sticker",
+                text = {
                     "Used this #1#",
                     "to win on {C:attention}Green",
                     "{C:attention}Stake{} difficulty",
                 },
             },
-            black_sticker={
-                name="Black Sticker",
-                text={
+            black_sticker = {
+                name = "Black Sticker",
+                text = {
                     "Used this #1#",
                     "to win on {C:attention}Black",
                     "{C:attention}Stake{} difficulty",
                 },
             },
-            blue_sticker={
-                name="Blue Sticker",
-                text={
+            blue_sticker = {
+                name = "Blue Sticker",
+                text = {
                     "Used this #1#",
                     "to win on {C:attention}Blue",
                     "{C:attention}Stake{} difficulty",
                 },
             },
             purple_sticker={
-                name="Purple Sticker",
-                text={
+                name = "Purple Sticker",
+                text = {
                     "Used this #1#",
                     "to win on {C:attention}Purple",
                     "{C:attention}Stake{} difficulty",
                 },
             },
             orange_sticker={
-                name="Orange Sticker",
-                text={
+                name = "Orange Sticker",
+                text = {
                     "Used this #1#",
                     "to win on {C:attention}Orange",
                     "{C:attention}Stake{} difficulty",
                 },
             },
-            gold_sticker={
-                name="Gold Sticker",
-                text={
+            gold_sticker = {
+                name = "Gold Sticker",
+                text = {
                     "Used this #1#",
                     "to win on {C:attention}Gold",
                     "{C:attention}Stake{} difficulty",
                 },
             },
 
-            artist = {
-                text = {
-                    "{C:inactive}Artist",
-                },
-            },
-            artists = {
-                text = {
-                    "{C:inactive}Artists",
-                },
-            },
-            artistcredit = {
+            artistcredit_1 = {
                 name = "Artist",
                 text = {
                     "{E:1}#1#{}"
@@ -192,29 +192,36 @@ return {
                     "{E:1}#2#{}"
                 },
             },
+            artistcredit_3 = {
+                name = "Artists",
+                text = {
+                    "{E:1}#1#{}",
+                    "{E:1}#2#{}"
+                },
+            },
 
-            p_arrow_analog1={
+            p_arrow_analog1 = {
                 name = 'Analog Pack',
                 text = {
                     "Choose {C:attention}#1#{} of up to",
                     "{C:attention}#2#{C:vhs} VHS Tapes{}",
                 },
             },
-            p_arrow_analog2={
+            p_arrow_analog2 = {
                 name = 'Analog Pack',
                 text = {
                     "Choose {C:attention}#1#{} of up to",
                     "{C:attention}#2#{C:vhs} VHS Tapes{}",
                 },
             },
-            p_arrow_analog3={
+            p_arrow_analog3 = {
                 name = 'Jumbo Analog Pack',
                 text = {
                     "Choose {C:attention}#1#{} of up to",
                     "{C:attention}#2#{C:vhs} VHS Tapes{}",
                 },
             },
-            p_arrow_analog4={
+            p_arrow_analog4 = {
                 name = 'Mega Analog Pack',
                 text = {
                     "Choose {C:attention}#1#{} of up to",
@@ -239,6 +246,57 @@ return {
             },
         },
         Tarot = {
+            c_strength = {
+				name = "Strength",
+				text = {
+					"Increases rank of",
+					"up to {C:attention}#1#{} selected",
+					"cards by {C:attention}#2#{}"
+				}
+			},
+			c_strength_multi = {
+				name = "Strength",
+				text = {
+					"Increases rank",
+					"of {C:attention}#1#{} selected",
+					"card by {C:attention}#2#{}"
+				}
+			},
+			c_death = {
+				name = "Death",
+				text = {
+					"Select {C:attention}#1#{} cards,",
+					"convert the {C:attention}left{} card",
+					"into the {C:attention}right{} card",
+					"{C:inactive}(Drag to rearrange)"
+				}
+			},
+			c_death_multi = {
+				name = "Death",
+				text = {
+					"Select {C:attention}#1#{} cards,",
+					"convert the {C:attention}left{} cards",
+					"into the {C:attention}rightmost{} card",
+					"{C:inactive}(Drag to rearrange)"
+				}
+			},
+			c_devil = { name = "The Devil", text = enhance_text.singular },
+			c_devil_multi = { name = "The Devil", text = enhance_text.multi },
+            c_tower = { name = "The Tower", text = enhance_text.singular },
+			c_tower_multi = { name = "The Tower", text = enhance_text.multi },
+			c_magician = { name = "The Magician", text = enhance_text.singular },
+			c_magician_multi = { name = "The Magician", text = enhance_text.multi },
+			c_empress = { name = "The Empress", text = enhance_text.singular },
+			c_empress_multi = { name = "The Empress", text = enhance_text.multi },
+			c_heirophant = { name = "The Hierophant", text = enhance_text.singular },
+			c_heirophant_multi = { name = "The Hierophant", text = enhance_text.multi },
+			c_lovers = { name = "The Lovers", text = enhance_text.singular },
+			c_lovers_multi = { name = "The Lovers", text = enhance_text.multi },
+			c_chariot = { name = "The Chariot", text = enhance_text.singular },
+			c_chariot_multi = { name = "The Chariot", text = enhance_text.multi },
+			c_justice = { name = "Justice", text = enhance_text.singular },
+			c_justice_multi = { name = "Justice", text = enhance_text.multi },
+
             c_arrow_tarot_arrow = {
                 name = "The Arrow",
                 text = {
@@ -248,6 +306,49 @@ return {
             },
         },
         Spectral = {
+            			c_talisman = { name = "Talisman", text = seal_text.singular },
+			c_talisman_multi = { name = "Talisman", text = seal_text.multi },
+			c_deja_vu = { name = "Deja Vu", text = seal_text.singular },
+			c_deja_vu_multi = { name = "Deja Vu", text = seal_text.multi },
+			c_medium = { name = "Medium", text = seal_text.singular },
+			c_medium_multi = { name = "Medium", text = seal_text.multi },
+			c_trance = { name = "Trance", text = seal_text.singular },
+			c_trance_multi = { name = "Trance", text = seal_text.multi },
+
+			c_cryptid = {
+				name = 'Cryptid',
+				text = {
+					"Create {C:attention}#1#{} copies of",
+					"{C:attention}#2#{} selected card",
+					"in your hand"
+				},
+			},
+			c_cryptid_multi = {
+				name = 'Cryptid',
+				text = {
+					"Create {C:attention}#1#{} copies of",
+					"up to {C:attention}#2#{} selected cards",
+					"in your hand"
+				},
+			},
+
+			c_aura = {
+				name = 'Aura',
+				text = {
+					"Add {C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
+					"{C:dark_edition}#2#{} edition to",
+					"{C:attention}#1#{} selected card in hand"
+				},
+			},
+			c_aura_multi = {
+				name = 'Aura',
+				text = {
+					"Add {C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
+					"{C:dark_edition}#2#{} edition to up to",
+					"{C:attention}#1#{} selected cards in hand"
+				},
+			},
+            
             c_arrow_spec_diary = {
                 name = "The Diary",
                 text = {

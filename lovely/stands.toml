@@ -10,7 +10,9 @@ pattern = '''if self.ability.set == 'Joker' and not self.sticker_run then'''
 position = "before"
 payload = '''
 if self.ability.set == 'Stand' and not self.sticker_run then
-    self.sticker_run = get_stand_win_sticker(self.config.center) or 'NONE'
+    local get_sticker = ArrowAPI.stands.get_win_sticker(self.config.center)
+    sendDebugMessage('obtained sticker_run: '..tostring(get_sticker))
+    self.sticker_run = get_sticker or 'NONE'
 end'''
 match_indent = true
 
@@ -19,7 +21,7 @@ match_indent = true
 target = "functions/state_events.lua"
 pattern = "set_joker_win()"
 position = "after"
-payload = "set_stand_win()"
+payload = "ArrowAPI.stands.set_stand_win()"
 match_indent = true
 
 [[patches]]
@@ -29,7 +31,7 @@ pattern = '''local rows, protos = {}, {'collection', 'challenges', 'joker_sticke
 _profile_progress = _profile_progress or G.PROFILES[G.SETTINGS.profile].progress'''
 position = "after"
 payload = '''
-if not G.FUNCS.arrow_consumabletype_has_items('Stand') then
+if not ArrowAPI.loading.consumeable_has_items('Stand') then
     rows, protos = {}, {'collection', 'challenges', 'joker_stickers', 'stand_stickers', 'deck_stake_wins'}
     _profile_progress = _profile_progress or G.PROFILES[G.SETTINGS.profile].progress
     if not _profile_progress.stand_stickers then
@@ -47,7 +49,7 @@ target = "functions/UI_definitions.lua"
 pattern = "local text_scale = smaller and 0.7 or 1"
 position = "before"
 payload = '''
-if not G.FUNCS.arrow_consumabletype_has_items('Stand') then
+if not ArrowAPI.loading.consumeable_has_items('Stand') then
   _profile_progress.overall_tally, _profile_progress.overall_of =
   _profile_progress.discovered.tally/_profile_progress.discovered.of +
   _profile_progress.deck_stakes.tally/_profile_progress.deck_stakes.of +

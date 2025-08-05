@@ -6,17 +6,19 @@ local voucherInfo = {
             rate = 1,
         }
     },
-    part = 'stone',
+    origin = {
+        category = 'jojo',
+        sub_origins = {
+            'stone',
+        },
+        custom_color = 'stone',
+    },
+    artist = 'gote',
+    requires_type = 'Stand',
 }
 
 function voucherInfo.in_pool(self, args)
-    if not G.FUNCS.arrow_consumabletype_has_items('Stand') then
-        return false
-    end
-end
-
-function voucherInfo.loc_vars(self, info_queue, card)
-    info_queue[#info_queue+1] = {key = "artistcredit", set = "Other", vars = { G.arrow_team.gote } }
+    return ArrowAPI.loading.consumeable_has_items('Stand')
 end
 
 function voucherInfo.redeem(self, card, area, copier)

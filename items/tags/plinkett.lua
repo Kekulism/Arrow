@@ -1,20 +1,22 @@
 local tagInfo = {
     name = 'Plinkett Tag',
     config = {type = 'new_blind_choice'},
-    alerted = true,
+    origin = {
+        category = 'rlm',
+        sub_origins = {
+            'rlm_p',
+        },
+        custom_color = 'rlm',
+    },
+    artist = 'gote',
+    requires_type = 'VHS',
 }
 
 function tagInfo.in_pool(self, args)
-    if not G.FUNCS.arrow_consumabletype_has_items('VHS') then
-        return false
-    end
+    return ArrowAPI.loading.consumeable_has_items('VHS')
 end
 
-tagInfo.loc_vars = function(self, info_queue, card)
-    info_queue[#info_queue+1] = {key = "artistcredit", set = "Other", vars = { G.arrow_team.gote } }
-end
-
-tagInfo.apply = function(self, tag, context)
+function tagInfo.apply(self, tag, context)
     if context.type == self.config.type then
         tag:yep('+', G.C.VHS,function()
             local key = 'p_arrow_analog4'
