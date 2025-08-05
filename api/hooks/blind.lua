@@ -63,7 +63,7 @@ function arrow_init_extra_blind(X, Y, W, H, extra_source)
 		table.insert(G.I.CARD, extra_blind)
 	end
 	
-	return extra
+	return extra_blind
 end
 
 function Blind:extra_set_blind(blind, reset)

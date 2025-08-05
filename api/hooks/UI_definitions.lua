@@ -318,7 +318,7 @@ function G.UIDEF.challenge_description_tab(args)
             }},
             {n=G.UIT.R, config={align = "cm", padding = 0.075, colour = G.C.WHITE, r = 0.1 }, nodes={
                 ch.origin and ArrowAPI.ui.dynamic_badge(ch) or nil,
-                {n = G.UIT.R, config = {align = "cm", minh = ch.origin and 3.275 or 3.95, minw = 4.4, maxw = 4.4, padding = 0.05, r = 0.1, colour = G.C.WHITE}, nodes = story_text}
+                {n = G.UIT.R, config = {align = "cm", minh = ch.origin and 3.45 or 3.95, minw = 4.4, maxw = 4.4, padding = 0.05, r = 0.1, colour = G.C.WHITE}, nodes = story_text}
             }},
         }}
 

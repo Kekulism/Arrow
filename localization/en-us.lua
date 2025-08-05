@@ -63,10 +63,12 @@ return {
 			-- general behavior
 			banned_except = {"{C:attention}All Jokers{} and {C:stand}all Stands{} {C:attention}banned{} except:"},
 			blinds_except = {"{C:attention}All Blinds banned{} except:"},
+            ch_c_scaling = {"{C:attention}#1#X{} Blind scaling"},
             ch_c_max_stands = {"You may have up to {C:attention}#1#{} {C:stand}Stands{}"},
             ch_c_all_bosses = {"{C:attention}Small{} and {C:attention}Big Blinds{} are {C:attention}Boss Blinds{}"},
 			ch_c_all_showdown = {"{C:attention}Boss Blinds{} are {C:attention}Final Boss Blinds{}"},
             ch_c_all_scores_hidden = {"{C:attention}Blind requirements{} are {C:dark_edition}hidden{}"},
+            ch_c_extra_blind_active = {"{B:1,C:white}#1#{} is {C:attention}always active{}"},
 		},
     },
     descriptions = {

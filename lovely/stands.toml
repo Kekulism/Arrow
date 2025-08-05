@@ -11,7 +11,6 @@ position = "before"
 payload = '''
 if self.ability.set == 'Stand' and not self.sticker_run then
     local get_sticker = ArrowAPI.stands.get_win_sticker(self.config.center)
-    sendDebugMessage('obtained sticker_run: '..tostring(get_sticker))
     self.sticker_run = get_sticker or 'NONE'
 end'''
 match_indent = true

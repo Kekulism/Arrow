@@ -1,7 +1,7 @@
 {
 	"id": "ArrowAPI",
 	"name": "Arrow",
-	"author": ["BarrierTrio/Gote", "Keku", "TheWinterComet"],
+	"author": ["Keku", "Vivian Giacobbi", "BarrierTrio/Gote"],
 	"description": "A lightweight API Mod for Balatro that adds expandable features introduced by Balatro: Cardsauce",
 	"prefix": "arrow",
 	"main_file": "main.lua",

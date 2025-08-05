@@ -9,9 +9,13 @@ G.C.VHS = HEX('a2615e')
 if not G.ARGS.LOC_COLOURS then loc_colour() end
 G.ARGS.LOC_COLOURS['stand'] = G.C.STAND
 G.ARGS.LOC_COLOURS['vhs'] = G.C.VHS
+G.ARGS.LOC_COLOURS['eternal'] = G.C.ETERNAL
+G.ARGS.LOC_COLOURS['perishable'] = G.C.PERISHABLE
+G.ARGS.LOC_COLOURS['rental'] = G.C.RENTAL
 
 local includes = {
 	-- data types
+	'compat',
 	'math',
 	'logging',
 	'string',

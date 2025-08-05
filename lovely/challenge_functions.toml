@@ -131,18 +131,32 @@ if v.colours then
     colours = {}
     for _, colour in ipairs(v.colours) do      
         if type(colour) == 'table' and colour.ref_table and colour.ref_key and colour.ref_value then
+            sendDebugMessage('getting color: '..tostring(colour.ref_table[colour.ref_key][colour.ref_value]))
             colours[#colours+1] = colour.ref_table[colour.ref_key][colour.ref_value]
         else
             colours[#colours+1] = colour
         end
     end
     if #colours > 0 then
+        sendDebugMessage('setting color')
         vars.colours = colours
     end
 end
 game_rules[#game_rules+1] = {n=G.UIT.R, config={align = "cl"}, nodes = localize{type = 'text', key = 'ch_c_'..v.id, vars = vars}}'''
 match_indent = true
 times = 1
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''if v.id == 'no_reward' then'''
+position = "at"
+payload = '''if v.func then
+    v.func()
+elseif v.id == 'no_reward' then '''
+match_indent = true
+times = 1
+
 
 
 #

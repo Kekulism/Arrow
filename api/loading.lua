@@ -100,7 +100,9 @@ ArrowAPI.loading = {
 
                 local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
                 function info.loc_vars(self, info_queue, card)
-                    info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
+                    if info_queue then
+                        info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
+                    end
                     return ref_loc_vars(self, info_queue, card)
                 end
             end
