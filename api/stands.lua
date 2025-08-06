@@ -284,7 +284,7 @@ ArrowAPI.stands = {
 
 local ref_spp = set_profile_progress
 function set_profile_progress()
-    ref_spp()
+    local ret = ref_spp()
     G.PROGRESS.stand_stickers = {tally = 0, of = 0}
     for _, v in pairs(G.P_CENTERS) do
         if v.set == 'Stand' then
@@ -293,4 +293,5 @@ function set_profile_progress()
         end
     end
     G.PROFILES[G.SETTINGS.profile].progress.stand_stickers = copy_table(G.PROGRESS.stand_stickers)
+    return ret
 end

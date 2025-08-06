@@ -142,11 +142,13 @@ ArrowAPI.game = {
     --- @param exclude table | nil An SMODS object to exclude from the count (usually the one calling the check)
     --- @return integer discovered Number of currently discovered mod cards
     --- @return integer total Total number of mod cards
-    check_mod_discoveries = function(mod_id, exclude)
+    check_mod_discoveries = function(mod_id, set, exclude)
         local count = 0
         local discovered = 0
         for k, v in pairs(G.P_CENTERS) do
-            if ((mod_id and v.original_mod and v.original_mod.id == mod_id) or (not mod_id and not v.original_mod)) and (not exclude or k ~= exclude.key) then
+            if ((mod_id and v.original_mod and v.original_mod.id == mod_id) or
+            (not mod_id and not v.original_mod)) and (not set or (v.ability and v.ability.set == set))
+            and (not exclude or k ~= exclude.key) then
                 count = count + 1
                 if v.discovered and v.unlocked then
                     discovered = discovered + 1
