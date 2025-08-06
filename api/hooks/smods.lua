@@ -1,5 +1,6 @@
 function SMODS.current_mod.reset_game_globals(run_start)
     if run_start then
+        G.GAME.arrow_extra_discounts = {}
         G.GAME.arrow_extra_blinds = G.GAME.arrow_extra_blinds or {}
         G.GAME.modifiers.max_stands = G.GAME.modifiers.max_stands or 1
         G.GAME.modifiers.consumable_selection_mod = G.GAME.modifiers.consumable_selection_mod or 0

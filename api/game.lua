@@ -235,7 +235,7 @@ ArrowAPI.game = {
     --- @param discount number discount percentage. 0 is 0%, 1 is 100%
     --- @param center_set string | nil Set to limit the discount to ('Booster', 'Tarot', 'Joker', etc)
     set_center_discount = function(source, discount, juice, center_set)
-        G.GAME.extra_discounts[source.unique_val] = {
+        G.GAME.arrow_extra_discounts[source.unique_val] = {
             center_set = center_set,
             discount = discount
         }
@@ -252,7 +252,7 @@ ArrowAPI.game = {
     --- and updates all instanced cards' costs
     --- @param source Card Balatro Card table indicating the source of the discount
     clear_discount = function(source)
-        G.GAME.extra_discounts[source.unique_val] = nil
+        G.GAME.arrow_extra_discounts[source.unique_val] = nil
         for _, v in pairs(G.I.CARD) do
             if v.set_cost then 
                 v:set_cost()
