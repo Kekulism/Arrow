@@ -1,6 +1,6 @@
 local ref_pseudoseed = pseudoseed
-function pseudoseed(...)
-    if not G.GAME.pseudorandom.predict_mode then return ref_pseudoseed(...) end
+function pseudoseed(key, predict_seed, ...)
+    if not G.GAME.pseudorandom.predict_mode then return ref_pseudoseed(key, predict_seed, ...) end
 
     -- maintain these two cases ig
     if key == 'seed' then return math.random() end
