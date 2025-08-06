@@ -213,10 +213,12 @@ local ref_check_unlock = check_for_unlock
 function check_for_unlock(args)
     local ret = ref_check_unlock(args)
 
-    for _, v in pairs(G.GAME.modifiers) do
-        if type(v) == 'table' and v.alt_win and v.type == args.type then
-            local win = v.func()
-            if win then ArrowAPI.game.game_over(true) end
+    if G.GAME.challenge then
+        local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge)]
+        if ch.alt_win and type(ch.alt_win) == 'table' and (ch.alt_win.type or 'modify_deck') == args.type then
+            if type(ch.alt_win.func) == 'function' and ch.alt_win.func(ch) then
+                ArrowAPI.game.game_over(true)
+            end
         end
     end
 

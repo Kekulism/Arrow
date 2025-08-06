@@ -42,9 +42,7 @@ end
 local ref_load_profile = Game.load_profile
 function Game:load_profile(_profile)
     local ret = ref_load_profile(self, _profile)
-    if not G.PROFILES[G.SETTINGS.profile].stand_usage then
-        G.PROFILES[G.SETTINGS.profile].stand_usage = {}
-    end
+    G.PROFILES[G.SETTINGS.profile].stand_usage = G.PROFILES[G.SETTINGS.profile].stand_usage or {}
 
     return ret
 end

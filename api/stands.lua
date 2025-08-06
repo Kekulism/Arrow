@@ -239,6 +239,7 @@ ArrowAPI.stands = {
     --- @param index boolean | nil Bool to return the key instead of the sticker sprite
     --- @return Sprite | number # Returns the sticker sprite, or the key to index it in G.sticker_map if 'index' is true
     get_win_sticker = function(center, index)
+        G.PROFILES[G.SETTINGS.profile].stand_usage = G.PROFILES[G.SETTINGS.profile].stand_usage or {}
         local stand_usage = G.PROFILES[G.SETTINGS.profile].stand_usage[center.key] or {}
         if stand_usage.wins then
             local applied = {}
@@ -266,6 +267,7 @@ ArrowAPI.stands = {
 
     --- Sets the stake win state for a Stand in the player's profile and then saves
     set_stand_win = function()
+        G.PROFILES[G.SETTINGS.profile].stand_usage = G.PROFILES[G.SETTINGS.profile].stand_usage or {}
         for _, v in pairs(G.consumeables.cards) do
             if v.config.center_key and v.ability.set == 'Stand' then
                 G.PROFILES[G.SETTINGS.profile].stand_usage[v.config.center_key] = G.PROFILES[G.SETTINGS.profile].stand_usage[v.config.center_key] or {count = 1, order = v.config.center.order, wins = {}, losses = {}, wins_by_key = {}, losses_by_key = {}}

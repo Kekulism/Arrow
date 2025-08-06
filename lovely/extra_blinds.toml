@@ -266,18 +266,3 @@ payload = '''G.blind_select_opts.boss = G.GAME.round_resets.blind_states['Boss']
     config = {align="bmi", offset = {x=0,y=0}}} or nil'''
 match_indent = true
 times = 1
-
-[[patches]]
-[patches.pattern]
-target = "game.lua"
-pattern = '''if _ch.restrictions then'''
-position = "before"
-payload = '''   
-if _ch.extra_blinds then
-    G.GAME.arrow_extra_blinds = {}
-    for _, v in ipairs(_ch.extra_blinds) do
-        ArrowAPI.game.create_extra_blind({}, G.P_BLINDS[v], true)
-    end
-end'''
-match_indent = true
-times = 1

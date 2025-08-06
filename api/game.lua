@@ -33,14 +33,18 @@ function level_up_hand_bypass(card, hand, instant, amount, bypass_event)
 end
 
 local function game_over_handler(win)
-    G.GAME.won = win or false
-    G.STATE = G.STATES.GAME_OVER
-    if not G.GAME.won and not G.GAME.seeded and not G.GAME.challenge then 
-        G.PROFILES[G.SETTINGS.profile].high_scores.current_streak.amt = 0
+    if win then
+        win_game()
+        G.GAME.won = true
+    else
+        G.STATE = G.STATES.GAME_OVER
+        if not G.GAME.won and not G.GAME.seeded and not G.GAME.challenge then 
+            G.PROFILES[G.SETTINGS.profile].high_scores.current_streak.amt = 0
+        end
+        G:save_settings()
+        G.FILE_HANDLER.force = true
+        G.STATE_COMPLETE = false
     end
-    G:save_settings()
-    G.FILE_HANDLER.force = true
-    G.STATE_COMPLETE = false
 end
 
 --- General card helpers
@@ -288,7 +292,7 @@ ArrowAPI.game = {
             trigger = 'after',
             delay = 0.2,
             func = function()
-                    game_over_handler(win)
+                game_over_handler(win)
                 return true
             end
         }))

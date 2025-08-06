@@ -29,6 +29,7 @@ local includes = {
 	'hooks/node',
 	'hooks/blind',
 	'hooks/button_callbacks',
+	'hooks/common_events',
 	'hooks/card',
 	'hooks/cardarea',
 	'hooks/game',
