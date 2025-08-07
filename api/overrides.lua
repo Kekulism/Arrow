@@ -230,7 +230,7 @@ for _, v in ipairs(enhance_convert_keys) do
         end,
 
         can_use = function(self, card)
-            return G.hand and #G.hand.highlighted >= card.ability.min_highlighted and #G.hand.highlighted <= card.ability.max_highlighted
+            return G.hand and #G.hand.highlighted >= (card.ability.min_highlighted or 0) and #G.hand.highlighted <= (card.ability.max_highlighted or 0)
         end
     }
 
