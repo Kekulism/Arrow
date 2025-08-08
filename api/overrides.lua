@@ -560,7 +560,7 @@ SMODS.Joker:take_ownership('j_duo', { config = { x_mult = 2, type = 'Pair'}} , t
 SMODS.Joker:take_ownership('j_trio', { config = { x_mult = 3, type = 'Three of a Kind'} } , true)
 SMODS.Joker:take_ownership('j_family', { config = { x_mult = 4, type = 'Four of a Kind'} } , true)
 SMODS.Joker:take_ownership('j_tribe', { config = { x_mult = 2, type = 'Flush'} } , true)
-SMODS.Joker:take_ownership('j_order', { config = { extra = 3, type = 'Straight'} } , true)
+SMODS.Joker:take_ownership('j_order', { config = { x_mult = 3, type = 'Straight'} } , true)
 SMODS.Joker:take_ownership('j_ramen', { config = { x_mult = 2, extra = 0.01} }, true)
 
 
@@ -632,7 +632,6 @@ SMODS.Joker:take_ownership('j_chicot', {
         if context.blueprint or card.getting_sliced then return end
 
         if context.setting_blind and G.GAME.blind.boss then
-            
             G.E_MANAGER:add_event(Event({func = function()
                 G.E_MANAGER:add_event(Event({func = function()
                     G.GAME.blind:disable()
@@ -645,5 +644,3 @@ SMODS.Joker:take_ownership('j_chicot', {
         end
     end
 }, true)
-
-
