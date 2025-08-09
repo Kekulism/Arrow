@@ -505,7 +505,7 @@ function G.UIDEF.run_setup_option(...)
             }}
         }
 
-        if args[1] == 'Continue' then
+        if args[1] == 'Continue' and V(G.SAVED_GAME.GAME.smods_version or '0.0.0') == V(SMODS.version) then
             local back_desc_nodes = ret.nodes[1].nodes[1].nodes[1].nodes[2].nodes
             back_desc_nodes[#back_desc_nodes+1] = credit
         elseif args[1] == 'New Run' then

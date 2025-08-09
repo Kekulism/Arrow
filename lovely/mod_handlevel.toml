@@ -18,14 +18,14 @@ payload = '''local effective_hand = {
     mult = G.GAME.hands[text].mult,
     chips = G.GAME.hands[text].chips
 }
-local mod_level = SMODS.get_effective_hand_level(effective_hand.level, { highlight = effective_hand.level, handname = disp_text })
+local mod_level = SMODS.get_effective_hand_level(effective_hand.level, { arrow_highlight_level = effective_hand.level, handname = disp_text })
 if mod_level ~= G.GAME.hands[text].level then
     effective_hand.level = mod_level
     effective_hand.mult = math.max(G.GAME.hands[text].s_mult + G.GAME.hands[text].l_mult * (effective_hand.level - 1), 1)
     effective_hand.chips = math.max(G.GAME.hands[text].s_chips + G.GAME.hands[text].l_chips * (effective_hand.level - 1), 0)
 end
 
-update_hand_text({immediate = true, nopulse = true}, {
+update_hand_text({immediate = true, nopulse = true, delay = 0}, {
     handname = disp_text,
     level = effective_hand.level,
     mult = effective_hand.mult,
@@ -46,7 +46,7 @@ payload = '''local effective_hand = {
     mult = G.GAME.hands[text].mult,
     chips = G.GAME.hands[text].chips
 }
-local mod_level = SMODS.get_effective_hand_level(effective_hand.level, { initial = effective_hand.level, scoring_hand = scoring_hand, handname = disp_text })
+local mod_level = SMODS.get_effective_hand_level(effective_hand.level, { arrow_initial_level = effective_hand.level, scoring_hand = scoring_hand, handname = disp_text })
 if mod_level ~= G.GAME.hands[text].level then
     effective_hand.level = mod_level
     effective_hand.mult = math.max(G.GAME.hands[text].s_mult + G.GAME.hands[text].l_mult * (effective_hand.level - 1), 1)
@@ -86,7 +86,7 @@ hand_chips = mod_chips(G.GAME.hands[text].chips)'''
 position = "at"
 payload = '''SMODS.displayed_hand = nil
 
-mod_level = SMODS.get_effective_hand_level(effective_hand.level, { before = effective_hand.level, scoring_hand = scoring_hand, handname = disp_text })
+mod_level = SMODS.get_effective_hand_level(effective_hand.level, { arrow_before_level = effective_hand.level, scoring_hand = scoring_hand, handname = disp_text })
 if mod_level ~= G.GAME.hands[text].level then
     effective_hand.level = mod_level
     effective_hand.mult = math.max(G.GAME.hands[text].s_mult + G.GAME.hands[text].l_mult * (effective_hand.level - 1), 1)

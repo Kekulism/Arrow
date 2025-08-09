@@ -82,7 +82,10 @@ function Card:start_dissolve(...)
     local ret = ref_card_dissolve(self, ...)
 
     if self.area then
+        local was_getting_sliced = self.getting_sliced
+        self.getting_sliced = nil
         SMODS.calculate_context({removed_card = self})
+        self.getting_sliced = was_getting_sliced
     end
 
     return ret

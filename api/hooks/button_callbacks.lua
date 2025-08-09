@@ -79,8 +79,26 @@ end
 local ref_select_card = G.FUNCS.can_select_card
 G.FUNCS.can_select_card = function(e)
     local card = e.config.ref_table
+    if card.ability.set == 'Joker' and next(SMODS.find_card('c_fnwk_jspec_shout')) then
+        e.config.colour = G.C.GREEN
+        e.config.button = "use_card"
+        return
+    end
+
     if card.ability.set == 'VHS' then
         if #G.consumeables.cards < G.consumeables.config.card_limit then
+            e.config.colour = G.C.GREEN
+            e.config.button = "use_card"
+        else
+            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+            e.config.button = nil
+        end
+        return
+    end
+
+    if card.ability.set == 'Stand' then
+        if #G.consumeables.cards < G.consumeables.config.card_limit and (G.GAME.modifiers.unlimited_stands
+        or ArrowAPI.stands.get_num_stands() < G.GAME.modifiers.max_stands) then
             e.config.colour = G.C.GREEN
             e.config.button = "use_card"
         else

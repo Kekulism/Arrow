@@ -12,21 +12,17 @@ function level_up_hand(card, hand, instant, amount)
         end
     end
 
-    return ref_level_up(card, hand, instant, amount)
+    local ret = ref_level_up(card, hand, instant, amount)
+    G.GAME.arrow_last_upgraded_hand = {[hand] = true}
+    return ret
 end
 
-function level_up_hand_bypass(card, hand, instant, amount, bypass_event)
+function level_up_hand_bypass(card, hand, instant, amount, bypass_context)
     local ret = level_up_hand(card, hand, instant, amount)
 
-    if not bypass_event then
+    if not bypass_context then
         G.GAME.arrow_last_upgraded_hand = {[hand] = true}
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            func = function()
-                SMODS.calculate_context({hand_upgraded = true, upgraded = {[hand] = true}, amount = amount})
-                return true
-            end
-        }))
+        SMODS.calculate_context({hand_upgraded = true, upgraded = {[hand] = true}, amount = amount})
     end
 
     return ret

@@ -32,3 +32,23 @@ function SMODS.create_mod_badges(obj, badges)
     end
     return ret
 end
+
+
+
+
+
+---------------------------
+--------------------------- Hand level modification behavior
+---------------------------
+
+function SMODS.get_effective_hand_level(base_level, optional_contexts)
+    local context = {mod_handlevel = true, numerator = base_level}
+    if optional_contexts and type(optional_contexts) == 'table' then
+        for k, v in pairs(optional_contexts) do
+            context[k] = v
+        end
+    end
+    local mod_level = SMODS.calculate_context(context)
+    mod_level.numerator = mod_level.numerator or base_level
+    return mod_level.numerator
+end
