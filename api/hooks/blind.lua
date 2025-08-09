@@ -312,12 +312,12 @@ function Blind:disable(...)
 end
 
 local ref_blind_type = Blind.get_type
-function Blind:get_type(...)
+function Blind:get_type()
     if self.arrow_extra_blind then
 		return 'Extra'
 	end
 
-	return ref_blind_type(self, ...)
+	return ref_blind_type(self)
 end
 
 

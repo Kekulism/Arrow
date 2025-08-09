@@ -222,34 +222,16 @@ match_indent = true
 [[patches]]
 [patches.regex]
 target = 'card.lua'
-pattern = 'G\.GAME\.blind\.boss'
+pattern = 'not context\.blind\.boss'
 position = 'at'
-payload = "G.GAME.blind:get_type() == 'Boss'"
+payload = "G.GAME.blind:get_type() ~= 'Boss'"
 
 [[patches]]
 [patches.regex]
 target = 'card.lua'
 pattern = 'context\.blind\.boss'
 position = 'at'
-payload = "context.blind:get_type() == 'Boss'"
-
-[[patches]]
-[patches.pattern]
-target = 'back.lua'
-pattern = "if self.name == 'Anaglyph Deck' and args.context == 'eval' and G.GAME.last_blind and G.GAME.last_blind.boss then"
-position = 'at'
-payload = "if self.name == 'Anaglyph Deck' and args.context == 'eval' and G.GAME.last_blind and G.GAME.last_blind:get_type() == 'Boss' then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'tag.lua'
-pattern = "G.GAME.last_blind and G.GAME.last_blind.boss then"
-position = 'at'
-payload = "G.GAME.last_blind and G.GAME.last_blind:get_type() == 'Boss' then"
-match_indent = true
-
-
+payload = "G.GAME.blind:get_type() == 'Boss'"
 
 # Back:trigger_effect(args)
 [[patches]]
