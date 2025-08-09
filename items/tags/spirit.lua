@@ -3,7 +3,7 @@ local tagInfo = {
     config = {type = 'immediate'},
     origin = 'jojo',
     artist = 'gote',
-    requires_type = 'VHS',
+    requires_type = 'Stand',
 }
 
 function tagInfo.in_pool(self, args)
