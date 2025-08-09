@@ -79,11 +79,6 @@ end
 local ref_select_card = G.FUNCS.can_select_card
 G.FUNCS.can_select_card = function(e)
     local card = e.config.ref_table
-    if card.ability.set == 'Joker' and next(SMODS.find_card('c_fnwk_jspec_shout')) then
-        e.config.colour = G.C.GREEN
-        e.config.button = "use_card"
-        return
-    end
 
     if card.ability.set == 'VHS' then
         if #G.consumeables.cards < G.consumeables.config.card_limit then
