@@ -68,42 +68,22 @@ G.FUNCS.check_for_buy_space = function(card)
     return ret
 end
 
+local ref_select_booster = G.FUNCS.can_select_from_booster
+G.FUNCS.can_select_from_booster = function(e)
+    local ret = ref_select_booster(e)
+
+    if e.config.button then
+        local card = e.config.ref_table
 
 
 
-
----------------------------
---------------------------- Stand/VHS pack select behavior
----------------------------
-
-local ref_select_card = G.FUNCS.can_select_card
-G.FUNCS.can_select_card = function(e)
-    local card = e.config.ref_table
-
-    if card.ability.set == 'VHS' then
-        if #G.consumeables.cards < G.consumeables.config.card_limit then
-            e.config.colour = G.C.GREEN
-            e.config.button = "use_card"
-        else
+        if card.ability.set == 'Stand' and not G.GAME.modifiers.unlimited_stands and ArrowAPI.stands.get_num_stands() >= G.GAME.modifiers.max_stands then
             e.config.colour = G.C.UI.BACKGROUND_INACTIVE
             e.config.button = nil
         end
-        return
     end
 
-    if card.ability.set == 'Stand' then
-        if #G.consumeables.cards < G.consumeables.config.card_limit and (G.GAME.modifiers.unlimited_stands
-        or ArrowAPI.stands.get_num_stands() < G.GAME.modifiers.max_stands) then
-            e.config.colour = G.C.GREEN
-            e.config.button = "use_card"
-        else
-            e.config.colour = G.C.UI.BACKGROUND_INACTIVE
-            e.config.button = nil
-        end
-        return
-    end
-
-    return ref_select_card(e)
+    return ret
 end
 
 

@@ -38,7 +38,6 @@ function Game:delete_run(...)
     return ret
 end
 
-
 local ref_load_profile = Game.load_profile
 function Game:load_profile(_profile)
     local ret = ref_load_profile(self, _profile)

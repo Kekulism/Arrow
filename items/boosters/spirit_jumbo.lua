@@ -14,6 +14,11 @@ local packInfo = {
 }
 
 function packInfo.loc_vars(self, info_queue, card)
+    if G.GAME.modifiers.unlimited_stands then
+        info_queue[#info_queue+1] = {key = "stand_info_unlimited", set = "Other"}
+    else
+        info_queue[#info_queue+1] = {key = "stand_info", set = "Other", vars = { G.GAME.modifiers.max_stands or 1, (card.area.config.collection and localize('k_stand')) or ((G.GAME.modifiers.max_stands or 1) > 1 and localize('b_stand_cards') or localize('k_stand')) }}
+    end
     return { vars = {card.ability.choose, card.ability.extra} }
 end
 
