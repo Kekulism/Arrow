@@ -188,7 +188,7 @@ ArrowAPI.game = {
             if G.GAME.arrow_extra_blinds[i].arrow_extra_blind == blind_source then
                 -- disable effect more removal
                 local extra_blind = G.GAME.arrow_extra_blinds[i]
-                if extra_blind.in_blind then
+                if G.GAME.blind.in_blind then
                     local old_main_blind = G.GAME.blind
                     extra_blind.chips = old_main_blind.chips
                     extra_blind.chip_text = number_format(old_main_blind.chips)

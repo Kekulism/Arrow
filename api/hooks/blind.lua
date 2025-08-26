@@ -262,7 +262,7 @@ function Blind:disable(...)
 		local ret = nil
 		if not self.main_blind_disabled then
 			self.main_blind_disabled = not self.disabled
-			ret = {ref_blind_disable(self, ...)}
+			ret = ref_blind_disable(self, ...)
 			if (self.config.blind.score_invisible or G.GAME.modifiers.all_scores_hidden) and G.GAME.modifiers.hide_blind_score then
 				G.GAME.modifiers.hide_blind_score = nil
 				set_blind_score_visible(true)
