@@ -92,7 +92,7 @@ SMODS.ConsumableType {
 }
 
 --- Helper functions for Stands
-ArrowAPI.stands = { 
+ArrowAPI.stands = {
     --- Gets the leftmost stand in the consumable slots
     --- @return Card | nil # The first Stand in the consumables slot, or nil if you have no Stands
     get_leftmost_stand = function()

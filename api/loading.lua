@@ -245,7 +245,6 @@ ArrowAPI.loading.batch_load({
             'analog3',
             'analog4',
             'spirit_reg',
-            'spirit_jumbo',
         }
     },
 

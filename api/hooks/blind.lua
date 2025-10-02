@@ -1,45 +1,60 @@
 local function set_blind_score_visible(bool)
-    local blind_score = G.hand_text_area.blind_chips
-    local chip_total = G.hand_text_area.game_chips
+	local hud_def = create_UIBox_HUD()
+	local blind_def = create_UIBox_HUD_blind()
+
+	-- reset hud
+	if G.HUD then G.HUD:remove(); G.HUD = nil end
+	if G.HUD_blind then
+		-- manually nil out the blind object so this remove call doesn't destroy it unnecessarily
+		G.HUD_blind.UIRoot.children[2].children[2].children[1].config.object = nil
+		G.HUD_blind:remove();
+		G.HUD_blind = nil
+	end
+
     if not bool then
-        blind_score.UIT = G.UIT.O
-        blind_score.config.object = DynaText({
-            string = '?????',
-            colours = {G.C.DARK_EDITION},
-            bump = true,
-            pop_in_rate = 99999999,
-            scale = 0.65,
-        })
-        blind_score.config.ref_table = nil
-        blind_score.config.ref_value = nil
-
-        chip_total.UIT = G.UIT.O
-        chip_total.config.object = DynaText({
-            string = '?????',
-            colours = {G.C.DARK_EDITION},
-            bump = true,
-            pop_in_rate = 99999999,
-            scale = 0.65,
-        })
-        chip_total.config.ref_table = nil
-        chip_total.config.ref_value = nil
-        chip_total.UIBox:recalculate()
-
-        return
+		local blind_node = blind_def.nodes[2].nodes[2]
+		blind_node.nodes = {
+			{n=G.UIT.C, config={align = "cm", minw = 1.4, id = 'HUD_blind_count'}, nodes={}},
+			blind_def.nodes[2].nodes[2].nodes[1],
+			-- below are dummy equivalents to prevent having to invasively change some code in blind.lua
+			{n=G.UIT.C, config={align = "cm", minw = 1.4, id = 'HUD_blind_reward'}, nodes={
+				{n=G.UIT.O, config={object = DynaText({string = {""}, colours = {G.C.CLEAR}, silent = true, scale = 0}), id = 'dollars_to_be_earned'}},
+			}},
+		}
+		hud_def.nodes[1].nodes[1].nodes[3] = {n=G.UIT.R, config={align = "cm", r=0.1, id = 'row_dollars_chips'}, nodes={{
+			n=G.UIT.C, config={align = "cm", minw = 3.3, minh = 0.95}, nodes={
+				{n=G.UIT.R, config={align = "cm", id = 'chip_UI_count'}}
+			}}
+		}}
     end
 
-    blind_score.UIT = G.UIT.T
-    blind_score.config.ref_table = G.GAME.blind
-    blind_score.config.ref_value = 'chip_text'
-    if blind_score.config.object then blind_score.config.object:remove() end
+	G.HUD = UIBox{
+        definition = hud_def,
+        config = {align=('cli'), offset = {x=-0.7,y=0}, major = G.ROOM_ATTACH}
+    }
+	
+   	G.HUD_blind = UIBox{
+		definition = blind_def,
+		config = {major = G.HUD:get_UIE_by_ID('row_blind_bottom'), align = 'bmi', offset = {x=0,y=0}, bond = 'Weak'}
+	}
 
-    chip_total.UIT = G.UIT.T
-    chip_total.config.ref_table = G.GAME
-    chip_total.config.ref_value = 'chips_text'
-    if chip_total.config.object then chip_total.config.object:remove() end
+	G.hand_text_area = {
+        chips = G.HUD:get_UIE_by_ID('hand_chips'),
+        mult = G.HUD:get_UIE_by_ID('hand_mult'),
+        ante = G.HUD:get_UIE_by_ID('ante_UI_count'),
+        round = G.HUD:get_UIE_by_ID('round_UI_count'),
+        chip_total = G.HUD:get_UIE_by_ID('hand_chip_total'),
+        handname = G.HUD:get_UIE_by_ID('hand_name'),
+        hand_level = G.HUD:get_UIE_by_ID('hand_level'),
+        game_chips = G.HUD:get_UIE_by_ID('chip_UI_count'),
+        blind_chips = G.HUD_blind:get_UIE_by_ID('HUD_blind_count'),
+        blind_spacer = G.HUD:get_UIE_by_ID('blind_spacer')
+    }
+end
 
-    blind_score:juice_up()
-    chip_total:juice_up()
+local ref_blind_debuff = G.FUNCS.HUD_blind_debuff
+G.FUNCS.HUD_blind_debuff = function(e)
+	if e.UIBox == G.HUD_blind then return ref_blind_debuff(e) end 
 end
 
 
@@ -187,15 +202,16 @@ function Blind:set_blind(...)
 	G.GAME.modifiers.hide_blind_score = nil
 	self.newrun_flag = nil
 
-	local ret = ref_blind_set(self, ...)
-	self.main_blind_disabled = nil
-
+	
 	if blind and (blind.score_invisible or G.GAME.modifiers.all_scores_hidden) then
 		G.GAME.modifiers.hide_blind_score = true
 		set_blind_score_visible(false)
 
 		if blind.score_invisible then self.triggered = true end
 	end
+
+	local ret = ref_blind_set(self, ...)
+	self.main_blind_disabled = nil
 	
 	if not (blind or reset) then return ret end
 
@@ -846,9 +862,6 @@ function Blind:load(blindTable)
 end
 
 
-
-
-
 ---------------------------
 --------------------------- Check for card added behavior
 ---------------------------
@@ -873,4 +886,56 @@ function Blind:remove()
         end
     end
     Moveable.remove(self)
+end
+
+
+local ref_eval_row = add_round_eval_row
+function add_round_eval_row(config)
+    config = config or {}
+    local width = G.round_eval.T.w - 0.51
+    local scale = 0.9
+
+    if config.name ~= 'bottom' and config.name == 'blind1' then
+        delay(0.4)
+
+        G.E_MANAGER:add_event(Event({
+            trigger = 'before',
+			delay = 0.5,
+            func = function()
+                --Add the far left text and context first:
+                local left_text = {}
+                if config.name == 'blind1' then
+                    local stake_sprite = get_stake_sprite(G.GAME.stake or 1, 0.5)
+                    local obj = G.GAME.blind.config.blind
+                    local blind_sprite = AnimatedSprite(0, 0, 1.2, 1.2, G.ANIMATION_ATLAS[obj.atlas] or G.ANIMATION_ATLAS['blind_chips'], copy_table(G.GAME.blind.pos))
+                    blind_sprite:define_draw_steps({
+                        {shader = 'dissolve', shadow_height = 0.05},
+                        {shader = 'dissolve'}
+                    })
+                    table.insert(left_text, {n=G.UIT.O, config={w=1.2,h=1.2 , object = blind_sprite, hover = true, can_collide = false}})
+                    table.insert(left_text,
+                    {n=G.UIT.C, config={padding = 0.05, align = 'cm'}, nodes={
+                        {n=G.UIT.R, config={align = 'cm', minh = 0.8}, nodes={
+                            {n=G.UIT.O, config={w=0.5,h=0.5 , object = stake_sprite, hover = true, can_collide = false}},
+                            {n=G.UIT.T, config={text = "DEFEAT BOSS", scale = 0.8, colour = G.C.RED, shadow = true}}
+                        }}
+                    }})
+                end
+
+                local full_row = {n=G.UIT.R, config={align = "cm", minw = 5}, nodes={
+                    {n=G.UIT.C, config={padding = 0.05, minw = width*0.55, minh = 0.61, align = "cl"}, nodes=left_text},
+                    {n=G.UIT.C, config={padding = 0.05, minw = width*0.45, align = "cr"}, nodes={}}
+                }}
+        
+                G.GAME.blind:juice_up()
+                G.round_eval:add_child(full_row, G.round_eval:get_UIE_by_ID('base_round_eval'))
+                play_sound('cancel', config.pitch or 1)
+                play_sound('highlight1',( 1.5*config.pitch) or 1, 0.2)
+                if config.card then config.card:juice_up(0.7, 0.46) end
+                return true
+            end
+        }))
+    else
+        return ref_eval_row(config)
+    end
 end

@@ -94,25 +94,14 @@ function create_UIBox_blind_choice(...)
 
     local args = { ... }
     local type = args[1]
-    if G.P_BLINDS[G.GAME.round_resets.blind_choices[type]].score_invisible or G.GAME.modifiers.all_scores_hidden then
-        local score_node = ret.nodes[1].nodes[3].nodes[1].nodes[2].nodes[2].nodes[3]
-        score_node.config.object = DynaText({
-            string = '?????',
-            colours = {disabled and G.C.UI.TEXT_INACTIVE or G.C.DARK_EDITION},
-            bump = true,
-            pop_in_rate = 1.5*G.SPEEDFACTOR,
-            silent = true,
-            scale = 0.65,
-        })
-        score_node.n = G.UIT.O
+    if G.P_BLINDS[G.GAME.round_resets.blind_choices[type]].score_invisible then
+        local info_node = ret.nodes[1].nodes[3].nodes[1].nodes[2]
+        info_node.config.colour = G.C.CLEAR
+        info_node.nodes = {}
     end
 
     return ret
 end
-
-
-
-
 
 ---------------------------
 --------------------------- Multi line attention text support

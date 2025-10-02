@@ -43,7 +43,6 @@ return {
 
             b_activate = "PLAY",
             b_deactivate = "PAUSE",
-            b_and_activate = "& PLAY",
 
             -- vhs related badges
             ba_rlm = "RedLetterMedia",
@@ -233,14 +232,6 @@ return {
 
             p_arrow_spirit_reg = {
                 name = 'Spirit Pack',
-                text = {
-                    "Choose {C:attention}#1#{} of up to",
-                    "{C:attention}#2#{C:vhs} Stands{}",
-                },
-            },
-
-            p_arrow_spirit_jumbo = {
-                name = 'Jumbo Spirit Pack',
                 text = {
                     "Choose {C:attention}#1#{} of up to",
                     "{C:attention}#2#{C:vhs} Stands{}",

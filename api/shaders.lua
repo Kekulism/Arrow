@@ -144,7 +144,7 @@ SMODS.DrawStep {
     order = 39,
     func = function(self, layer)
         if self.config.center.soul_pos and self.ability.set == 'Stand' and (self.config.center.discovered or self.bypass_discovery_center) then
-            local scale_mod = 0.07 + 0.02*math.sin(1.8*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
+            local scale_mod = (self.config.center.stand_scale_mod or 1)*0.07 + (self.config.center.stand_scale_mod or 1)*0.02*math.sin(1.8*G.TIMERS.REAL)
             local rotate_mod = 0.05*math.sin(1.219*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
 
             if self.ability.stand_mask then
