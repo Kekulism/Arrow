@@ -90,12 +90,7 @@ times = 1
 target = "game.lua"
 pattern = '''if _ch.restrictions then'''
 position = "before"
-payload = '''
-if _ch.alt_win and type(_ch.alt_win) == 'table' and _ch.alt_win.prevent_win then
-    G.GAME.modifiers.prevent_win = true
-end
-
-if _ch.extra_blinds then
+payload = '''if _ch.extra_blinds then
     G.GAME.arrow_extra_blinds = {}
     for _, v in ipairs(_ch.extra_blinds) do
         ArrowAPI.game.create_extra_blind({}, G.P_BLINDS[v], true)
@@ -157,13 +152,16 @@ times = 1
 target = "functions/state_events.lua"
 pattern = '''if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then'''
 position = "at"
-payload = '''if G.GAME.challenge then
-    local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge)]
-    if ch.alt_lose and type(ch.alt_lose) == 'function' then
-        local win = ch:alt_lose()
-        if win then ArrowAPI.game.game_over(false, true) end
+payload = '''local prevent_win = false
+local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge or -1)]
+if ch and ch.gameover then
+    prevent_win = ch.gameover.endgame == 'prevent'
+    local lose = ch.gameover.endgame == 'lose' or not (type(ch.gameover) == 'func' and ch.gameover.func(ch, true))
+    if lose == false then
+        ArrowAPI.game.game_over(false, true)
     end
-elseif not G.GAME.modifiers.prevent_win and G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then'''
+end
+if not prevent_win and G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then'''
 match_indent = true
 times = 1
 

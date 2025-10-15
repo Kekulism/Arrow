@@ -215,9 +215,10 @@ function check_for_unlock(args)
 
     if G.GAME.challenge then
         local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge)]
-        if ch.alt_win and type(ch.alt_win) == 'table' and (ch.alt_win.type or 'modify_deck') == args.type then
-            if type(ch.alt_win.func) == 'function' and ch.alt_win.func(ch) then
-                ArrowAPI.game.game_over(true)
+        if ch.gameover and type(ch.gameover) == 'table' and (ch.gameover.type or args.type) == args.type then
+            local gameover = ch.gameover.func(ch)
+            if gameover ~= nil then
+                ArrowAPI.game.game_over(gameover, true)
             end
         end
     end
