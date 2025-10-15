@@ -82,6 +82,10 @@ times = 1
 
 
 
+if challenge.restrictions.banned_cards then
+
+
+
 
 #
 # Inits extra blinds added in challenges
@@ -95,10 +99,6 @@ position = "before"
 payload = '''
 if _ch.alt_win and type(_ch.alt_win) == 'table' and _ch.alt_win.prevent_win then
     G.GAME.modifiers.prevent_win = true
-end
-
-if _ch.on_apply and type(_ch.on_apply) == 'function' then
-    _ch.on_apply(_ch)
 end
 
 if _ch.extra_blinds then
