@@ -577,3 +577,78 @@ function G.UIDEF.deck_artist_popup(center)
         }}
     }}
 end
+
+function create_UIBox_notify_alert(key, type)
+    local _c, _atlas
+
+    local is_arrow_achievement = false
+    if SMODS.Achievements[key] then
+        _c = SMODS.Achievements[key]
+        if _c.original_mod then
+            for _, x in ipairs(_c.original_mod.dependencies or {}) do
+                for _, y in ipairs(x) do
+                    if y.id == 'ArrowAPI' then
+                        is_arrow_achievement = true
+                        break
+                    end
+                end
+            end
+        end
+        _atlas = G.ASSET_ATLAS[_c.atlas]
+    else
+        _c = G.P_CENTERS[key]
+        _atlas = ((type == 'Joker' or type == 'Voucher') and G.ASSET_ATLAS[type]) 
+        or (type == 'Back' and G.ASSET_ATLAS['centers']) or G.ASSET_ATLAS['icons']
+
+        local _smods_atlas = _c and ((G.SETTINGS.colourblind_option and _c.hc_atlas or _c.lc_atlas) or _c.atlas)
+        if _smods_atlas then
+            _atlas = G.ASSET_ATLAS[_smods_atlas] or _atlas
+        end
+    end
+
+    local t_s = Sprite(0,0,1.5*(_atlas.px/_atlas.py),1.5,_atlas, _c and _c.pos or {x=3, y=0})
+    t_s.states.drag.can = false
+    t_s.states.hover.can = false
+    t_s.states.collide.can = false
+
+    local subtext = type == 'achievement' and localize(G.F_TROPHIES and 'k_trophy' or 'k_achievement') or
+        (type == 'Joker' or type == 'Voucher') and localize('k_'..type:lower()) or
+        type == 'Back' and localize('k_deck') or
+        _c.set and localize('k_' .. _c.set:lower()) or
+        'ERROR'
+    if key == 'b_challenge' then subtext = localize('k_challenges') end
+
+    local name_text = is_arrow_achievement
+    and localize{type = 'name_text', key = key, set = 'Achievements'} 
+    or localize(key, 'achievement_names')
+
+    local t = {n=G.UIT.ROOT, config = {align = 'cl', r = 0.1, padding = 0.06, colour = G.C.UI.TRANSPARENT_DARK}, nodes={
+        {n=G.UIT.R, config={align = "cl", padding = 0.2, minw = 20, r = 0.1, colour = G.C.BLACK, outline = 1.5, outline_colour = G.C.GREY}, nodes={
+            {n=G.UIT.R, config={align = "cm", r = 0.1}, nodes={
+                {n=G.UIT.R, config={align = "cm", r = 0.1}, nodes={
+                    {n=G.UIT.O, config={object = t_s}},
+                }},
+                type ~= 'achievement' and {n=G.UIT.R, config={align = "cm", padding = 0.04}, nodes={
+                    {n=G.UIT.R, config={align = "cm", maxw = 3.4}, nodes={
+                        {n=G.UIT.T, config={text = subtext, scale = 0.5, colour = G.C.FILTER, shadow = true}},
+                    }},
+                    {n=G.UIT.R, config={align = "cm", maxw = 3.4}, nodes={
+                        {n=G.UIT.T, config={text = localize('k_unlocked_ex'), scale = 0.35, colour = G.C.FILTER, shadow = true}},
+                    }}
+                }}
+                or {n=G.UIT.R, config={align = "cm", padding = 0.04}, nodes={
+                    {n=G.UIT.R, config={align = "cm", maxw = 3.4, padding = 0.1}, nodes={
+                        {n=G.UIT.T, config={text = name_text, scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true}},
+                    }},
+                    {n=G.UIT.R, config={align = "cm", maxw = 3.4}, nodes={
+                        {n=G.UIT.T, config={text = subtext, scale = 0.3, colour = G.C.FILTER, shadow = true}},
+                    }},
+                    {n=G.UIT.R, config={align = "cm", maxw = 3.4}, nodes={
+                        {n=G.UIT.T, config={text = localize('k_unlocked_ex'), scale = 0.35, colour = G.C.FILTER, shadow = true}},
+                    }}
+                }}
+            }}
+        }}
+    }}
+    return t
+end

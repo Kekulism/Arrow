@@ -48,8 +48,8 @@ function G.UIDEF.preview_cardarea(preview_num, scale)
 end
 
 
-local function calc_scale_fac(text)
-    local size = 0.9
+local function calc_scale_fac(text, size)
+    local size = size or 0.9
     local font = G.LANG.font
     local max_text_width = 2 - 2 * 0.05 - 4 * 0.03 * size - 2 * 0.03
     local calced_text_width = 0
@@ -68,9 +68,9 @@ ArrowAPI.ui = {
      --- Create dynamic badge for a center based on its 'origin' property
     --- @param center table Center table representing the item
     --- @return table # badge UI tree
-    dynamic_badge = function(center)
+    dynamic_badge = function(center, text_scale, maxw)
         local scale_fac = {}
-        local min_scale_fac = 1
+        local min_scale_fac = 2
         local strings = { }
         local badge_colour = HEX('32A852')
         local text_colour = G.C.WHITE
@@ -95,7 +95,7 @@ ArrowAPI.ui = {
         end
 
         for i = 1, #strings do
-            scale_fac[i] = calc_scale_fac(strings[i])
+            scale_fac[i] = calc_scale_fac(strings[i], text_scale)
             min_scale_fac = math.min(min_scale_fac, scale_fac[i])
         end
 
@@ -108,39 +108,34 @@ ArrowAPI.ui = {
 
         return {
             n = G.UIT.R,
-            config = { align = "cm" },
+            config = {
+                align = "cm",
+                colour = badge_colour,
+                r = 0.1,
+                minw = 1.4/min_scale_fac,
+                minh = 0.36,
+                emboss = 0.05,
+                padding = 0.03 * 0.9,
+            },
             nodes = {
+                { n = G.UIT.B, config = { h = 0.1, w = 0.01 } },
                 {
-                    n = G.UIT.R,
+                    n = G.UIT.O,
                     config = {
-                        align = "cm",
-                        colour = badge_colour,
-                        r = 0.1,
-                        minw = 1.4 / min_scale_fac,
-                        minh = 0.36,
-                        emboss = 0.05,
-                        padding = 0.03 * 0.9,
-                    },
-                    nodes = {
-                        { n = G.UIT.B, config = { h = 0.1, w = 0.03 } },
-                        {
-                            n = G.UIT.O,
-                            config = {
-                                object = DynaText({
-                                    string = ct or "ERROR",
-                                    colours = { text_colour },
-                                    silent = true,
-                                    float = true,
-                                    shadow = true,
-                                    offset_y = -0.03,
-                                    spacing = 1,
-                                    scale = 0.33 * 0.9,
-                                }),
-                            },
-                        },
-                        { n = G.UIT.B, config = { h = 0.1, w = 0.03 } },
+                        object = DynaText({
+                            string = ct or "ERROR",
+                            colours = { text_colour },
+                            silent = true,
+                            float = true,
+                            shadow = true,
+                            maxw = maxw,
+                            offset_y = -0.03,
+                            spacing = 1,
+                            scale = 0.33 * (text_scale or 0.9),
+                        }),
                     },
                 },
+                { n = G.UIT.B, config = { h = 0.1, w = 0.01 } },
             },
         }
     end,
@@ -214,3 +209,236 @@ ArrowAPI.ui = {
         ArrowAPI['ui']['badge_colors'][mod.id] = copy_table(args)
     end
 }
+
+local function recursive_text_tint(ui_tree, color, percentage)
+	if ui_tree.n == G.UIT.T then
+		ui_tree.config.colour = mix_colours(ui_tree.config.colour, color, percentage or 0.5)
+		return
+	elseif ui_tree.n == G.UIT.O then
+		ui_tree.config.object.colours = {mix_colours(ui_tree.config.object.colours[1], color, percentage or 0.5)}
+		return
+	end
+
+	for _, v in ipairs(ui_tree.nodes or {}) do
+		recursive_text_tint(v, color, percentage)
+	end
+end
+
+local ref_ach_tab = buildAchievementsTab
+function buildAchievementsTab(mod, current_page)
+    local is_arrow_mod = false
+    for _, x in ipairs(mod.dependencies or {}) do
+        for _, y in ipairs(x) do
+            if y.id == 'ArrowAPI' then
+                is_arrow_mod = true
+                break
+            end
+        end
+
+        if is_arrow_mod then break end
+    end
+
+    if not is_arrow_mod then
+        return ref_ach_tab(mod, current_page)
+    end
+
+    current_page = current_page or 1
+    fetch_achievements()
+    local num_per_row = 6
+	local num_rows = 2
+	local num_per_page = num_per_row * num_rows
+    local achievements_pool = {}
+    for _, v in pairs(G.ACHIEVEMENTS) do
+        if v.mod and v.mod.id == mod.id then achievements_pool[#achievements_pool+1] = v end
+    end
+
+    table.sort(achievements_pool, function(a, b)
+		return (a.rarity or 0) < (b.rarity or 0) or (a.order or 1) < (b.order or 1)
+	end)
+
+	local current_rarity = achievements_pool[1].rarity
+	local achievement_pages = {}
+	local page = 1
+	local page_index = 1
+	for i = 1, #achievements_pool do
+		if not achievement_pages[page] then
+			achievement_pages[page] = {rarity = current_rarity, start_index = i}
+		end
+
+		local next_page = false
+		if i == #achievements_pool then
+			achievement_pages[page].stop_index = i
+			break
+		elseif achievements_pool[i+1].rarity > current_rarity then
+			current_rarity = current_rarity + 1
+			next_page = true
+		elseif not next_page and page_index >= num_per_page then
+			next_page = true
+		end
+
+		if next_page then
+			achievement_pages[page].stop_index = i
+			page = page + 1
+			page_index = 1
+		else
+			page_index = page_index + 1
+		end
+	end
+
+    local row = 1
+	local page_info = achievement_pages[current_page]
+	local title_color = G.C[string.upper(mod.prefix)..'_ACH_RARE_'..page_info.rarity] or mod.badge_colour
+	local achievement_matrix = {{},{}}
+    for i = page_info.start_index, page_info.stop_index do
+        local ach = achievements_pool[i]
+        if not ach then break end
+
+        local ach_sprite = Sprite(0, 0, 1.1, 1.1, G.ASSET_ATLAS[ach.atlas or "achievements"], ach.earned and ach.pos or ach.hidden_pos)
+        ach_sprite:define_draw_steps({
+            {shader = 'dissolve', shadow_height = 0.05},
+            {shader = 'dissolve'}
+        })
+        if i == 1 then 
+            G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = (function()
+                G.CONTROLLER:snap_to{node = ach_sprite}
+                return true
+            end)
+            }))
+        end
+        ach_sprite.float = true
+        ach_sprite.states.hover.can = true
+        ach_sprite.states.drag.can = false
+        ach_sprite.states.collide.can = true
+        ach_sprite.hover = function()
+            if not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch then 
+                if not ach_sprite.hovering and ach_sprite.states.visible then
+                    ach_sprite.hovering = true
+                    ach_sprite.hover_tilt = 1.5
+                    ach_sprite:juice_up(0.05, 0.02)
+                    play_sound('chips1', math.random()*0.1 + 0.55, 0.12)
+                    Node.hover(ach_sprite)
+                    if ach_sprite.children.alert then 
+                        ach_sprite.children.alert:remove()
+                        ach_sprite.children.alert = nil
+                        ach.alerted = true
+                        G:save_progress()
+                    end
+                end
+            end
+        end
+
+		ach_sprite.stop_hover = function()
+			ach_sprite.hovering = false
+			Node.stop_hover(ach_sprite)
+			ach_sprite.hover_tilt = 0
+		end
+
+        -- Description
+		local name_nodes
+		local desc_nodes = { }
+
+		local loc_vars = {}
+		if ach.loc_vars and type(ach.loc_vars) == 'function' then
+			loc_vars = ach:loc_vars()
+		end
+
+        local badge_colour = mod.badge_colour
+        local text_colour = G.C.WHITE
+        local text = ''
+		if ach.origin then
+            if type(ach.origin) == 'table' then
+                text = ' '..((ach.origin.sub_origins or {})[1] and localize('ba_'..ach.origin.sub_origins[1]) or ach.origin.category)..' '
+                
+                local color_key = ach.origin.custom_color or ach.origin.category
+                badge_colour = ArrowAPI.ui.badge_colors[mod.id]['co_'..color_key] or badge_colour
+                text_colour = ArrowAPI.ui.badge_colors[mod.id]['te_'..color_key] or text_colour
+            else
+                text = ' '..localize('ba_'..ach.origin)..' '
+                badge_colour = ArrowAPI.ui.badge_colors[mod.id]['co_'..ach.origin] or badge_colour
+                text_colour = ArrowAPI.ui.badge_colors[mod.id]['te_'..ach.origin] or text_colour
+            end
+        end
+
+		local key = ach.key..(G.localization.descriptions.Achievements[ach.key..'_hidden'] and '_hidden' or '')
+		name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, scale = 0.4}
+		localize{type = 'descriptions', key = key, set = "Achievements", vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, nodes = desc_nodes, scale = 0.95}
+
+		local desc = {}
+		for _, desc_row in ipairs(desc_nodes) do
+			desc[#desc+1] = {n=G.UIT.R, config={align = "cm"}, nodes=desc_row}
+		end
+
+		recursive_text_tint({nodes = name_nodes}, title_color, ach.earned and 0 or 0.6)
+		if not ach.earned then
+			recursive_text_tint({nodes = desc}, G.C.WHITE, 0.5)
+		end
+
+        local badge_scale = 0.9 * math.min(0.3, calc_scale_fac(text))
+
+        table.insert(achievement_matrix[row], {
+            n = G.UIT.C,
+            config = { align = "cm", padding = 0.05 },
+            nodes = {
+                {n=G.UIT.R, config = {align = "cm"}, nodes = {
+                    {n=G.UIT.R, config = {align = "cm", w = 2, padding = 0.05}, nodes =
+						{{ n = G.UIT.O, config = { object = ach_sprite, focus_with_object = true }}}
+					},
+                    {n=G.UIT.R, config = {align = "cm", w = 2, padding = 0.025}, nodes = {
+						{n=G.UIT.R, config={align = "cm", maxw = 1.75, padding = 0.025}, nodes=name_nodes},
+						{n=G.UIT.R, config={align = "cm", colour = not ach.earned and G.C.UI.BACKGROUND_INACTIVE or G.C.WHITE, r = 0.1, emboss = 0.025, minh = 1.05, maxh = 1.05, filler = true, main_box_flag = true}, nodes={
+							{n=G.UIT.R, config={align = "cm", maxw = 1.75, padding = 0.025 }, nodes=desc}
+						}},
+                        {n=G.UIT.R, config={align = "cm", padding = 0.025 }, nodes={
+                            {n = G.UIT.R, config = { align = "cm", colour = badge_colour, minh = 0.35, maxh = 0.35, maxw = 2, minw = 2, r = 0.1, emboss = 0.05, padding = 0.05}, nodes = {
+                                {n=G.UIT.T, config={text = text, shadow = true, colour = text_colour, align = "cm", scale = badge_scale, maxw = 1.75, padding = 0.025}, nodes=desc}
+                            }}
+                        }}
+					}},
+                }},
+            },
+        })
+        if #achievement_matrix[row] == num_per_row then 
+            row = row + 1
+            max_lines = 2
+        end
+    end
+
+    local achievements_options = {}
+    for i = 1, #achievement_pages do
+        table.insert(achievements_options, localize('k_page')..' '..tostring(i)..'/'..tostring(#achievement_pages))
+    end
+
+	-- needs localization for "Achievments"
+	local title = page_info.rarity > 0 and localize(mod.prefix..'_ach_rare_'..page_info.rarity) or nil
+
+    local t = {{n=G.UIT.C, config={align = "cm", minw = 15}, nodes={
+        {n=G.UIT.C, config={align = "cm"}, nodes={
+        	{n=G.UIT.R, config={align = "cm"}, nodes={
+				title and {n=G.UIT.R, config={align = "tm", minh = 0.6 }, nodes = {
+					{n=G.UIT.R, config={align = "cm", colour = title_color, r = 0.1, shadow = true, minw = 7.5, minh = 0.5 }, nodes = {
+						{n=G.UIT.T, config = {align = "cm", text = title, scale = 0.48}}
+					}}
+				}} or nil,
+            	{n=G.UIT.R, config={align = "tm", padding = 0.05, minh = 3.1 }, nodes=achievement_matrix[1]},
+            	{n=G.UIT.R, config={align = "tm", padding = 0.05, minh = 3.1 }, nodes=achievement_matrix[2]},
+            	not title and {n=G.UIT.R, config={align = "tm", minh = 1 }, nodes = {}} or nil,
+				create_option_cycle({options = achievements_options, w = 4.5, cycle_shoulders = true, opt_callback = 'achievments_tab_page', focus_args = {snap_to = true, nav = 'wide'}, current_option = current_page, colour = G.C.RED})
+        	}}
+        }}
+    }}}
+    return {
+        n = G.UIT.ROOT,
+        config = {
+            emboss = 0.05,
+            minh = 6,
+            r = 0.1,
+            minw = 9,
+            align = "tm",
+            padding = 0.2,
+            colour = G.C.BLACK
+        },
+        nodes = t
+    }
+end

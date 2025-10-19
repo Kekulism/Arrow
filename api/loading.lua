@@ -18,8 +18,8 @@ ArrowAPI.loading = {
 
         for _, v in ipairs(priority_list) do
             if next(v.items) and ArrowAPI.loading.filter_loading(v.key) then
-                for _, item in ipairs(v.items) do
-                    ArrowAPI.loading.load_item(item, v.key, v.alias)
+                for i, item in ipairs(v.items) do
+                    ArrowAPI.loading.load_item(item, v.key, v.alias, nil, i)
                 end
             end
         end
@@ -31,7 +31,7 @@ ArrowAPI.loading = {
     --- @param type_alias string | nil SMODS type alias (I.E. Decks are SMODS['Back'])
     --- @param folder_key string | nil folder key if needed, otherwise item_type is used
     --- @return boolean # True if the item successfuly loaded
-    load_item = function(file_key, item_type, alias, folder_key)
+    load_item = function(file_key, item_type, alias, folder_key, order_in_type)
         folder_key = folder_key or string.lower(item_type)..(item_type == 'VHS' and '' or 's')
         local parent_folder = 'items/'
         local info = assert(SMODS.load_file(parent_folder .. folder_key .. "/" .. file_key .. ".lua"))()
@@ -44,6 +44,16 @@ ArrowAPI.loading = {
         info.key = file_key
         if item_type == 'Challenge' then
             info.button_colour = info.button_colour or SMODS.current_mod.badge_colour
+        elseif item_type == 'Achievement' then
+            info.atlas = SMODS.current_mod.prefix..'_achievements'
+            info.order = order_in_type
+            if info.rarity and info.rarity > 0 then
+                info.pos = info.pos or { x = info.rarity - 1, y = 0 }
+                info.hidden_pos = info.hidden_pos or {x = info.rarity - 1, y = 1}
+            elseif not info.rarity then
+                info.rarity = 0
+            end
+            sendDebugMessage(info.key..' rarity: '..info.rarity)
         elseif item_type ~= 'Edition' then
             info.atlas = file_key
             info.pos = { x = 0, y = 0 }
@@ -133,12 +143,12 @@ ArrowAPI.loading = {
             end
         end
 
-        if item_type == 'Challenge' or item_type == 'Edition' then
+        if item_type == 'Challenge' or item_type == 'Achievement' or item_type == 'Edition' then
             return true
         end
 
         if item_type == 'Blind' then
-            -- separation for animated spritess
+            -- separation for animated sprites
             SMODS.Atlas({ key = file_key, atlas_table = "ANIMATION_ATLAS", path = "blinds/" .. file_key .. ".png", px = 34, py = 34, frames = 21 })
         else
             local width = 71
