@@ -98,15 +98,11 @@ ArrowAPI.stands = {
     get_leftmost_stand = function()
         if not G.consumeables then return nil end
 
-        local stand = nil
-        for i, card in ipairs(G.consumeables.cards) do
+        for _, card in ipairs(G.consumeables.cards) do
             if card.ability.set == "Stand" then
-                stand = card
-                break
+                return card
             end
         end
-
-        return stand
     end,
 
     --- Gets the number of stands in your consumable slots
@@ -135,7 +131,7 @@ ArrowAPI.stands = {
         if stand.children.stand_aura then
             stand.children.stand_aura.atlas = G.ASSET_ATLAS[stand.ability.evolved and 'arrow_blank_evolved' or 'arrow_blank']
         end
-        
+
         ArrowAPI.stands.flare_aura(stand, 0.50)
         G.E_MANAGER:add_event(Event({
             func = function()

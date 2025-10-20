@@ -1,3 +1,16 @@
+local suit_text = {
+	singular = {
+		"Converts C:attention}#1#{}",
+        "selected card",
+        "to {V:1}#2#{}"
+	},
+	multi = {
+		"Converts up to",
+        "{C:attention}#1#{}selected cards",
+        "to {V:1}#2#{}"
+	}
+}
+
 local enhance_text = {
 	singular = {
 		"Enhances {C:attention}#1#{} selected",
@@ -290,6 +303,15 @@ return {
 			c_justice = { name = "Justice", text = enhance_text.singular },
 			c_justice_multi = { name = "Justice", text = enhance_text.multi },
 
+            c_star = { name = "The Star", text = suit_text.singular },
+			c_star_multi = { name = "The Star", text = suit_text.multi },
+			c_world = { name = "The World", text = suit_text.singular },
+			c_world_multi = { name = "The World", text = suit_text.multi },
+			c_moon = { name = "The Moon", text = suit_text.singular },
+			c_moon_multi = { name = "The Moon", text = suit_text.multi },
+			c_sun = { name = "The Sun", text = suit_text.singular },
+			c_sun_multi = { name = "The Sun", text = suit_text.multi },
+
             c_arrow_tarot_arrow = {
                 name = "The Arrow",
                 text = {
@@ -341,7 +363,7 @@ return {
 					"{C:attention}#1#{} selected cards in hand"
 				},
 			},
-            
+
             c_arrow_spec_diary = {
                 name = "The Diary",
                 text = {

@@ -10,7 +10,7 @@ SMODS.Consumable:take_ownership('c_strength', {
             key = card.config and card.config.center.key..(multi and '_multi' or '') or nil
         }
     end,
-    
+
     use = function(self, card, area, copier)
         for i=1, #G.hand.highlighted do
             local percent = 1.15 - (i-0.999)/(#G.hand.highlighted-0.998)*0.3
@@ -21,7 +21,7 @@ SMODS.Consumable:take_ownership('c_strength', {
                     G.hand.highlighted[i]:flip()
                     play_sound('card1', percent);
                     G.hand.highlighted[i]:juice_up(0.3, 0.3);
-                    return true 
+                    return true
                 end
             }))
         end
@@ -32,7 +32,7 @@ SMODS.Consumable:take_ownership('c_strength', {
                 delay = 0.1,
                 func = function()
                     assert(SMODS.modify_rank(G.hand.highlighted[i], card.ability.extra))
-                    return true 
+                    return true
                 end
             }))
         end
@@ -59,7 +59,7 @@ SMODS.Consumable:take_ownership('c_strength', {
                 return true
             end
         }))
-        
+
         delay(0.5)
     end,
 
@@ -89,13 +89,13 @@ SMODS.Consumable:take_ownership('death', {
                     G.hand.highlighted[i]:flip()
                     play_sound('card1', percent);
                     G.hand.highlighted[i]:juice_up(0.3, 0.3);
-                    return true 
+                    return true
                 end
             }))
         end
 
         local rightmost = G.hand.highlighted[1]
-        for i=1, #G.hand.highlighted do 
+        for i=1, #G.hand.highlighted do
             if G.hand.highlighted[i].T.x > rightmost.T.x then
                 rightmost = G.hand.highlighted[i]
             end
@@ -123,8 +123,8 @@ SMODS.Consumable:take_ownership('death', {
                     G.hand.highlighted[i]:flip();
                     play_sound('tarot2', percent, 0.6);
                     G.hand.highlighted[i]:juice_up(0.3, 0.3);
-                    return true 
-                end 
+                    return true
+                end
             }))
         end
 
@@ -153,7 +153,7 @@ local enhance_convert_keys = {
     'c_tower',
     'c_magician',
     'c_heirophant',
-    'c_empress'
+    'c_empress',
 }
 
 for _, v in ipairs(enhance_convert_keys) do
@@ -168,7 +168,7 @@ for _, v in ipairs(enhance_convert_keys) do
         loc_vars = function(self, info_queue, card)
             info_queue[#info_queue+1] = G.P_CENTERS[card.ability.mod_conv]
             local multi = card.ability.max_highlighted ~= 1
-            return { 
+            return {
                 vars = {
                     card.ability.max_highlighted,
                     localize{type = 'name_text', set = 'Enhanced', key = card.ability.mod_conv}
@@ -187,7 +187,7 @@ for _, v in ipairs(enhance_convert_keys) do
                         G.hand.highlighted[i]:flip()
                         play_sound('card1', percent);
                         G.hand.highlighted[i]:juice_up(0.3, 0.3);
-                        return true 
+                        return true
                     end
                 }))
             end
@@ -198,10 +198,10 @@ for _, v in ipairs(enhance_convert_keys) do
                     delay = 0.1,
                     func = function()
                         G.hand.highlighted[i]:set_ability(G.P_CENTERS[card.ability.mod_conv])
-                        return true 
+                        return true
                     end
                 }))
-            end 
+            end
 
             for i=1, #G.hand.highlighted do
                 local percent = 0.85 + (i-0.999)/(#G.hand.highlighted-0.998)*0.3
@@ -212,8 +212,98 @@ for _, v in ipairs(enhance_convert_keys) do
                         G.hand.highlighted[i]:flip();
                         play_sound('tarot2', percent, 0.6);
                         G.hand.highlighted[i]:juice_up(0.3, 0.3);
-                        return true 
-                    end 
+                        return true
+                    end
+                }))
+            end
+
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.2,
+                func = function()
+                    G.hand:unhighlight_all()
+                    return true
+                end
+            }))
+
+            delay(0.5)
+        end,
+
+        can_use = function(self, card)
+            return G.hand and #G.hand.highlighted >= (card.ability.min_highlighted or 0) and #G.hand.highlighted <= (card.ability.max_highlighted or 0)
+        end
+    }
+
+    SMODS.Consumable:take_ownership(v, mod_table, true)
+end
+
+local suit_convert_keys = {
+    'c_star',
+    'c_world',
+    'c_sun',
+    'c_moon'
+}
+
+for _, v in ipairs(suit_convert_keys) do
+    local old_center = G.P_CENTERS[v]
+    local mod_table = {
+        config = {
+            suit_conv = old_center.config.suit_conv,
+            min_highlighted = old_center.config.min_highlighted or 1,
+            max_highlighted = old_center.config.max_highlighted,
+        },
+
+        loc_vars = function(self, info_queue, card)
+            local multi = card.ability.max_highlighted ~= 1
+            return {
+                vars = {
+                    card.ability.max_highlighted,
+                    localize(card.ability.suit_conv, 'suits_plural'),
+                    colours = {
+                        G.C.SUITS[card.ability.suit_conv]
+                    }
+                },
+                key = card.config and card.config.center.key..(multi and '_multi' or '') or nil
+            }
+        end,
+
+        use = function(self, card, area, copier)
+            for i=1, #G.hand.highlighted do
+                local percent = 1.15 - (i-0.999)/(#G.hand.highlighted-0.998)*0.3
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.15,
+                    func = function()
+                        G.hand.highlighted[i]:flip()
+                        play_sound('card1', percent);
+                        G.hand.highlighted[i]:juice_up(0.3, 0.3);
+                        return true
+                    end
+                }))
+            end
+
+            for i=1, #G.hand.highlighted do
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.1,
+                    func = function()
+                        G.hand.highlighted[i]:change_suit(self.ability.consumeable.suit_conv)
+                        return true
+                    end
+                }))
+            end
+
+            for i=1, #G.hand.highlighted do
+                local percent = 0.85 + (i-0.999)/(#G.hand.highlighted-0.998)*0.3
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'after',
+                    delay = 0.15,
+                    func = function()
+                        G.hand.highlighted[i]:flip();
+                        play_sound('tarot2', percent, 0.6);
+                        G.hand.highlighted[i]:juice_up(0.3, 0.3);
+                        return true
+                    end
                 }))
             end
 
@@ -252,10 +342,10 @@ for _, v in ipairs(seal_keys) do
         loc_vars = function(self, info_queue, card)
             info_queue[#info_queue+1] = G.P_SEALS[card.ability.extra]
             local multi = card.ability.max_highlighted ~= 1
-            return { 
+            return {
                 vars = {
                     localize{type = 'name_text', set = 'Other', key = string.lower(card.ability.extra) .. '_seal'},
-                    card.ability.max_highlighted,                   
+                    card.ability.max_highlighted,
                 },
                 key = card.config and card.config.center.key..(multi and '_multi' or '') or nil
             }
@@ -269,7 +359,7 @@ for _, v in ipairs(seal_keys) do
                     func = function()
                         play_sound('tarot1', percent)
                         card:juice_up(0.3, 0.5)
-                        return true  
+                        return true
                     end
                 }))
                 G.E_MANAGER:add_event(Event({
@@ -281,7 +371,7 @@ for _, v in ipairs(seal_keys) do
                     end
                 }))
             end
-            
+
             delay(0.5)
             G.E_MANAGER:add_event(Event({
                 trigger = 'after',
@@ -311,10 +401,10 @@ SMODS.Consumable:take_ownership('c_cryptid', {
 
     loc_vars = function(self, info_queue, card)
         local multi = card.ability.max_highlighted ~= 1
-        return { 
+        return {
             vars = {
                 card.ability.extra,
-                card.ability.max_highlighted,          
+                card.ability.max_highlighted,
             },
             key = card.config and card.config.center.key..(multi and '_multi' or '') or nil
         }
@@ -323,10 +413,10 @@ SMODS.Consumable:take_ownership('c_cryptid', {
         G.E_MANAGER:add_event(Event({
             func = function()
                 card:juice_up(0.3, 0.5)
-                return true   
+                return true
             end
         }))
-        
+
         G.E_MANAGER:add_event(Event({
             func = function()
                 local _first_dissolve = nil
@@ -370,7 +460,7 @@ SMODS.Consumable:take_ownership('aura', {
     loc_vars = function(self, info_queue, card)
         local multi = card.ability.max_highlighted ~= 1
         local poly_name = localize{type = 'name_text', key = 'e_polychrome', set = 'Edition'}
-        return { 
+        return {
             vars = {
                 card.ability.max_highlighted,
                 poly_name
@@ -378,7 +468,7 @@ SMODS.Consumable:take_ownership('aura', {
             key = card.config and card.config.center.key..(multi and '_multi' or '') or nil
         }
     end,
-    
+
     use = function(self, card, area, copier)
         for i=1, #G.hand.highlighted do
             G.E_MANAGER:add_event(Event({
@@ -389,7 +479,7 @@ SMODS.Consumable:take_ownership('aura', {
                     local aura_card = G.hand.highlighted[i]
                     aura_card:set_edition(edition, true)
                     card:juice_up(0.3, 0.5)
-                    return true 
+                    return true
                 end
             }))
         end
@@ -458,7 +548,7 @@ SMODS.Joker:take_ownership('j_throwback', {
 
     calculate = function(self, card, context)
         if not context.cardarea == G.jokers then return end
-        
+
         if context.joker_main and G.GAME.skips > 0 then
             local x_mult = 1 + G.GAME.skips * card.ability.extra
             return {
@@ -468,17 +558,17 @@ SMODS.Joker:take_ownership('j_throwback', {
                 card = context.blueprint_card or card
             }
         end
-        
+
         if context.blueprint then return end
 
         if context.skip_blind then
             G.E_MANAGER:add_event(Event({
-                func = function() 
+                func = function()
                     card_eval_status_text(card, 'extra', nil, nil, nil, {
                         message = localize{type = 'variable', key = 'a_xmult', vars = {1 + card.ability.extra * G.GAME.skips}},
                         colour = G.C.RED,
                         card = card
-                    }) 
+                    })
                     return true
                 end
             }))
@@ -507,7 +597,7 @@ SMODS.Joker:take_ownership('j_stencil', {
             for i = 1, #G.jokers.cards do
                 if G.jokers.cards[i].ability.name == 'Joker Stencil' then x_mult = x_mult + 1 end
             end
-            
+
             if x_mult > 0 then
                 return {
                     message = localize{type='variable',key='a_xmult',vars={x_mult}},
@@ -536,7 +626,7 @@ SMODS.Joker:take_ownership('j_swashbuckler', {
 
     calculate = function(self, card, context)
         if not context.cardarea == G.jokers then return end
-        
+
         if context.joker_main then
             local sell_cost = 0
             for i = 1, #G.jokers.cards do
@@ -569,7 +659,7 @@ SMODS.Joker:take_ownership('j_luchador', {
         local has_message = (G.GAME and card.area and (card.area == G.jokers))
         local main_end = nil
         if has_message then
-            
+
             local disableable = G.GAME.blind and (G.GAME.blind.boss and not G.GAME.blind.disabled)
             main_end = {
                 {n=G.UIT.C, config={align = "bm", minh = 0.4}, nodes={
@@ -587,13 +677,13 @@ SMODS.Joker:take_ownership('j_luchador', {
     end,
 
     calculate = function(self, card, context)
-        if context.selling_self then 
-            if G.GAME.blind.boss and not G.GAME.blind.disabled then 
+        if context.selling_self then
+            if G.GAME.blind.boss and not G.GAME.blind.disabled then
                 card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = localize('ph_boss_disabled')})
                 G.GAME.blind:disable()
                 return nil, true
             end
-        end      
+        end
     end
 }, true)
 
@@ -612,7 +702,7 @@ SMODS.Joker:take_ownership('j_madness', {
             end
             local joker_to_destroy = #destructable_jokers > 0 and pseudorandom_element(destructable_jokers, pseudoseed('madness')) or nil
 
-            if joker_to_destroy and not (context.blueprint_card or card).getting_sliced then 
+            if joker_to_destroy and not (context.blueprint_card or card).getting_sliced then
                 joker_to_destroy.getting_sliced = true
                 G.E_MANAGER:add_event(Event({func = function()
                     (context.blueprint_card or card):juice_up(0.8, 0.8)

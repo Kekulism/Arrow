@@ -39,7 +39,7 @@ function G.UIDEF.preview_cardarea(preview_num, scale)
     end
 
     return {{
-        n=G.UIT.R, 
+        n=G.UIT.R,
         config = {align = "cm", colour = G.C.CLEAR, r = 0.0, padding = 0.5},
         nodes={{
             n=G.UIT.O, config = {object = preview_area}
@@ -83,7 +83,7 @@ ArrowAPI.ui = {
                 for _, v in ipairs(center.origin.sub_origins or {}) do
                     strings[#strings+1] = ' '..localize('ba_'..v)..' '
                 end
-                
+
                 local color_key = center.origin.custom_color or center.origin.category
                 badge_colour = ArrowAPI.ui.badge_colors[mod.id]['co_'..color_key] or badge_colour
                 text_colour = ArrowAPI.ui.badge_colors[mod.id]['te_'..color_key] or text_colour
@@ -253,7 +253,20 @@ function buildAchievementsTab(mod, current_page)
     end
 
     table.sort(achievements_pool, function(a, b)
-		return (a.rarity or 0) < (b.rarity or 0) or (a.order or 1) < (b.order or 1)
+        local a_rarity = a.rarity or 0
+        local b_rarity = b.rarity or 0
+
+        if a_rarity ~= b_rarity then
+            return a_rarity < b_rarity
+        end
+
+        local a_order = a.order or 1
+        local b_order = b.order or 1
+        if a_order ~= b_order then
+            return a_order < b_order
+        end
+
+		return false
 	end)
 
 	local current_rarity = achievements_pool[1].rarity
@@ -298,7 +311,7 @@ function buildAchievementsTab(mod, current_page)
             {shader = 'dissolve', shadow_height = 0.05},
             {shader = 'dissolve'}
         })
-        if i == 1 then 
+        if i == 1 then
             G.E_MANAGER:add_event(Event({
             trigger = 'immediate',
             func = (function()
@@ -312,14 +325,14 @@ function buildAchievementsTab(mod, current_page)
         ach_sprite.states.drag.can = false
         ach_sprite.states.collide.can = true
         ach_sprite.hover = function()
-            if not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch then 
+            if not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch then
                 if not ach_sprite.hovering and ach_sprite.states.visible then
                     ach_sprite.hovering = true
                     ach_sprite.hover_tilt = 1.5
                     ach_sprite:juice_up(0.05, 0.02)
                     play_sound('chips1', math.random()*0.1 + 0.55, 0.12)
                     Node.hover(ach_sprite)
-                    if ach_sprite.children.alert then 
+                    if ach_sprite.children.alert then
                         ach_sprite.children.alert:remove()
                         ach_sprite.children.alert = nil
                         ach.alerted = true
@@ -350,7 +363,7 @@ function buildAchievementsTab(mod, current_page)
 		if ach.origin then
             if type(ach.origin) == 'table' then
                 text = ' '..((ach.origin.sub_origins or {})[1] and localize('ba_'..ach.origin.sub_origins[1]) or ach.origin.category)..' '
-                
+
                 local color_key = ach.origin.custom_color or ach.origin.category
                 badge_colour = ArrowAPI.ui.badge_colors[mod.id]['co_'..color_key] or badge_colour
                 text_colour = ArrowAPI.ui.badge_colors[mod.id]['te_'..color_key] or text_colour
@@ -361,7 +374,7 @@ function buildAchievementsTab(mod, current_page)
             end
         end
 
-		local key = ach.key..(G.localization.descriptions.Achievements[ach.key..'_hidden'] and '_hidden' or '')
+		local key = ach.key..(G.localization.descriptions.Achievements[ach.key..'_hidden'] and not ach.earned and '_hidden' or '')
 		name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, scale = 0.4}
 		localize{type = 'descriptions', key = key, set = "Achievements", vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, nodes = desc_nodes, scale = 0.95}
 
@@ -399,7 +412,7 @@ function buildAchievementsTab(mod, current_page)
                 }},
             },
         })
-        if #achievement_matrix[row] == num_per_row then 
+        if #achievement_matrix[row] == num_per_row then
             row = row + 1
             max_lines = 2
         end
