@@ -287,7 +287,7 @@ for _, v in ipairs(suit_convert_keys) do
                     trigger = 'after',
                     delay = 0.1,
                     func = function()
-                        G.hand.highlighted[i]:change_suit(self.ability.consumeable.suit_conv)
+                        G.hand.highlighted[i]:change_suit(self.ability.suit_conv)
                         return true
                     end
                 }))

@@ -1,12 +1,12 @@
 local suit_text = {
 	singular = {
-		"Converts C:attention}#1#{}",
+		"Converts {C:attention}#1#{}",
         "selected card",
         "to {V:1}#2#{}"
 	},
 	multi = {
 		"Converts up to",
-        "{C:attention}#1#{}selected cards",
+        "{C:attention}#1#{} selected cards",
         "to {V:1}#2#{}"
 	}
 }
