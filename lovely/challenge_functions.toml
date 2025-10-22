@@ -53,11 +53,11 @@ times = 1
 target = "game.lua"
 pattern = '''if _ch.restrictions.banned_other then'''
 position = "after"
-payload = '''   
+payload = '''
     if type(_ch.restrictions.banned_other) == 'function' then
         _ch.restrictions.banned_other = _ch.restrictions.banned_other()
     end
-    
+
     if _ch.restrictions.banned_other.allowed then
         local bans = {}
         local allow_map = {}
@@ -124,7 +124,7 @@ end
 local colours = nil
 if v.colours then
     colours = {}
-    for _, colour in ipairs(v.colours) do      
+    for _, colour in ipairs(v.colours) do
         if type(colour) == 'table' and colour.ref_table and colour.ref_key and colour.ref_value then
             colours[#colours+1] = colour.ref_table[colour.ref_key][colour.ref_value]
         else
@@ -156,7 +156,6 @@ payload = '''local prevent_win = false
 local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge or -1)]
 if ch and ch.gameover then
     local lose = ch.gameover.endgame_type == 'lose' or (ch.gameover.func and ch.gameover.func(ch, true) == false)
-    sendDebugMessage('alt lose = '..tostring(lose))
     if lose then
         ArrowAPI.game.game_over(false, true)
     end

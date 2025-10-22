@@ -53,7 +53,6 @@ ArrowAPI.loading = {
             elseif not info.rarity then
                 info.rarity = 0
             end
-            sendDebugMessage(info.key..' rarity: '..info.rarity)
         elseif item_type ~= 'Edition' then
             info.atlas = file_key
             info.pos = { x = 0, y = 0 }
@@ -171,7 +170,7 @@ ArrowAPI.loading = {
     --- Returns whether an SMODS.ConsumableType has any added items, excluding items set as no_collection
     --- @param set string Set string for a ConsumableType
     consumeable_has_items = function(set)
-        if set == 'Stand' then 
+        if set == 'Stand' then
             return not not (#G.P_CENTER_POOLS['StandPool'] > 0 or #G.P_CENTER_POOLS['EvolvedPool'] > 0)
         end
 

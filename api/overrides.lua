@@ -68,6 +68,22 @@ SMODS.Consumable:take_ownership('c_strength', {
     end
 }, true)
 
+SMODS.Consumable:take_ownership('hanged_man', {
+    loc_vars = function(self, info_queue, card)
+        local multi = card.ability.max_highlighted ~= 1
+        return {
+            vars = {
+                card.ability.max_highlighted,
+            },
+            key = card.config and card.config.center.key..(multi and '_multi' or '') or nil
+        }
+    end,
+
+    can_use = function(self, card)
+        return G.hand and #G.hand.highlighted >= 0 and #G.hand.highlighted <= card.ability.max_highlighted
+    end
+}, true)
+
 SMODS.Consumable:take_ownership('death', {
     loc_vars = function(self, info_queue, card)
         local multi = (card.ability.max_highlighted - 1) ~= 1

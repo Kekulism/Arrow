@@ -286,6 +286,19 @@ return {
 					"{C:inactive}(Drag to rearrange)"
 				}
 			},
+            c_hanged_man = {
+				name = "The Hanged Man",
+				text = {
+                    "Destroys {C:attention}#1#{} selected card",
+				}
+			},
+			c_hanged_man_multi = {
+				name = "The Hanged Man",
+				text = {
+					"Destroys up to",
+					"{C:attention}#1#{} selected cards",
+				}
+			},
 			c_devil = { name = "The Devil", text = enhance_text.singular },
 			c_devil_multi = { name = "The Devil", text = enhance_text.multi },
             c_tower = { name = "The Tower", text = enhance_text.singular },

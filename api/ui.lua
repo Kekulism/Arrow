@@ -375,7 +375,8 @@ function buildAchievementsTab(mod, current_page)
         end
 
 		local key = ach.key..(G.localization.descriptions.Achievements[ach.key..'_hidden'] and not ach.earned and '_hidden' or '')
-		name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, scale = 0.4}
+		local name_text = localize{type = 'name_text', key = key, set = 'Achievements', vars = loc_vars.vars}
+        name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, scale = math.min(0.48, calc_scale_fac(name_text))}
 		localize{type = 'descriptions', key = key, set = "Achievements", vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, nodes = desc_nodes, scale = 0.95}
 
 		local desc = {}
@@ -388,24 +389,24 @@ function buildAchievementsTab(mod, current_page)
 			recursive_text_tint({nodes = desc}, G.C.WHITE, 0.5)
 		end
 
-        local badge_scale = 0.9 * math.min(0.3, calc_scale_fac(text))
+        local badge_scale = 0.9 * math.min(0.25, calc_scale_fac(text))
 
         table.insert(achievement_matrix[row], {
             n = G.UIT.C,
             config = { align = "cm", padding = 0.05 },
             nodes = {
-                {n=G.UIT.R, config = {align = "cm"}, nodes = {
-                    {n=G.UIT.R, config = {align = "cm", w = 2, padding = 0.05}, nodes =
-						{{ n = G.UIT.O, config = { object = ach_sprite, focus_with_object = true }}}
-					},
-                    {n=G.UIT.R, config = {align = "cm", w = 2, padding = 0.025}, nodes = {
-						{n=G.UIT.R, config={align = "cm", maxw = 1.75, padding = 0.025}, nodes=name_nodes},
-						{n=G.UIT.R, config={align = "cm", colour = not ach.earned and G.C.UI.BACKGROUND_INACTIVE or G.C.WHITE, r = 0.1, emboss = 0.025, minh = 1.05, maxh = 1.05, filler = true, main_box_flag = true}, nodes={
-							{n=G.UIT.R, config={align = "cm", maxw = 1.75, padding = 0.025 }, nodes=desc}
+                {n=G.UIT.R, config = {align = "cm", colour = not ach.earned and G.C.UI.BACKGROUND_INACTIVE or G.C.WHITE, r = 0.1, emboss = 0.05}, nodes = {
+                    {n=G.UIT.R, config = {align = "cm", minw = 2.6, maxw = 2.6, padding = 0.025}, nodes = {
+                        {n=G.UIT.R, config={align = "cm", maxw = 2.5, minw =  2.5, padding = 0.025}, nodes = name_nodes},
+                        {n=G.UIT.R, config = {align = "cm", maxw = 2.5, minw =  2.5, padding = 0.05}, nodes =
+                            {{ n = G.UIT.O, config = { object = ach_sprite, focus_with_object = true }}}
+                        },
+						{n=G.UIT.R, config={align = "cm", r = 0.1, emboss = 0.025, minh = 1.05, maxh = 1.05, filler = true, main_box_flag = true}, nodes={
+							{n=G.UIT.R, config={align = "cm", maxw = 2, padding = 0.025 }, nodes=desc}
 						}},
-                        {n=G.UIT.R, config={align = "cm", padding = 0.025 }, nodes={
-                            {n = G.UIT.R, config = { align = "cm", colour = badge_colour, minh = 0.35, maxh = 0.35, maxw = 2, minw = 2, r = 0.1, emboss = 0.05, padding = 0.05}, nodes = {
-                                {n=G.UIT.T, config={text = text, shadow = true, colour = text_colour, align = "cm", scale = badge_scale, maxw = 1.75, padding = 0.025}, nodes=desc}
+                        {n=G.UIT.R, config={align = "cm", padding = 0.05 }, nodes={
+                            {n = G.UIT.R, config = { align = "cm", colour = badge_colour, minh = 0.35, maxh = 0.35, maxw = 2.5, minw =  2.5, r = 0.1, emboss = 0.05, padding = 0.05}, nodes = {
+                                {n=G.UIT.T, config={text = text, shadow = true, colour = text_colour, align = "cm", scale = badge_scale, maxw = 2, padding = 0.025}, nodes=desc}
                             }}
                         }}
 					}},
@@ -434,8 +435,8 @@ function buildAchievementsTab(mod, current_page)
 						{n=G.UIT.T, config = {align = "cm", text = title, scale = 0.48}}
 					}}
 				}} or nil,
-            	{n=G.UIT.R, config={align = "tm", padding = 0.05, minh = 3.1 }, nodes=achievement_matrix[1]},
-            	{n=G.UIT.R, config={align = "tm", padding = 0.05, minh = 3.1 }, nodes=achievement_matrix[2]},
+            	{n=G.UIT.R, config={align = "tm", padding = 0.05, minh = 3.15 }, nodes=achievement_matrix[1]},
+            	{n=G.UIT.R, config={align = "tm", padding = 0.05, minh = 3.15 }, nodes=achievement_matrix[2]},
             	not title and {n=G.UIT.R, config={align = "tm", minh = 1 }, nodes = {}} or nil,
 				create_option_cycle({options = achievements_options, w = 4.5, cycle_shoulders = true, opt_callback = 'achievments_tab_page', focus_args = {snap_to = true, nav = 'wide'}, current_option = current_page, colour = G.C.RED})
         	}}
