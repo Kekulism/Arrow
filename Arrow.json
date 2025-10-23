@@ -11,7 +11,7 @@
 	"display_name": "Arrow",
 	"version": "1.0.0",
 	"dependencies": [
-		"Steamodded (>=1.0.0-BETA-1016c)"
+		"Steamodded (>=1.0.0~BETA-1016c)"
 	],
 	"conflicts": [
 	],
