@@ -9,7 +9,9 @@ priority = 0
 [[patches]]
 [patches.pattern]
 target = "game.lua"
-pattern = '''if _ch.restrictions.banned_cards then'''
+pattern = '''if type(_ch.restrictions.banned_cards) == 'function' then
+    _ch.restrictions.banned_cards = _ch.restrictions.banned_cards()
+end'''
 position = "after"
 payload = '''
     if _ch.restrictions.banned_cards.allowed then
@@ -31,7 +33,6 @@ payload = '''
         end
 
         _ch.restrictions.banned_cards = {{id = 'j_joker', ids = bans}}
-        _ch.restrictions.allowed_cards = allow_list
     end'''
 match_indent = true
 times = 1
@@ -74,7 +75,6 @@ payload = '''
         end
 
         _ch.restrictions.banned_other = bans
-        _ch.restrictions.allowed_other = allow_list
     end'''
 match_indent = true
 times = 1

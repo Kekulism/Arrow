@@ -51,7 +51,7 @@ function ease_background_colour_blind(...)
         local col_primary = blind.boss_colour and blind.boss_colour.colours and blind.boss_colour or nil
         local col_special = blind.special_colour and blind.special_colour.colours and blind.special_colour or nil
         local col_tertiary = blind.tertiary_colour and blind.tertiary_colour.colours and blind.tertiary_colour or nil
-        
+
         if col_primary or col_special or col_tertiary then
             G.GAME.arrow_gradient_background = true
 
@@ -134,7 +134,7 @@ function get_new_boss(...)
     -- idk what it's used for but maybe modded cards can change this which I still want o allow
     G.GAME.perscribed_bosses = G.GAME.perscribed_bosses or {}
     if G.GAME.perscribed_bosses and G.GAME.perscribed_bosses[G.GAME.round_resets.ante] then
-        local ret_boss = G.GAME.perscribed_bosses[G.GAME.round_resets.ante] 
+        local ret_boss = G.GAME.perscribed_bosses[G.GAME.round_resets.ante]
         G.GAME.perscribed_bosses[G.GAME.round_resets.ante] = nil
         G.GAME.bosses_used[ret_boss] = G.GAME.bosses_used[ret_boss] + 1
         return ret_boss
@@ -189,7 +189,7 @@ end
 --------------------------- Force clear main_start and main_end
 ---------------------------
 local ref_card_ui = generate_card_ui
-function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...) 
+function generate_card_ui(_c, full_UI_table, specific_vars, card_type, badges, hide_desc, main_start, main_end, card, ...)
     local not_full = not full_UI_table
     if not_full then
         if _c.loc_vars and type(_c.loc_vars) == 'function' then
@@ -213,7 +213,7 @@ local ref_check_unlock = check_for_unlock
 function check_for_unlock(args)
     local ret = ref_check_unlock(args)
 
-    if G.GAME.challenge then
+    if G.GAME.challenge and not G.STATES.GAME_OVER then
         local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge)]
         if ch.gameover and type(ch.gameover) == 'table' and (ch.gameover.type or args.type) == args.type then
             local gameover = ch.gameover.func(ch)

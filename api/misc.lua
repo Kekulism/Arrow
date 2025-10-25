@@ -44,23 +44,6 @@ ArrowAPI.misc = {
                 ch.restrictions.banned_cards = ch.restrictions.banned_cards()
             end
 
-            local temp_cards = {}
-            for _, v in ipairs(ch.restrictions.banned_cards) do
-                if G.P_CENTERS[v.id] then
-                    local temp_ids = nil
-                    if v.ids then
-                        temp_ids = {}
-                        for _, vv in pairs(v.ids) do
-                            if G.P_CENTERS[vv] then
-                                temp_ids[#temp_ids+1] = vv
-                            end
-                        end
-                    end
-                    temp_cards[#temp_cards+1] = {id = v.id, ids = temp_ids}
-                end
-            end
-            ch.restrictions.banned_cards = temp_cards
-
             if ch.restrictions.banned_cards.allowed then
                 local bans = {}
                 local allow_map = {}
@@ -81,6 +64,23 @@ ArrowAPI.misc = {
 
                 ch.restrictions.banned_cards = {{id = 'j_joker', ids = bans}}
                 ch.restrictions.allowed_cards = allow_list
+            else
+                 local temp_cards = {}
+                for _, v in ipairs(ch.restrictions.banned_cards) do
+                    if G.P_CENTERS[v.id] then
+                        local temp_ids = nil
+                        if v.ids then
+                            temp_ids = {}
+                            for _, vv in pairs(v.ids) do
+                                if G.P_CENTERS[vv] then
+                                    temp_ids[#temp_ids+1] = vv
+                                end
+                            end
+                        end
+                        temp_cards[#temp_cards+1] = {id = v.id, ids = temp_ids}
+                    end
+                end
+                ch.restrictions.banned_cards = temp_cards
             end
         end
 
@@ -113,14 +113,6 @@ ArrowAPI.misc = {
                 ch.restrictions.banned_other = ch.restrictions.banned_other()
             end
 
-            local temp_other = {}
-            for _, v in ipairs(ch.restrictions.banned_other) do
-                if G.P_BLINDS[v.id] then
-                    temp_other[#temp_other+1] = {id = v.id, type = 'blind'}
-                end
-            end
-            ch.restrictions.banned_other = temp_other
-
             if ch.restrictions.banned_other.allowed then
                 local bans = {}
                 local allow_map = {}
@@ -138,6 +130,14 @@ ArrowAPI.misc = {
 
                 ch.restrictions.banned_other = bans
                 ch.restrictions.allowed_other = allow_list
+            else
+                local temp_other = {}
+                for _, v in ipairs(ch.restrictions.banned_other) do
+                    if G.P_BLINDS[v.id] then
+                        temp_other[#temp_other+1] = {id = v.id, type = 'blind'}
+                    end
+                end
+                ch.restrictions.banned_other = temp_other
             end
         end
     end,

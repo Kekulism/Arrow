@@ -61,7 +61,7 @@ G.FUNCS.initPostSplash = function()
 	local ret = ref_post_splash()
 	ArrowAPI.loading.disable_empty()
 
-	for _, v in ipairs(G.CHALLENGES) do
+	for k, v in ipairs(G.CHALLENGES) do
 		ArrowAPI.misc.run_challenge_functions(v)
 	end
 

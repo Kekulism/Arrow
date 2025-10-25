@@ -131,17 +131,17 @@ function attention_text(args)
 
     args.uibox_config = {
         align = args.align or 'cm',
-        offset = args.offset or {x=0,y=0}, 
+        offset = args.offset or {x=0,y=0},
         major = args.cover or args.major or nil,
     }
 
     local nodes = {}
     for _, line in ipairs(args.text) do
         nodes[#nodes+1] = {{
-            n=G.UIT.C, 
+            n=G.UIT.C,
             config={align = "m"},
             nodes={{
-                n=G.UIT.O, 
+                n=G.UIT.O,
                 config={
                     object = DynaText({
                         string = line,
@@ -161,7 +161,7 @@ function attention_text(args)
     end
 
     local final_text = {
-        n=G.UIT.ROOT, 
+        n=G.UIT.ROOT,
         config = {
             align = args.cover_align or 'cm',
             minw = (args.cover and args.cover.T.w or 0.001) + (args.cover_padding or 0),
@@ -173,7 +173,7 @@ function attention_text(args)
         },
         nodes={}
     }
-    
+
     for _, line in ipairs(nodes) do
         final_text.nodes[#final_text.nodes+1] = {n=G.UIT.R, config={align = "m"}, nodes=line}
     end
@@ -186,7 +186,7 @@ function attention_text(args)
         func = function()
             args.AT = UIBox{
                 T = {args.pos.x,args.pos.y, 0, 0},
-                definition = final_text, 
+                definition = final_text,
                 config = args.uibox_config
             }
             args.AT.attention_text = true
@@ -195,7 +195,7 @@ function attention_text(args)
             for _, v in ipairs(args.text) do
                 v.children[1].children[1].config.object:pulse(0.5)
             end
-            
+
             if args.cover then
             Particles(args.pos.x,args.pos.y, 0,0, {
                 timer_type = 'TOTAL',
@@ -359,7 +359,7 @@ function G.UIDEF.challenge_description_tab(args)
                     allow_area:emplace(card)
                 end
 
-                
+
                 table.insert(banned_nodes,
                     {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
                         {n=G.UIT.O, config={object = allow_area}}
@@ -381,7 +381,7 @@ function G.UIDEF.challenge_description_tab(args)
             for _, v in pairs(ch.restrictions.allowed_other) do
                 allowed_blinds[#allowed_blinds+1] = G.P_BLINDS[v.id]
             end
-        
+
             table.sort(allowed_blinds, function (a, b) return a.order < b.order end)
             for _, v in ipairs(allowed_blinds) do
                 local temp_blind = AnimatedSprite(0,0,1,1, G.ANIMATION_ATLAS[v.atlas or ''] or G.ANIMATION_ATLAS['blind_chips'], v.pos)
@@ -597,7 +597,7 @@ function create_UIBox_notify_alert(key, type)
         _atlas = G.ASSET_ATLAS[_c.atlas]
     else
         _c = G.P_CENTERS[key]
-        _atlas = ((type == 'Joker' or type == 'Voucher') and G.ASSET_ATLAS[type]) 
+        _atlas = ((type == 'Joker' or type == 'Voucher') and G.ASSET_ATLAS[type])
         or (type == 'Back' and G.ASSET_ATLAS['centers']) or G.ASSET_ATLAS['icons']
 
         local _smods_atlas = _c and ((G.SETTINGS.colourblind_option and _c.hc_atlas or _c.lc_atlas) or _c.atlas)
@@ -619,7 +619,7 @@ function create_UIBox_notify_alert(key, type)
     if key == 'b_challenge' then subtext = localize('k_challenges') end
 
     local name_text = is_arrow_achievement
-    and localize{type = 'name_text', key = key, set = 'Achievements'} 
+    and localize{type = 'name_text', key = key, set = 'Achievements'}
     or localize(key, 'achievement_names')
 
     local t = {n=G.UIT.ROOT, config = {align = 'cl', r = 0.1, padding = 0.06, colour = G.C.UI.TRANSPARENT_DARK}, nodes={
