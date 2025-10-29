@@ -15,7 +15,7 @@ position = "before"
 payload = '''local extra_blinds = {}
 if G.GAME.arrow_extra_blinds then
     for i, v in ipairs(G.GAME.arrow_extra_blinds) do
-        if (type(v) == "table") and v.is and v:is(Blind) then 
+        if (type(v) == "table") and v.is and v:is(Blind) then
             local extra_blind_ser = v:save()
             if extra_blind_ser then extra_blinds[i] = extra_blind_ser end
         end
@@ -42,7 +42,7 @@ times = 1
 [patches.pattern]
 target = "game.lua"
 pattern = '''G.GAME.blind:load(saveTable.BLIND)'''
-position = "after"      
+position = "after"
 payload = '''
 if saveTable.EXTRA_BLINDS then
     self.GAME.arrow_extra_blinds = {}
@@ -227,6 +227,14 @@ position = 'at'
 payload = "G.GAME.blind:get_type() ~= 'Boss'"
 
 [[patches]]
+[patches.pattern]
+target = 'blind.lua'
+pattern = '''if self.boss and G.GAME.chips - G.GAME.blind.chips >= 0 then'''
+position = 'at'
+payload = '''if self:get_type() == 'Boss' and G.GAME.chips - G.GAME.blind.chips >= 0 then'''
+match_indent = true
+
+[[patches]]
 [patches.regex]
 target = 'card.lua'
 pattern = 'context\.blind\.boss'
@@ -261,7 +269,7 @@ pattern = '''G.blind_select_opts.boss = G.GAME.round_resets.blind_states['Boss']
 position = "at"
 payload = '''G.blind_select_opts.boss = G.GAME.round_resets.blind_states['Boss'] ~= 'Hide' and UIBox{
     definition = {
-      n=G.UIT.ROOT, 
+      n=G.UIT.ROOT,
       config={align = "cm", colour = G.C.CLEAR},
       nodes={
         UIBox_dyn_container(

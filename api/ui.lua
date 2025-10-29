@@ -111,6 +111,7 @@ ArrowAPI.ui = {
             config = {
                 align = "cm",
                 colour = badge_colour,
+                id = 'arrow_badge_color_node',
                 r = 0.1,
                 minw = 1.4/min_scale_fac,
                 minh = 0.36,

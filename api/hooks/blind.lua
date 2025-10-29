@@ -208,7 +208,10 @@ function Blind:set_blind(...)
 	for _, v in ipairs(G.consumeables.cards) do
         if not reset and v.ability.set == 'Stand' then self:debuff_card(v, true) end
     end
-	self.main_blind_disabled = nil
+
+	if not reset then
+		self.main_blind_disabled = nil
+	end
 
 	if not (blind or reset) then return ret end
 
@@ -242,6 +245,7 @@ function Blind:defeat(...)
 				v.chips = self.chips
 				v.chip_text = number_format(self.chips)
 				v.dollars = self.dollars
+				sendDebugMessage("disabled extra blind: "..tostring(v.disabled))
 				G.GAME.blind = v
 
 				for _, val in ipairs(G.jokers.cards) do

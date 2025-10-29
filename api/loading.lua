@@ -56,7 +56,10 @@ ArrowAPI.loading = {
         elseif item_type ~= 'Edition' then
             info.atlas = file_key
             info.pos = { x = 0, y = 0 }
-            if info.hasSoul then
+            if item_type == 'Stake' then
+                info.sticker_atlas = file_key..'_sticker'
+                info.sticker_pos = { x = 0, y = 0 }
+            elseif info.hasSoul then
                 info.pos = { x = 1, y = 0 }
                 info.soul_pos = { x = 2, y = 0 }
             end
@@ -152,8 +155,13 @@ ArrowAPI.loading = {
         else
             local width = 71
             local height = 95
-            if item_type == 'Tag' then width = 34; height = 34 end
-            if item_type == 'Sleeve' then width = 73 end
+            if item_type == 'Tag' then width = 34; height = 34
+            elseif item_type == 'Sleeve' then width = 73
+            elseif item_type == 'Stake' then
+                width = 29
+                height = 29
+                SMODS.Atlas({ key = file_key..'_sticker', path = "stickers/" .. file_key .. "_sticker.png", px = 71, py = 95 })
+            end
             SMODS.Atlas({ key = file_key, path = folder_key .. "/" .. file_key .. ".png", px = new_item.width or width, py = new_item.height or height })
         end
         return true

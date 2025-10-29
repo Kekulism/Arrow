@@ -34,7 +34,7 @@ local function game_over_handler(win)
         G.GAME.won = true
     else
         G.STATE = G.STATES.GAME_OVER
-        if not G.GAME.won and not G.GAME.seeded and not G.GAME.challenge then 
+        if not G.GAME.won and not G.GAME.seeded and not G.GAME.challenge then
             G.PROFILES[G.SETTINGS.profile].high_scores.current_streak.amt = 0
         end
         G:save_settings()
@@ -53,7 +53,7 @@ ArrowAPI.game = {
         local played = -1;
         local order = 100;
         for k, v in pairs(G.GAME.hands) do
-            if v.played > played or (v.played == played and order < v.order) then 
+            if v.played > played or (v.played == played and order < v.order) then
                 played = v.played
                 hand = k
             end
@@ -86,7 +86,7 @@ ArrowAPI.game = {
         if not G.playing_cards then
             return enhance_tally
         end
-        if G.playing_cards then 
+        if G.playing_cards then
             for k, v in pairs(G.playing_cards) do
                 if (not enhancement_key and v.ability.set == 'Enhanced') or SMODS.has_enhancement(v, enhancement_key) then
                     enhance_tally =  enhance_tally + 1
@@ -202,7 +202,7 @@ ArrowAPI.game = {
                     old_main_blind.dollars = extra_blind.dollars
                     G.GAME.blind = old_main_blind
                 end
-                
+
                 table.remove(G.GAME.arrow_extra_blinds, i)
 
                 if blind_source.ability and type(blind_source.ability) == 'table' then
@@ -224,7 +224,7 @@ ArrowAPI.game = {
         return removed
     end,
 
-    
+
     --- Sets a discount for specific cards rather than a
     --- global discount and updates all instanced cards' costs
     --- @param source Card Balatro Card table indicating the source of the discount
@@ -236,7 +236,7 @@ ArrowAPI.game = {
             discount = discount
         }
         for _, v in pairs(G.I.CARD) do
-            if v.set_cost and (not center_set or (v.ability and v.ability.set == center_set)) then 
+            if v.set_cost and (not center_set or (v.ability and v.ability.set == center_set)) then
                 v:set_cost()
                 v:juice_up()
             end
@@ -250,7 +250,7 @@ ArrowAPI.game = {
     clear_discount = function(source)
         G.GAME.arrow_extra_discounts[source.unique_val] = nil
         for _, v in pairs(G.I.CARD) do
-            if v.set_cost then 
+            if v.set_cost then
                 v:set_cost()
             end
         end
@@ -285,7 +285,7 @@ ArrowAPI.game = {
             game_over_handler(win)
             return
         end
-        
+
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
             delay = 0.2,

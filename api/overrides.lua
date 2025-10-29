@@ -753,7 +753,6 @@ SMODS.Joker:take_ownership('j_chicot', {
     end
 }, true)
 
-
 SMODS.Joker:take_ownership('j_perkeo', {
 	loc_vars = function(self, info_queue, card)
 		info_queue[#info_queue+1] = {key = 'e_negative_consumable', set = 'Edition', config = {extra = 1}}

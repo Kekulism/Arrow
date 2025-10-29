@@ -95,6 +95,9 @@ payload = '''if _ch.extra_blinds then
     for _, v in ipairs(_ch.extra_blinds) do
         ArrowAPI.game.create_extra_blind({}, G.P_BLINDS[v], true)
     end
+end
+if _ch.post_apply and type(_ch.post_apply) == "function" then
+    _ch:post_apply()
 end'''
 match_indent = true
 times = 1
@@ -154,7 +157,7 @@ pattern = '''if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get
 position = "at"
 payload = '''local prevent_win = false
 local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge or -1)]
-if ch and ch.gameover then
+if ch and ch.gameover and G.GAME.round_resets.ante == G.GAME.win_ante then
     local lose = ch.gameover.endgame_type == 'lose' or (ch.gameover.func and ch.gameover.func(ch, true) == false)
     if lose then
         ArrowAPI.game.game_over(false, true)
