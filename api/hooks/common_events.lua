@@ -218,7 +218,6 @@ function check_for_unlock(args)
         if ch.gameover and type(ch.gameover) == 'table' and (ch.gameover.type or args.type) == args.type then
             local gameover = ch.gameover.func(ch)
             if gameover ~= nil then
-                sendDebugMessage('gameover state: '..tostring(gameover))
                 ArrowAPI.game.game_over(gameover, true)
             end
         end

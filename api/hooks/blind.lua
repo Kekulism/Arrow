@@ -245,7 +245,6 @@ function Blind:defeat(...)
 				v.chips = self.chips
 				v.chip_text = number_format(self.chips)
 				v.dollars = self.dollars
-				sendDebugMessage("disabled extra blind: "..tostring(v.disabled))
 				G.GAME.blind = v
 
 				for _, val in ipairs(G.jokers.cards) do
