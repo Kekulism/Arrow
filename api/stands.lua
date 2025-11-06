@@ -68,7 +68,7 @@ SMODS.ConsumableType {
     secondary_colour = G.C.STAND,
     collection_rows = { 8, 8 },
     shop_rate = 0,
-    default = "c_arrow_diamond_star",
+    default = "c_arrow_stardust_star",
     rarities = {
         {key = 'StandRarity'},
         {key = 'EvolvedRarity'},

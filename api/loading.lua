@@ -1,6 +1,5 @@
 SMODS.Atlas({ key = 'undiscovered', path = "undiscovered.png", px = 71, py = 95 })
 
--- Loading helper functions
 ArrowAPI.loading = {
     --- Load a batch of items from a formatted table
     --- @param args table A table of item sets to load as a batch
@@ -140,6 +139,22 @@ ArrowAPI.loading = {
                 for k_, v_ in pairs(new_item) do
                     if type(v_) == 'function' then
                         new_item[k_] = info[k_]
+                    end
+                end
+            end
+        end
+
+        if SMODS.current_mod.ARROW_USE_CREDITS then
+            local id = SMODS.current_mod.id
+            for _, v in ipairs(ArrowAPI.credits[id]) do
+                if new_item[v.key] then
+                    local name = new_item[v.key]
+                    if type(name) ~= 'table' then name = {name} end
+                    for _, vv in ipairs(name) do
+                        if not v.contributors[vv] or type(v.contributors[vv]) ~= 'function' then
+                            v.contributors[vv] = {}
+                        end
+                        table.insert(v.contributors[vv], {key = new_item.key, item_type = smods_item})
                     end
                 end
             end

@@ -8,7 +8,8 @@ local tagInfo = {
         },
         custom_color = 'rlm',
     },
-    artist = 'gote',
+    artist = 'BarrierTrio/Gote',
+    programmer = 'Kekulism',
     requires_type = 'VHS',
 }
 

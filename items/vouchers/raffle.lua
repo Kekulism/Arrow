@@ -11,7 +11,8 @@ local voucherInfo = {
         },
         custom_color = 'rlm',
     },
-    artist = 'joey',
+    artist = 'Joey',
+    programmer = 'Kekulism',
     requires_type = 'VHS',
 }
 

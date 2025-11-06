@@ -15,7 +15,8 @@ local packInfo = {
         sub_origins = {'rlm_r'},
         custom_color = 'rlm',
     },
-    artist = 'yunkie',
+    artist = 'yunkie101',
+    programmer = 'Kekulism',
     requires_type = 'VHS',
 }
 

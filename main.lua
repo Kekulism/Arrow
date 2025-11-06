@@ -30,8 +30,8 @@ local includes = {
 	'hooks/blind',
 	'hooks/button_callbacks',
 	'hooks/common_events',
-	'hooks/card',
 	'hooks/cardarea',
+	'hooks/card',
 	'hooks/game',
 	'hooks/back',
 	'hooks/smods',
@@ -60,6 +60,28 @@ if G.FUNCS.initPostSplash then ref_post_splash = G.FUNCS.initPostSplash end
 G.FUNCS.initPostSplash = function()
 	local ret = ref_post_splash()
 	ArrowAPI.loading.disable_empty()
+
+	for _, mod in pairs(SMODS.Mods) do
+		if mod.can_load and mod.ARROW_USE_CREDITS then
+			-- clean any default sections that aren't provided contributors
+			if ArrowAPI.credits[mod.id].use_default_sections then
+				for i = #ArrowAPI.credits[mod.id], 1, -1 do
+					if not next(ArrowAPI.credits[mod.id][i].contributors) then
+						table.remove(ArrowAPI.credits[mod.id], i)
+					end
+				end
+
+				-- set default section dimensions
+				local default_w = ArrowAPI.DEFAULT_CREDIT_MATRIX.col/#ArrowAPI.credits[mod.id]
+				for i, v in ipairs(ArrowAPI.credits[mod.id]) do
+					v.pos_start = {col = default_w * (i-1), row = 0}
+					v.pos_end = {col = default_w * i, row = ArrowAPI.DEFAULT_CREDIT_MATRIX.row}
+				end
+			end
+
+			mod.credits_tab = ArrowAPI.credits.create_credits_tab(mod)
+		end
+	end
 
 	for k, v in ipairs(G.CHALLENGES) do
 		ArrowAPI.misc.run_challenge_functions(v)

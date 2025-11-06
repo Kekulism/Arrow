@@ -11,6 +11,8 @@ local packInfo = {
     select_card = 'consumeables',
     origin = 'jojo',
     requires_type = 'Stand',
+    artist = 'yunkie101',
+    programmer = 'Vivian Giacobbi',
 }
 
 function packInfo.loc_vars(self, info_queue, card)
