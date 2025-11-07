@@ -13,16 +13,22 @@ function level_up_hand(card, hand, instant, amount)
     end
 
     local ret = ref_level_up(card, hand, instant, amount)
-    G.GAME.arrow_last_upgraded_hand = {[hand] = true}
+    if not ArrowAPI.bypass_level_up_context then
+        G.GAME.arrow_last_upgraded_hand = {[hand] = true}
+        SMODS.calculate_context({hand_upgraded = true, upgraded = {[hand] = true}, amount = amount})
+    end
+
     return ret
 end
 
 function level_up_hand_bypass(card, hand, instant, amount, bypass_context)
+    ArrowAPI.bypass_level_up_context = bypass_context
     local ret = level_up_hand(card, hand, instant, amount)
 
-    if not bypass_context then
+    if ArrowAPI.bypass_level_up_context then
         G.GAME.arrow_last_upgraded_hand = {[hand] = true}
         SMODS.calculate_context({hand_upgraded = true, upgraded = {[hand] = true}, amount = amount})
+        ArrowAPI.bypass_level_up_context = nil
     end
 
     return ret

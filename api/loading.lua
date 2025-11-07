@@ -97,25 +97,14 @@ ArrowAPI.loading = {
         end
 
         if item_type ~= 'Deck' and item_type ~= 'Challenge' and item_type ~= 'Edition' and info.artist and ArrowAPI.current_config.enable_item_credits then
-            if not ArrowAPI.credits[SMODS.current_mod.id] then
-                ArrowAPI.logging.send('[ARROW] Artist credit not defined for object: '..info.key, 'warn')
-            else
-                local vars = {}
-                if type(info.artist) == 'table' then
-                    for i, v in ipairs(info.artist) do
-                        vars[i] = ArrowAPI.credits[SMODS.current_mod.id][v]
-                    end
-                else
-                    vars[1] = ArrowAPI.credits[SMODS.current_mod.id][info.artist]
-                end
+            local vars = type(info.artist) == 'table' and info.artist or {info.artist}
 
-                local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
-                function info.loc_vars(self, info_queue, card)
-                    if info_queue then
-                        info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
-                    end
-                    return ref_loc_vars(self, info_queue, card)
+            local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
+            function info.loc_vars(self, info_queue, card)
+                if info_queue and ArrowAPI.current_config['enable_Credits'] then
+                    info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
                 end
+                return ref_loc_vars(self, info_queue, card)
             end
         end
 

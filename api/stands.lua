@@ -2,23 +2,23 @@ SMODS.Atlas({key = 'stand_blank', path = 'blank.png', px = 93, py = 179})
 SMODS.Atlas({key = 'stand_blank_evolved', path = 'blank_evolved.png', px = 93, py = 179})
 SMODS.Atlas({key = 'stand_stickers', path = "stand_stickers.png", px = 71, py = 95})
 
-SMODS.Sticker{key = "Stand_White", atlas = 'arrow_stand_stickers', pos = { x = 0, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
-SMODS.Sticker{key = "Stand_Red", atlas = 'arrow_stand_stickers', pos = { x = 1, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
-SMODS.Sticker{key = "Stand_Green", atlas = 'arrow_stand_stickers', pos = { x = 2, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
-SMODS.Sticker{key = "Stand_Black", atlas = 'arrow_stand_stickers', pos = { x = 3, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
-SMODS.Sticker{key = "Stand_Blue", atlas = 'arrow_stand_stickers', pos = { x = 4, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
-SMODS.Sticker{key = "Stand_Purple", atlas = 'arrow_stand_stickers', pos = { x = 5, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
-SMODS.Sticker{key = "Stand_Orange", atlas = 'arrow_stand_stickers', pos = { x = 6, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
-SMODS.Sticker{key = "Stand_Gold", atlas = 'arrow_stand_stickers', pos = { x = 7, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_white", atlas = 'arrow_stand_stickers', pos = { x = 0, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_red", atlas = 'arrow_stand_stickers', pos = { x = 1, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_green", atlas = 'arrow_stand_stickers', pos = { x = 2, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_black", atlas = 'arrow_stand_stickers', pos = { x = 3, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_blue", atlas = 'arrow_stand_stickers', pos = { x = 4, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_purple", atlas = 'arrow_stand_stickers', pos = { x = 5, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_orange", atlas = 'arrow_stand_stickers', pos = { x = 6, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
+SMODS.Sticker{key = "Stand_gold", atlas = 'arrow_stand_stickers', pos = { x = 7, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true}
 
-G.sticker_map['arrow_Stand_White'] = 'White'
-G.sticker_map['arrow_Stand_Red'] = 'Red'
-G.sticker_map['arrow_Stand_Green'] = 'Green'
-G.sticker_map['arrow_Stand_Black'] = 'Black'
-G.sticker_map['arrow_Stand_Blue'] = 'Blue'
-G.sticker_map['arrow_Stand_Purple'] = 'Purple'
-G.sticker_map['arrow_Stand_Orange'] = 'Orange'
-G.sticker_map['arrow_Stand_Gold'] = 'Gold'
+G.sticker_map['arrow_Stand_white'] = 'white'
+G.sticker_map['arrow_Stand_red'] = 'red'
+G.sticker_map['arrow_Stand_green'] = 'green'
+G.sticker_map['arrow_Stand_black'] = 'black'
+G.sticker_map['arrow_Stand_blue'] = 'blue'
+G.sticker_map['arrow_Stand_purple'] = 'purple'
+G.sticker_map['arrow_Stand_orange'] = 'orange'
+G.sticker_map['arrow_Stand_gold'] = 'gold'
 
 -- stand pool
 SMODS.ObjectType {

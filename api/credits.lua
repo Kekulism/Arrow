@@ -191,10 +191,10 @@ ArrowAPI.credits.create_credits_tab = function(mod)
                 }}
             }
 
-            local base_col_num = 8
-            local col_mod = h/w * 1.3
+            local base_col_num = 12
+            local col_mod = h/w
             local num_per_col = math.floor(base_col_num * col_mod)
-            local mod_scale = col_mod * 0.8
+            local mod_scale = col_mod * 0.7 * (col_mod < 1 and 1.5 or 1)
 
             -- only add definition and padding if it represents a low-level index
             if sec.ref_index then
@@ -213,7 +213,7 @@ ArrowAPI.credits.create_credits_tab = function(mod)
                 local col_nodes = contributor_nodes[1].nodes
 
                 for name, _ in pairs(ref.contributors) do
-                    local scale_fac = math.max(0.6, ArrowAPI.ui.calc_scale_fac(name))
+                    local scale_fac = math.min(0.8, ArrowAPI.ui.calc_scale_fac(name))
                     col_nodes[#col_nodes+1] = {
                         n=G.UIT.R,
                         config={align = "tm"},

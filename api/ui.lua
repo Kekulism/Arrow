@@ -50,9 +50,9 @@ end
 -- helper functions for ui generation
 ArrowAPI.ui = {
     calc_scale_fac = function(text, size)
-        local size = size or 0.9
+        size = size or 0.9
         local font = G.LANG.font
-        local max_text_width = 2 - 2 * 0.05 - 4 * 0.03 * size - 2 * 0.03
+        local max_text_width = 4 - 4 * 0.05 - 4 * 0.03 * size - 4 * 0.03
         local calced_text_width = 0
         -- Math reproduced from DynaText:update_text
         for _, c in utf8.chars(text) do
@@ -154,38 +154,7 @@ ArrowAPI.ui = {
         end
     end,
 
-    --- Helper function that reloads the main Balatro UI
-    --- @param hud_offset number Starting y offset of the hud
-    manual_ui_reload = function(hud_offset)
-        if G.HUD then G.HUD:remove(); G.HUD = nil end
-        if G.HUD_blind then
-            -- manually nil out the blind object so this remove call doesn't destroy it unnecessarily
-            G.HUD_blind.UIRoot.children[2].children[2].children[1].config.object = nil
-            G.HUD_blind:remove();
-            G.HUD_blind = nil
-        end
-        G.HUD = UIBox{
-            definition = create_UIBox_HUD(),
-            config = {align=('cli'), offset = {x=-0.7,y=0}, major = G.ROOM_ATTACH}
-        }
-        G.HUD_blind = UIBox{
-            definition = create_UIBox_HUD_blind(),
-            config = {major = G.HUD:get_UIE_by_ID('row_blind_bottom'), align = 'bmi', offset = {x=0,y=hud_offset or -10}, bond = 'Weak'}
-        }
 
-        G.hand_text_area = {
-            chips = G.HUD:get_UIE_by_ID('hand_chips'),
-            mult = G.HUD:get_UIE_by_ID('hand_mult'),
-            ante = G.HUD:get_UIE_by_ID('ante_UI_count'),
-            round = G.HUD:get_UIE_by_ID('round_UI_count'),
-            chip_total = G.HUD:get_UIE_by_ID('hand_chip_total'),
-            handname = G.HUD:get_UIE_by_ID('hand_name'),
-            hand_level = G.HUD:get_UIE_by_ID('hand_level'),
-            game_chips = G.HUD:get_UIE_by_ID('chip_UI_count'),
-            blind_chips = G.HUD_blind:get_UIE_by_ID('HUD_blind_count'),
-            blind_spacer = G.HUD:get_UIE_by_ID('blind_spacer')
-        }
-    end,
 
     -- A table of badge_colors. Backgrounds are prefixed with `co_`, text is prefixed with `te_`
     badge_colors = {

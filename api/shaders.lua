@@ -176,6 +176,33 @@ SMODS.DrawStep {
     conditions = { vortex = false, facing = 'front' },
 }
 
+function scale_sticker(sticker, card)
+    if not sticker or not card then
+        return nil, nil
+    end
+
+    if sticker.atlas.px ~= card.children.center.atlas.px and sticker.atlas.py ~= card.children.center.atlas.px then
+        local x_scale = sticker.atlas.px / card.children.center.atlas.px
+        local y_scale = sticker.atlas.py / card.children.center.atlas.py
+        local t = {w = card.T.w, h = card.T.h}
+        local vt = {w = card.VT.w, h = card.VT.h}
+        card.T.w  = sticker.T.w * x_scale
+        card.VT.w = sticker.T.w * x_scale
+        card.T.h = sticker.T.h * y_scale
+        card.VT.h = sticker.T.h * y_scale
+        return t, vt
+    end
+    return nil, nil
+end
+
+function reset_sticker_scale(card, t, vt)
+    if not t and not vt then return end
+    card.T.w = t and t.w or G.CARD_W
+    card.VT.w = vt and vt.w or G.CARD_W
+    card.T.h = t and t.h or G.CARD_H
+    card.VT.h = vt and vt.h or G.CARD_H
+end
+
 local old_sticker_func = SMODS.DrawSteps.stickers.func
 SMODS.DrawStep:take_ownership('stickers', {
     func = function(self, layer)
@@ -183,19 +210,21 @@ SMODS.DrawStep:take_ownership('stickers', {
             return old_sticker_func(self, layer)
         end
 
-        if self.sticker then
-            G.shared_stickers[self.sticker].role.draw_major = self
-            G.shared_stickers[self.sticker]:draw_shader('dissolve', nil, nil, nil, self.children.center)
-            G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-        end
-
-        if G.SETTINGS.run_stake_stickers and self.sticker_run and G.shared_stickers[self.sticker_run] then
-            local key = G.shared_stickers['arrow_Stand_'..self.sticker_run] and 'arrow_Stand_'..self.sticker_run or self.sticker_run
+        if self.sticker and G.sticker_map['arrow_Stand_'..self.sticker] then
+            local key = 'arrow_Stand_'..self.sticker
+            local t, vt = scale_sticker(G.shared_stickers[key], self)
             G.shared_stickers[key].role.draw_major = self
             G.shared_stickers[key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
             G.shared_stickers[key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
+            reset_sticker_scale(self, t, vt)
+        elseif G.SETTINGS.run_stake_stickers and self.sticker_run and G.shared_stickers[self.sticker_run] then
+            local key = G.shared_stickers['arrow_Stand_'..self.sticker_run] and 'arrow_Stand_'..self.sticker_run or self.sticker_run
+            local t, vt = scale_sticker(G.shared_stickers[key], self)
+            G.shared_stickers[key].role.draw_major = self
+            G.shared_stickers[key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+            G.shared_stickers[key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
+            reset_sticker_scale(self, t, vt)
         end
-
 
         for _, v in pairs(SMODS.Stickers) do
             if self.ability[v.key] then
@@ -203,9 +232,11 @@ SMODS.DrawStep:take_ownership('stickers', {
                     v:draw(self, layer)
                 else
                     local mod_key = G.shared_stickers['arrow_Stand_'..v.key] and 'arrow_Stand_'..v.key or v.key
+                    local t, vt = scale_sticker(G.shared_stickers[mod_key], self)
                     G.shared_stickers[mod_key].role.draw_major = self
                     G.shared_stickers[mod_key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
                     G.shared_stickers[mod_key]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
+                    reset_sticker_scale(self, t, vt)
                 end
             end
         end
