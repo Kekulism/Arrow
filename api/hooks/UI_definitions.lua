@@ -508,15 +508,7 @@ end
 
 function G.UIDEF.deck_credit(back)
     -- set the artists
-    local vars = {}
-    local mod = back.original_mod or back.mod
-    if type(back.artist) == 'table' then
-        for i, v in ipairs(back.artist) do
-            vars[i] = ArrowAPI.credits[ mod.id][v]
-        end
-    else
-        vars[1] = ArrowAPI.credits[ mod.id][back.artist]
-    end
+    local vars = type(back.artist) == 'table' and back.artist or {back.artist}
 
     local name_nodes = localize{type = 'name', key = "artistcredit_"..#vars, set = 'Other', scale = 0.6}
     local desc_nodes = {}
@@ -530,13 +522,11 @@ function G.UIDEF.deck_credit(back)
         }
     }
 
-    if credit.nodes[1] and credit.nodes[2] then
-        credit.nodes[1].config.padding = 0.035
-        credit.nodes[2].config.padding = 0.03
-        credit.nodes[2].config.minh = 0.15
-        credit.nodes[2].config.minw = 4
-        credit.nodes[2].config.r = 0.005
-    end
+    credit.nodes[1].config.padding = 0.035
+    credit.nodes[2].config.padding = 0.03
+    credit.nodes[2].config.minh = 0.15
+    credit.nodes[2].config.minw = 4
+    credit.nodes[2].config.r = 0.005
 
     return credit
 end
