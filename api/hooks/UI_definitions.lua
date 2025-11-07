@@ -530,12 +530,13 @@ function G.UIDEF.deck_credit(back)
         }
     }
 
-    -- customized measurements
-    credit.nodes[1].config.padding = 0.035
-    credit.nodes[2].config.padding = 0.03
-    credit.nodes[2].config.minh = 0.15
-    credit.nodes[2].config.minw = 4
-    credit.nodes[2].config.r = 0.005
+    if credit.nodes[1] and credit.nodes[2] then
+        credit.nodes[1].config.padding = 0.035
+        credit.nodes[2].config.padding = 0.03
+        credit.nodes[2].config.minh = 0.15
+        credit.nodes[2].config.minw = 4
+        credit.nodes[2].config.r = 0.005
+    end
 
     return credit
 end

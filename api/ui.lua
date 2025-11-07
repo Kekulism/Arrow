@@ -183,7 +183,7 @@ ArrowAPI.ui = {
         if G.HUD_blind then
             -- manually nil out the blind object so this remove call doesn't destroy it unnecessarily
             G.HUD_blind.UIRoot.children[2].children[2].children[1].config.object = nil
-            G.HUD_blind:remove();
+            G.HUD_blind:remove()
             G.HUD_blind = nil
         end
         G.HUD = UIBox{

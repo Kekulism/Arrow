@@ -220,7 +220,11 @@ ArrowAPI.loading = {
 
             for _, center in pairs(G.P_CENTERS) do
                 if disable_map[center.requires_type] then
-                    center:delete()
+                    center.no_collection = true
+                    center.no_doe = true
+                    center.unlock_condition = nil
+                    center.unlocked = false
+                    center.discovered = false
                 end
             end
 
