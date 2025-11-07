@@ -129,9 +129,7 @@ function ease_background_colour_blind(...)
 end
 
 -- evil bad overwrite
-function get_new_boss(...)
-    -- keep these two cases
-    -- idk what it's used for but maybe modded cards can change this which I still want o allow
+function get_new_boss(replace_type)
     G.GAME.perscribed_bosses = G.GAME.perscribed_bosses or {}
     if G.GAME.perscribed_bosses and G.GAME.perscribed_bosses[G.GAME.round_resets.ante] then
         local ret_boss = G.GAME.perscribed_bosses[G.GAME.round_resets.ante]
@@ -140,17 +138,19 @@ function get_new_boss(...)
         return ret_boss
     elseif G.FORCE_BOSS then return G.FORCE_BOSS end
 
-    local args = {...}
-    local replace_type = args[1] or 'Boss'
+    replace_type = replace_type or 'Boss'
     local get_showdown = (replace_type == 'Boss' and (G.GAME.modifiers.all_showdown or ((G.GAME.round_resets.ante%G.GAME.win_ante) == 0 and G.GAME.round_resets.ante >= 1)))
 
     local eligible_bosses = {}
     local num_bosses = 0
     local min_use = 1000
+
     for k, v in pairs(G.P_BLINDS) do
-        if v.boss and not G.GAME.banned_keys[k] and G.GAME.bosses_used[k] <= min_use then
-            local valid = (v.in_pool and type(v.in_pool) == 'function' and v:in_pool()) or true
-            if valid and ((get_showdown and v.boss.showdown) or (not get_showdown and not v.boss.showdown and v.boss.min <= math.max(1, G.GAME.round_resets.ante))) then
+		local res, options = SMODS.add_to_pool(v)
+        options = options or {}
+
+        if res and v.boss and not G.GAME.banned_keys[k] and G.GAME.bosses_used[k] <= min_use then
+            if options.ignore_showdown_check or ((get_showdown and v.boss.showdown) or (not get_showdown and not v.boss.showdown and v.boss.min <= math.max(1, G.GAME.round_resets.ante))) then
                 if G.GAME.bosses_used[k] < min_use then
                     min_use = G.GAME.bosses_used[k]
                     eligible_bosses = {}

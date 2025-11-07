@@ -13,7 +13,8 @@ local voucherInfo = {
         },
         custom_color = 'stone',
     },
-    artist = 'gote',
+    artist = 'BarrierTrio/Gote',
+    programmer = 'Kekulism',
     requires_type = 'Stand',
 }
 

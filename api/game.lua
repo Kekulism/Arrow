@@ -13,16 +13,22 @@ function level_up_hand(card, hand, instant, amount)
     end
 
     local ret = ref_level_up(card, hand, instant, amount)
-    G.GAME.arrow_last_upgraded_hand = {[hand] = true}
+    if not ArrowAPI.bypass_level_up_context then
+        G.GAME.arrow_last_upgraded_hand = {[hand] = true}
+        SMODS.calculate_context({hand_upgraded = true, upgraded = {[hand] = true}, amount = amount})
+    end
+
     return ret
 end
 
 function level_up_hand_bypass(card, hand, instant, amount, bypass_context)
+    ArrowAPI.bypass_level_up_context = bypass_context
     local ret = level_up_hand(card, hand, instant, amount)
 
-    if not bypass_context then
+    if ArrowAPI.bypass_level_up_context then
         G.GAME.arrow_last_upgraded_hand = {[hand] = true}
         SMODS.calculate_context({hand_upgraded = true, upgraded = {[hand] = true}, amount = amount})
+        ArrowAPI.bypass_level_up_context = nil
     end
 
     return ret
@@ -154,76 +160,6 @@ ArrowAPI.game = {
 
         return discovered, count
     end,
-
-    create_extra_blind = function(blind_source, blind_type, skip_set_blind)
-        if not G.GAME then return end
-
-        local new_extra_blind = arrow_init_extra_blind(0, 0, 0, 0, blind_source)
-        if not skip_set_blind and G.GAME.blind.in_blind then
-            new_extra_blind:extra_set_blind(blind_type)
-        else
-            new_extra_blind.config.blind = blind_type
-            new_extra_blind.name = blind_type.name
-            new_extra_blind.debuff = blind_type.debuff
-            new_extra_blind.mult = blind_type.mult / 2
-            new_extra_blind.disabled = false
-            new_extra_blind.discards_sub = nil
-            new_extra_blind.hands_sub = nil
-            new_extra_blind.boss = not not blind_type.boss
-            new_extra_blind.blind_set = false
-            new_extra_blind.triggered = nil
-            new_extra_blind.prepped = true
-            new_extra_blind:set_text()
-        end
-
-        G.GAME.arrow_extra_blinds[#G.GAME.arrow_extra_blinds+1] = new_extra_blind
-        return new_extra_blind
-    end,
-
-    remove_extra_blinds = function(blind_source)
-        if not G.GAME then return end
-
-        local removed = false
-        for i=#G.GAME.arrow_extra_blinds, 1, -1 do
-            if G.GAME.arrow_extra_blinds[i].arrow_extra_blind == blind_source then
-                -- disable effect more removal
-                local extra_blind = G.GAME.arrow_extra_blinds[i]
-                if G.GAME.blind.in_blind then
-                    local old_main_blind = G.GAME.blind
-                    extra_blind.chips = old_main_blind.chips
-                    extra_blind.chip_text = number_format(old_main_blind.chips)
-                    extra_blind.dollars = old_main_blind.dollars
-                    G.GAME.blind = extra_blind
-
-                    extra_blind:disable()
-
-                    old_main_blind.chips = extra_blind.chips
-                    old_main_blind.chip_text = number_format(extra_blind.chips)
-                    old_main_blind.dollars = extra_blind.dollars
-                    G.GAME.blind = old_main_blind
-                end
-
-                table.remove(G.GAME.arrow_extra_blinds, i)
-
-                if blind_source.ability and type(blind_source.ability) == 'table' then
-                    blind_source.ability.blind_type = nil
-                end
-                blind_source.blind_type = nil
-
-                G.E_MANAGER:add_event(Event({
-                    trigger = 'after',
-                    func = function()
-                        extra_blind:remove()
-                        return true
-                    end
-                }))
-                removed = true
-            end
-        end
-
-        return removed
-    end,
-
 
     --- Sets a discount for specific cards rather than a
     --- global discount and updates all instanced cards' costs

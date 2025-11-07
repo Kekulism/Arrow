@@ -47,24 +47,23 @@ function G.UIDEF.preview_cardarea(preview_num, scale)
     }}
 end
 
-
-local function calc_scale_fac(text, size)
-    local size = size or 0.9
-    local font = G.LANG.font
-    local max_text_width = 2 - 2 * 0.05 - 4 * 0.03 * size - 2 * 0.03
-    local calced_text_width = 0
-    -- Math reproduced from DynaText:update_text
-    for _, c in utf8.chars(text) do
-        local tx = font.FONT:getWidth(c) * (0.33 * size) * G.TILESCALE * font.FONTSCALE
-                + 2.7 * 1 * G.TILESCALE * font.FONTSCALE
-        calced_text_width = calced_text_width + tx / (G.TILESIZE * G.TILESCALE)
-    end
-    local scale_fac = calced_text_width > max_text_width and max_text_width / calced_text_width or 1
-    return scale_fac
-end
-
 -- helper functions for ui generation
 ArrowAPI.ui = {
+    calc_scale_fac = function(text, size)
+        size = size or 0.9
+        local font = G.LANG.font
+        local max_text_width = 4 - 4 * 0.05 - 4 * 0.03 * size - 4 * 0.03
+        local calced_text_width = 0
+        -- Math reproduced from DynaText:update_text
+        for _, c in utf8.chars(text) do
+            local tx = font.FONT:getWidth(c) * (0.33 * size) * G.TILESCALE * font.FONTSCALE
+                    + 2.7 * 1 * G.TILESCALE * font.FONTSCALE
+            calced_text_width = calced_text_width + tx / (G.TILESIZE * G.TILESCALE)
+        end
+        local scale_fac = calced_text_width > max_text_width and max_text_width / calced_text_width or 1
+        return scale_fac
+    end,
+
      --- Create dynamic badge for a center based on its 'origin' property
     --- @param center table Center table representing the item
     --- @return table # badge UI tree
@@ -95,7 +94,7 @@ ArrowAPI.ui = {
         end
 
         for i = 1, #strings do
-            scale_fac[i] = calc_scale_fac(strings[i], text_scale)
+            scale_fac[i] = ArrowAPI.ui.calc_scale_fac(strings[i], text_scale)
             min_scale_fac = math.min(min_scale_fac, scale_fac[i])
         end
 
@@ -155,38 +154,7 @@ ArrowAPI.ui = {
         end
     end,
 
-    --- Helper function that reloads the main Balatro UI
-    --- @param hud_offset number Starting y offset of the hud
-    manual_ui_reload = function(hud_offset)
-        if G.HUD then G.HUD:remove(); G.HUD = nil end
-        if G.HUD_blind then
-            -- manually nil out the blind object so this remove call doesn't destroy it unnecessarily
-            G.HUD_blind.UIRoot.children[2].children[2].children[1].config.object = nil
-            G.HUD_blind:remove();
-            G.HUD_blind = nil
-        end
-        G.HUD = UIBox{
-            definition = create_UIBox_HUD(),
-            config = {align=('cli'), offset = {x=-0.7,y=0}, major = G.ROOM_ATTACH}
-        }
-        G.HUD_blind = UIBox{
-            definition = create_UIBox_HUD_blind(),
-            config = {major = G.HUD:get_UIE_by_ID('row_blind_bottom'), align = 'bmi', offset = {x=0,y=hud_offset or -10}, bond = 'Weak'}
-        }
 
-        G.hand_text_area = {
-            chips = G.HUD:get_UIE_by_ID('hand_chips'),
-            mult = G.HUD:get_UIE_by_ID('hand_mult'),
-            ante = G.HUD:get_UIE_by_ID('ante_UI_count'),
-            round = G.HUD:get_UIE_by_ID('round_UI_count'),
-            chip_total = G.HUD:get_UIE_by_ID('hand_chip_total'),
-            handname = G.HUD:get_UIE_by_ID('hand_name'),
-            hand_level = G.HUD:get_UIE_by_ID('hand_level'),
-            game_chips = G.HUD:get_UIE_by_ID('chip_UI_count'),
-            blind_chips = G.HUD_blind:get_UIE_by_ID('HUD_blind_count'),
-            blind_spacer = G.HUD:get_UIE_by_ID('blind_spacer')
-        }
-    end,
 
     -- A table of badge_colors. Backgrounds are prefixed with `co_`, text is prefixed with `te_`
     badge_colors = {
@@ -208,7 +176,7 @@ ArrowAPI.ui = {
 
     add_badge_colors = function(mod, args)
         ArrowAPI['ui']['badge_colors'][mod.id] = copy_table(args)
-    end
+    end,
 }
 
 local function recursive_text_tint(ui_tree, color, percentage)
@@ -377,7 +345,7 @@ function buildAchievementsTab(mod, current_page)
 
 		local key = ach.key..(G.localization.descriptions.Achievements[ach.key..'_hidden'] and not ach.earned and '_hidden' or '')
 		local name_text = localize{type = 'name_text', key = key, set = 'Achievements', vars = loc_vars.vars}
-        name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, scale = math.min(0.48, calc_scale_fac(name_text))}
+        name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, scale = math.min(0.48, ArrowAPI.ui.calc_scale_fac(name_text))}
 		localize{type = 'descriptions', key = key, set = "Achievements", vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, nodes = desc_nodes, scale = 0.95}
 
 		local desc = {}
@@ -390,7 +358,7 @@ function buildAchievementsTab(mod, current_page)
 			recursive_text_tint({nodes = desc}, G.C.WHITE, 0.5)
 		end
 
-        local badge_scale = 0.9 * math.min(0.25, calc_scale_fac(text))
+        local badge_scale = 0.9 * math.min(0.25, ArrowAPI.ui.calc_scale_fac(text))
 
         table.insert(achievement_matrix[row], {
             n = G.UIT.C,

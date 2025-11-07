@@ -16,7 +16,8 @@ local voucherInfo = {
         },
         custom_color = 'lion',
     },
-    artist = 'gote',
+    artist = 'BarrierTrio/Gote',
+    programmer = 'Kekulism',
     requires_type = 'Stand',
 }
 

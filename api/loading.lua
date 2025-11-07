@@ -1,6 +1,5 @@
 SMODS.Atlas({ key = 'undiscovered', path = "undiscovered.png", px = 71, py = 95 })
 
--- Loading helper functions
 ArrowAPI.loading = {
     --- Load a batch of items from a formatted table
     --- @param args table A table of item sets to load as a batch
@@ -98,25 +97,14 @@ ArrowAPI.loading = {
         end
 
         if item_type ~= 'Deck' and item_type ~= 'Challenge' and item_type ~= 'Edition' and info.artist and ArrowAPI.current_config.enable_item_credits then
-            if not ArrowAPI.credits[SMODS.current_mod.id] then
-                ArrowAPI.logging.send('[ARROW] Artist credit not defined for object: '..info.key, 'warn')
-            else
-                local vars = {}
-                if type(info.artist) == 'table' then
-                    for i, v in ipairs(info.artist) do
-                        vars[i] = ArrowAPI.credits[SMODS.current_mod.id][v]
-                    end
-                else
-                    vars[1] = ArrowAPI.credits[SMODS.current_mod.id][info.artist]
-                end
+            local vars = type(info.artist) == 'table' and info.artist or {info.artist}
 
-                local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
-                function info.loc_vars(self, info_queue, card)
-                    if info_queue then
-                        info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
-                    end
-                    return ref_loc_vars(self, info_queue, card)
+            local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
+            function info.loc_vars(self, info_queue, card)
+                if info_queue and ArrowAPI.current_config['enable_Credits'] then
+                    info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
                 end
+                return ref_loc_vars(self, info_queue, card)
             end
         end
 
@@ -140,6 +128,22 @@ ArrowAPI.loading = {
                 for k_, v_ in pairs(new_item) do
                     if type(v_) == 'function' then
                         new_item[k_] = info[k_]
+                    end
+                end
+            end
+        end
+
+        if SMODS.current_mod.ARROW_USE_CREDITS then
+            local id = SMODS.current_mod.id
+            for _, v in ipairs(ArrowAPI.credits[id]) do
+                if new_item[v.key] then
+                    local name = new_item[v.key]
+                    if type(name) ~= 'table' then name = {name} end
+                    for _, vv in ipairs(name) do
+                        if not v.contributors[vv] or type(v.contributors[vv]) ~= 'function' then
+                            v.contributors[vv] = {}
+                        end
+                        table.insert(v.contributors[vv], {key = new_item.key, item_type = smods_item})
                     end
                 end
             end

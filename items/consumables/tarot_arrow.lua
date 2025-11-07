@@ -10,7 +10,8 @@ local consumInfo = {
         },
         custom_color = 'diamond',
     },
-    artist = 'gote',
+    artist = 'BarrierTrio/Gote',
+    programmer = 'Vivian Giacobbi',
     requires_type = 'Stand',
 }
 

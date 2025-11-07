@@ -43,6 +43,13 @@ return {
             stand = "Stand",
         },
         dictionary = {
+            credits_direction = "Direction",
+            credits_concept = "Concept",
+			credits_artist = "Artists",
+			credits_programmer = "Programming",
+			credits_shader = "Graphics",
+			credits_special = "Special Thanks",
+
             b_stand_cards = "Stands",
             b_evolved_stand_cards = "Evolved Stands",
             b_vhs_cards = "VHS Tapes",

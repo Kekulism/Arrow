@@ -2,7 +2,8 @@ local tagInfo = {
     name = 'Spirit Tag',
     config = {type = 'immediate'},
     origin = 'jojo',
-    artist = 'gote',
+    artist = 'BarrierTrio/Gote',
+    programmer = 'Kekulism',
     requires_type = 'Stand',
 }
 

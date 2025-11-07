@@ -10,7 +10,8 @@ local consumInfo = {
         },
         custom_color = 'stone',
     },
-    artist = 'cejai',
+    artist = 'SegaciousCejai',
+    programmer = 'Vivian Giacobbi',
     requires_type = 'Stand',
 }
 
