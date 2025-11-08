@@ -213,7 +213,7 @@ local ref_check_unlock = check_for_unlock
 function check_for_unlock(args)
     local ret = ref_check_unlock(args)
 
-    if G.GAME.challenge and not G.STATES.GAME_OVER then
+    if G.GAME.challenge and G.STATE ~= G.STATES.GAME_OVER then
         local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge)]
         if ch.gameover and type(ch.gameover) == 'table' and (ch.gameover.type or args.type) == args.type then
             local gameover = ch.gameover.func(ch)
