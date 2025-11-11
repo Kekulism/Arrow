@@ -19,8 +19,8 @@ end
 '''
 position = "before"
 payload = '''
-if _c.artist then
-    local vars = (type(_c.artist) == 'function' and _c:artist()) or (type(_c.artist) == 'table' and _c.artist) or {_c.artist}
+if card.artist then
+    local vars = (type(card.artist) == 'function' and card:artist()) or (type(card.artist) == 'table' and card.artist) or {card.artist}
     localize{type = 'other', nodes = desc_nodes, key = "artistcredit_"..#vars, set = "Other", vars = vars }
 end
 '''
