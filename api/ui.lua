@@ -589,7 +589,7 @@ function buildAchievementsTab(mod, current_page)
 
 		local loc_vars = {}
 		if ach.loc_vars and type(ach.loc_vars) == 'function' then
-			loc_vars = ach:loc_vars()
+			loc_vars = ach:loc_vars() or {}
 		end
 
         local badge_colour = mod.badge_colour
