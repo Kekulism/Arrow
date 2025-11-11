@@ -7,7 +7,7 @@ G.FUNCS.use_card = function(e, mute, nosave)
         end
 
         if card.ability.activation then
-            G.FUNCS.tape_activate(card)
+            ArrowAPI.vhs.tape_activate(card)
             if G.CONTROLLER.HID.controller then
                 card.children.focused_ui = G.UIDEF.card_focus_ui(card)
                 G.CONTROLLER.locks.use = false
@@ -100,7 +100,7 @@ G.FUNCS.start_run = function(...)
         G.GAME.blind.in_blind = false
         G.GAME.blind.newrun_flag = true
     end
-    
+
     if G.GAME.arrow_gradient_background then
         G.C.BACKGROUND.L = { G.C.BACKGROUND.L[1], G.C.BACKGROUND.L[2], G.C.BACKGROUND.L[3], G.C.BACKGROUND.L[4] }
         G.C.BACKGROUND.D = { G.C.BACKGROUND.D[1], G.C.BACKGROUND.D[2], G.C.BACKGROUND.D[3], G.C.BACKGROUND.D[4] }
@@ -154,7 +154,7 @@ G.FUNCS.update_blind_debuff_text = function(e)
 
     local new_str = SMODS.debuff_text or G.GAME.blind:get_loc_debuff_text()
     if not new_str then return end
-    
+
     if new_str ~= e.config.object.config.string[1].string then
         e.config.object.config.string[1].string = new_str
         e.config.object.start_pop_in = true
@@ -202,4 +202,70 @@ G.FUNCS.RUN_SETUP_check_artist = function(e)
         e.config.id = G.GAME.viewed_back.name
         e.UIBox:recalculate()
     end
+end
+
+
+
+---------------------------
+--------------------------- Config
+---------------------------
+
+-- Not happy about this overwrite, since it's changing function args, but the only vanilla or SMODS example
+-- that declares this argument doesn't use it -- local function createClickableModBox() in SMODS > src > ui.lua
+function G.FUNCS.toggle_button(e)
+  e.config.ref_table.ref_table[e.config.ref_table.ref_value] = not e.config.ref_table.ref_table[e.config.ref_table.ref_value]
+  if e.config.toggle_callback then
+    e.config.toggle_callback(e.config.ref_table, e.config.ref_table.ref_table[e.config.ref_table.ref_value])
+  end
+end
+
+function G.FUNCS.arrow_check_restart(e)
+    local mod = e.ref_mod
+	local match = true
+	for i, v in ipairs(mod.ARROW_USE_CONFIG) do
+		if v.value ~= mod.config[v.key] then
+			match = false
+		end
+	end
+
+	if match then
+		sendDebugMessage('Settings match')
+		SMODS.full_restart = 0
+	else
+		sendDebugMessage('Settings mismatch, restart required')
+		SMODS.full_restart = 1
+	end
+end
+
+G.FUNCS.arrow_reset_achievements = function(e)
+    local mod = e.ref_mod
+	local warning_text = e.UIBox:get_UIE_by_ID(mod.id..'_warn')
+	if warning_text.config.colour ~= G.C.WHITE then
+		warning_text:juice_up()
+		warning_text.config.colour = G.C.WHITE
+		warning_text.config.shadow = true
+		e.config.disable_button = true
+		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.06, blockable = false, blocking = false, func = function()
+			play_sound('tarot2', 0.76, 0.4);return true end}))
+		G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.35, blockable = false, blocking = false, func = function()
+			e.config.disable_button = nil; return true end}))
+		play_sound('tarot2', 1, 0.4)
+	else
+        warning_text.config.colour = G.C.CLEAR
+		G.FUNCS.wipe_on()
+		for k, v in pairs(SMODS.Achievements) do
+			if v.original_mod and v.original_mod.id == mod.id then
+				G.SETTINGS.ACHIEVEMENTS_EARNED[k] = nil
+				G.ACHIEVEMENTS[k].earned = nil
+			end
+		end
+		G:save_settings()
+		G.E_MANAGER:add_event(Event({
+			delay = 1,
+			func = function()
+				G.FUNCS.wipe_off()
+				return true
+			end
+		}))
+	end
 end

@@ -1,10 +1,24 @@
+
 ArrowAPI.table = {
+    --- Table extension, finds a value in a table
+    --- @param table table table to traverse for element
+    --- @param element any value to find in the table
+    --- @return boolean # true if this table contains this element paired with any key
+    contains = function(table, element)
+        for _, value in pairs(table) do
+            if value == element then
+                return true
+            end
+        end
+        return false
+    end,
+
     clear = function(t)
         for k in pairs(t) do
             t[k] = nil
         end
     end,
-    
+
     --- Recursively modifies number values in a table given a multipliative mod, or a reset table and comparator conditions to reset from.
     --- If no parameters but a table are provided, the function returns a deep copy of all non-object values
     --- @param table table A table to modify.
@@ -28,7 +42,7 @@ ArrowAPI.table = {
                 -- reset if a reset table is provided
                 if reset_table and ((compare == 'neg' and table < reset_table)
                 or (compare == 'pos' and table > reset_table)
-                or (compare == 'dif' and table ~= reset_table)) then 
+                or (compare == 'dif' and table ~= reset_table)) then
                     mod_copy = reset_table
                 end
 
@@ -55,7 +69,7 @@ ArrowAPI.table = {
                 else
                     mod_copy[k] = ArrowAPI.table.recursive_mod(v, mod, reset_table and reset_table[k] or nil, compare)
                 end
-                
+
             end
         end
 
@@ -77,7 +91,7 @@ ArrowAPI.table = {
 
             for k, v in pairs(tbl1) do
                 -- avoid the type call for missing keys in tbl2 by directly comparing with nil
-                if tbl2[k] == nil then	
+                if tbl2[k] == nil then
                     return false
                 elseif v ~= tbl2[k] then
                     if type(v) == "table" and type(tbl2[k]) == "table" then

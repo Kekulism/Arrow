@@ -4,40 +4,63 @@ ArrowAPI.loading = {
     --- Load a batch of items from a formatted table
     --- @param args table A table of item sets to load as a batch
     batch_load = function(args)
+        local mod = SMODS.current_mod
+        ArrowAPI.BATCH_LOAD = mod.id
         local priority_list = {}
         for k, v in pairs(args) do
             priority_list[#priority_list+1] = {
                 key = k,
                 alias = v.alias,
-                load_priority = v.load_priority or 0,
+                order = v.order,
                 items = v.items
             }
         end
-        table.sort(priority_list, function(a, b) return a.load_priority > b.load_priority end)
+        table.sort(priority_list, function(a, b)
+            if a.order and not b.order then return true
+            elseif b.order and not a.order then return false
+            elseif a.order and b.order then return a.order < b.order
+            else return false end
+        end)
 
-        for _, v in ipairs(priority_list) do
-            if next(v.items) and ArrowAPI.loading.filter_loading(v.key) then
+        for order, v in ipairs(priority_list) do
+            if next(v.items) and ArrowAPI.loading.filter_type(v.key, order) then
                 for i, item in ipairs(v.items) do
-                    ArrowAPI.loading.load_item(item, v.key, v.alias, nil, i)
+                    ArrowAPI.loading.load_item(item, v.key, v.alias, nil, i, mod)
+                end
+
+                if mod.ARROW_USE_CONFIG then
+                    -- add to ordered config list
+                    local key = 'enable_'..v.key..'s'
+                    if mod.config[key] == nil then
+                        ArrowAPI.config.update_config(mod, key, true, order)
+                        ArrowAPI.loading.write_default_config(mod)
+                    end
                 end
             end
         end
+        ArrowAPI.BATCH_LOAD = nil
     end,
 
     --- Load an item definition using SMODS
     --- @param file_key string file name to load within the "Items" directory, excluding file extension
     --- @param item_type string SMODS item type (such as Joker, Consumable, Deck, etc)
-    --- @param type_alias string | nil SMODS type alias (I.E. Decks are SMODS['Back'])
+    --- @param alias string | nil SMODS type alias (I.E. Decks are SMODS['Back'])
     --- @param folder_key string | nil folder key if needed, otherwise item_type is used
     --- @return boolean # True if the item successfuly loaded
-    load_item = function(file_key, item_type, alias, folder_key, order_in_type)
+    load_item = function(file_key, item_type, alias, folder_key, order_in_type, mod)
+        mod = mod or SMODS.current_mod
         folder_key = folder_key or string.lower(item_type)..(item_type == 'VHS' and '' or 's')
         local parent_folder = 'items/'
         local info = assert(SMODS.load_file(parent_folder .. folder_key .. "/" .. file_key .. ".lua"))()
 
-        --- generally support excluding wip items
-        if info.in_progress and not ArrowAPI.current_config['enable_Wips'] then
+        if not ArrowAPI.loading.filter_item(info) or (not ArrowAPI.BATCH_LOAD and not ArrowAPI.loading.filter_type(item_type, order_in_type)) then
             return false
+        end
+
+        local smods_item = alias or item_type
+        if not alias then
+            if item_type == 'Deck' then smods_item = 'Back'
+            elseif item_type == 'Stand' or item_type == 'VHS' then smods_item = 'Consumable' end
         end
 
         info.key = file_key
@@ -45,7 +68,9 @@ ArrowAPI.loading = {
             info.button_colour = info.button_colour or SMODS.current_mod.badge_colour
         elseif item_type == 'Achievement' then
             info.atlas = SMODS.current_mod.prefix..'_achievements'
-            info.order = order_in_type
+
+            -- want to generalize this but a lot of other items do custom order behavior
+            info.order = order_in_type and SMODS[smods_item].obj_buffer and (#SMODS[smods_item].obj_buffer + order_in_type)
             if info.rarity and info.rarity > 0 then
                 info.pos = info.pos or { x = info.rarity - 1, y = 0 }
                 info.hidden_pos = info.hidden_pos or {x = info.rarity - 1, y = 1}
@@ -96,22 +121,20 @@ ArrowAPI.loading = {
             end
         end
 
-        if item_type ~= 'Deck' and item_type ~= 'Challenge' and item_type ~= 'Edition' and info.artist and ArrowAPI.current_config.enable_item_credits then
-            local vars = type(info.artist) == 'table' and info.artist or {info.artist}
-
+        if item_type ~= 'Deck' and item_type ~= 'Challenge' and item_type ~= 'Edition' then
             local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
             function info.loc_vars(self, info_queue, card)
-                if info_queue and ArrowAPI.current_config['enable_Credits'] then
+                if info_queue and ArrowAPI.current_config['enable_ItemCredits'] then
+                    local vars = (type(info.artist) == 'function' and info:artist()) or (type(info.artist) == 'table' and info.artist) or {info.artist}
                     info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
                 end
-                return ref_loc_vars(self, info_queue, card)
-            end
-        end
 
-        local smods_item = alias or item_type
-        if not alias then
-            if item_type == 'Deck' then smods_item = 'Back'
-            elseif item_type == 'Stand' or item_type == 'VHS' then smods_item = 'Consumable' end
+                local ret = ref_loc_vars(self, info_queue, card)
+                if ret and ret.key == self.key and ArrowAPI.current_config['enable_DetailedDescs'] then
+                    ret.key = ret.key..'_detailed'
+                end
+                return ret
+            end
         end
 
         local new_item
@@ -130,22 +153,46 @@ ArrowAPI.loading = {
                         new_item[k_] = info[k_]
                     end
                 end
+            elseif Partner_API and item_type == 'Partner' then
+                new_item = Partner_API.Partner(info)
+                for k_, v_ in pairs(new_item) do
+                    if type(v_) == 'function' then
+                        new_item[k_] = info[k_]
+                    end
+                end
             end
         end
 
-        if SMODS.current_mod.ARROW_USE_CREDITS then
-            local id = SMODS.current_mod.id
-            for _, v in ipairs(ArrowAPI.credits[id]) do
+        if mod.ARROW_USE_CREDITS then
+            for _, v in ipairs(ArrowAPI.credits[mod.id]) do
                 if new_item[v.key] then
-                    local name = new_item[v.key]
-                    if type(name) ~= 'table' then name = {name} end
-                    for _, vv in ipairs(name) do
-                        if not v.contributors[vv] or type(v.contributors[vv]) ~= 'function' then
-                            v.contributors[vv] = {}
+                    local names = new_item[v.key]
+                    if type(names) ~= 'table' then names = {names} end
+                    for _, name in ipairs(names) do
+                        local found_contrib = false
+                        for i = #v.contributors, 1, -1 do
+                            if v.contributors[i].name == name then
+                                found_contrib = true
+                                v.contributors[i][#v.contributors[i]+1] = {
+                                    key = new_item.key,
+                                    item_type = smods_item
+                                }
+                            end
                         end
-                        table.insert(v.contributors[vv], {key = new_item.key, item_type = smods_item})
+
+                        if not found_contrib then
+                            table.insert(v.contributors, {name = name, name_colour = G.C.UI.TEXT_LIGHT, name_scale = 1})
+                        end
                     end
                 end
+            end
+        end
+
+        if not ArrowAPI.BATCH_LOAD and mod.ARROW_USE_CONFIG then
+            local key = 'enable_'..item_type..'s'
+            if mod.config[key] == nil then
+                ArrowAPI.config.update_config(mod, key, true, order_in_type)
+                ArrowAPI.loading.write_default_config(mod)
             end
         end
 
@@ -171,11 +218,83 @@ ArrowAPI.loading = {
         return true
     end,
 
-    filter_loading = function(item_type)
-        if item_type == 'Sleeve' then
-            return not not CardSleeves
+    write_default_config = function(mod)
+        local success = pcall(function()
+            NFS.createDirectory('config')
+            assert(mod.config and next(mod.config))
+            local current_config = 'return '..serialize(mod.config)
+            NFS.write(('config/%s.jkr'):format(mod.id), current_config)
+            NFS.write(mod.path..(mod.config_file or 'config.lua'), current_config)
+        end)
+        return success
+    end,
+
+    --- Simple wrapper for SMODS.DeckSkin to automatically table card credits
+    ---
+    load_deckskin = function(args)
+        if SMODS.current_mod.ARROW_USE_CREDITS then
+            local credits = nil
+            for i, v in ipairs(ArrowAPI.credits[SMODS.current_mod.id]) do
+                if v.key == 'artist' then
+                    credits = v
+                    break
+                end
+            end
+
+            if not credits then return SMODS.DeckSkin(args) end
+
+            for _, v in ipairs(args.palettes or {}) do
+                local artist_table = type(v.artist) == 'table' and v.artist or {v.artist}
+                for _, artists in pairs(artist_table) do
+                    local names = (artists) == 'table' and artists or {artists}
+                    for _, name in ipairs(names) do
+                        local found_contrib = false
+                        for i = #credits, 1, -1 do
+                            if credits[i].name == name then
+                                found_contrib = true
+                                credits[i][#credits[i]+1] = {
+                                    key = v.key,
+                                    item_type = 'DeckSkin'
+                                }
+                            end
+                        end
+
+                        if not found_contrib then
+                            table.insert(credits, {name = name, name_colour = G.C.UI.TEXT_LIGHT, name_scale = 1})
+                        end
+                    end
+                end
+            end
+        end
+
+        return SMODS.DeckSkin(args)
+    end,
+
+    filter_item = function(item)
+        if item.dependencies then
+            for k, _ in pairs(item.dependencies.config or {}) do
+                if SMODS.current_mod.config['enable_'..k..'s'] == false then
+                    return false
+                end
+            end
+
+            for k, _ in pairs(item.dependencies.mods or {}) do
+                if not next(SMODS.find_mod(k)) then return false end
+            end
+        end
+
+        return true
+    end,
+
+    filter_type = function(item_type, order)
+         if (item_type == 'Sleeve' and not Cardsleeves) or (item_type == 'Partner' and not Partner_API) then
+            ArrowAPI.config.update_config(SMODS.current_mod, 'enable_'..item_type..'s', false, order, true)
+            return false
         else
-            return SMODS.current_mod.config['enable_'..item_type..'s'] ~= false
+            local enabled = SMODS.current_mod.config['enable_'..item_type..'s']
+            if enabled == false then return false end
+
+            return true
         end
     end,
 
@@ -258,12 +377,31 @@ ArrowAPI.loading = {
             end
         end
         return fileTree
-    end
+    end,
 }
 
 ArrowAPI.loading.batch_load({
+    Consumable = {
+        order = 1,
+        items = {
+            'spec_diary',
+            'tarot_arrow',
+        }
+    },
+
+    Voucher = {
+        order = 2,
+        items = {
+            'scavenger',
+            'raffle',
+            'foo',
+            'plant',
+        }
+    },
+
+
     Booster = {
-        load_priority = 0,
+        order = 3,
         items = {
             'analog1',
             'analog2',
@@ -273,29 +411,11 @@ ArrowAPI.loading.batch_load({
         }
     },
 
-    Consumable = {
-        load_priority = 0,
-        items = {
-            'spec_diary',
-            'tarot_arrow',
-        }
-    },
-
     Tag = {
-        load_priority = 0,
+        order = 4,
         items = {
             'plinkett',
             'spirit',
-        }
-    },
-
-    Voucher = {
-        load_priority = 0,
-        items = {
-            'scavenger',
-            'raffle',
-            'foo',
-            'plant',
         }
     },
 })

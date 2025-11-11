@@ -730,8 +730,6 @@ SMODS.Joker:take_ownership('j_madness', {
             end
             return nil, true
         end
-
-        return nil, true
     end
 }, true)
 

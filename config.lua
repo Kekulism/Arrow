@@ -4,5 +4,6 @@ return {
 	['enable_Vouchers'] = true,
 	['enable_Tags'] = true,
 	['enable_Wips'] = true,
-	['enable_Credits'] = true,
+	['enable_ItemCredits'] = true,
+	['enable_DetailedDescs'] = false
 }

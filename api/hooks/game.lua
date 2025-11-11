@@ -1,7 +1,57 @@
+
+-- blank function that is run on starting the main menu,
+-- other parts of the mod can hook into this to run code
+-- that needs to be run after the game has initialized
+local ref_post_splash = G.FUNCS.initPostSplash or function() end
+G.FUNCS.initPostSplash = function()
+	local ret = ref_post_splash()
+	ArrowAPI.loading.disable_empty()
+
+	for _, mod in pairs(SMODS.Mods) do
+		if mod.can_load then
+			if mod.ARROW_USE_CREDITS then
+				-- clean any default sections that aren't provided contributors
+				if ArrowAPI.credits[mod.id].use_default_sections then
+					for i = #ArrowAPI.credits[mod.id], 1, -1 do
+						if not next(ArrowAPI.credits[mod.id][i].contributors) then
+							table.remove(ArrowAPI.credits[mod.id], i)
+						end
+					end
+
+					-- set default section dimensions
+					local default_w = ArrowAPI.DEFAULT_CREDIT_MATRIX.col/#ArrowAPI.credits[mod.id]
+					for i, v in ipairs(ArrowAPI.credits[mod.id]) do
+						v.pos_start = {col = default_w * (i-1), row = 0}
+						v.pos_end = {col = default_w * i, row = ArrowAPI.DEFAULT_CREDIT_MATRIX.row}
+					end
+				end
+
+				local credits_tab = ArrowAPI.ui.create_credits_tab(mod)
+				mod.credits_tab = credits_tab
+			end
+
+			if mod.ARROW_USE_CONFIG then
+				local config_tab = ArrowAPI.ui.create_config_tab(mod)
+				mod.config_tab = config_tab
+			end
+		end
+	end
+
+	for k, v in ipairs(G.CHALLENGES) do
+		ArrowAPI.misc.run_challenge_functions(v)
+	end
+
+	return ret
+end
+
 local ps_ref = Game.prep_stage
 function Game:prep_stage(new_stage, new_state, new_game_obj)
     ps_ref(self, new_stage, new_state, new_game_obj)
-    G.FUNCS.initPostSplash()
+
+    if not ArrowAPI.INIT_POST_SPLASH then
+        ArrowAPI.INIT_POST_SPLASH = true
+        G.FUNCS.initPostSplash()
+    end
 end
 
 local ref_game_start = Game.start_run

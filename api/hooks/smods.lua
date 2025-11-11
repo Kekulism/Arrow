@@ -52,3 +52,20 @@ function SMODS.get_effective_hand_level(base_level, optional_contexts)
     mod_level.numerator = mod_level.numerator or base_level
     return mod_level.numerator
 end
+
+local ref_context_flags = SMODS.update_context_flags
+function SMODS.update_context_flags(context, flags)
+    local ret = ref_context_flags(context, flags)
+
+    if flags.title_card then
+        context.title_center = flags.title_center
+        context.title_front = flags.title_front
+    end
+
+    if flags.splash_card then
+        context.splash_center = flags.splash_center
+        context.splash_front = flags.splash_front
+    end
+
+    return ret
+end

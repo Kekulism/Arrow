@@ -90,3 +90,20 @@ function Card:start_dissolve(...)
 
     return ret
 end
+
+---------------------------
+--------------------------- Add deck crediting
+---------------------------
+
+local ref_card_sprites = Card.set_sprites
+function Card:set_sprites(center, front)
+    local ret = ref_card_sprites(self, center, front)
+
+    if front and G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]
+    and SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]] then
+        local deckSkin = SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]]
+        if deckSkin.outdated then return ret end
+        local palette = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[front.suit] or ''] or (deckSkin.palettes or {})[1]
+        self.artist = type(palette.artist) == 'table' and palette.artist[front.value] or palette.artist
+    end
+end

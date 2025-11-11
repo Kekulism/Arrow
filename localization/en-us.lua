@@ -43,12 +43,29 @@ return {
             stand = "Stand",
         },
         dictionary = {
-            credits_direction = "Direction",
-            credits_concept = "Concept",
-			credits_artist = "Artists",
-			credits_programmer = "Programming",
-			credits_shader = "Graphics",
-			credits_special = "Special Thanks",
+            arrow_options_enable_DetailedDescs = "Detailed Descriptions",
+
+            arrow_credits_direction = "Direction",
+            arrow_credits_concept = "Concept",
+			arrow_credits_artist = "Artists",
+			arrow_credits_programmer = "Programming",
+			arrow_credits_graphics = "Graphics",
+			arrow_credits_special = "Special Thanks",
+
+			arrow_options_enable_Jokers = "Jokers",
+			arrow_options_enable_Consumables = "Consumables",
+			arrow_options_enable_Decks = "Decks",
+			arrow_options_enable_Blinds = "Boss Blinds",
+			arrow_options_enable_DeckSkins = "Deck Skins",
+			arrow_options_enable_Challenges = "Challenges",
+			arrow_options_enable_Achievements = "Achievements",
+			arrow_options_enable_VHSs = "VHS Tapes",
+			arrow_options_enable_Stands = "Stands",
+			arrow_options_enable_Tags = "Tags",
+			arrow_options_enable_Boosters = "Booster Packs",
+			arrow_options_enable_Vouchers = "Vouchers",
+			arrow_options_enable_Editions = "Editions",
+
 
             b_stand_cards = "Stands",
             b_evolved_stand_cards = "Evolved Stands",
@@ -77,6 +94,9 @@ return {
             ba_diamond = 'Diamond is Unbreakable',
             ba_stone = 'Stone Ocean',
             ba_lion = 'JoJolion',
+        },
+        v_dictionary = {
+            arrow_options_reset_achievements = "Reset #1# Achievements",
         },
         v_text = {
 			-- general behavior

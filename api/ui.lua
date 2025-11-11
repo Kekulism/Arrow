@@ -52,7 +52,7 @@ ArrowAPI.ui = {
     calc_scale_fac = function(text, size)
         size = size or 0.9
         local font = G.LANG.font
-        local max_text_width = 4 - 4 * 0.05 - 4 * 0.03 * size - 4 * 0.03
+        local max_text_width = 2 - 2 * 0.05 - 2 * 0.03 * size - 2 * 0.03
         local calced_text_width = 0
         -- Math reproduced from DynaText:update_text
         for _, c in utf8.chars(text) do
@@ -154,8 +154,6 @@ ArrowAPI.ui = {
         end
     end,
 
-
-
     -- A table of badge_colors. Backgrounds are prefixed with `co_`, text is prefixed with `te_`
     badge_colors = {
         ArrowAPI = {
@@ -207,6 +205,243 @@ ArrowAPI.ui = {
             blind_chips = G.HUD_blind:get_UIE_by_ID('HUD_blind_count'),
             blind_spacer = G.HUD:get_UIE_by_ID('blind_spacer')
         }
+    end,
+
+    create_credits_tab = function(mod)
+        local ref_table = {}
+        for i=1, #ArrowAPI.credits[mod.id] do
+            ref_table[i] = true
+        end
+
+        local depth = 0
+        local mode = 'row'
+        local tree = {}
+        local start_coords = {col = 0, row = 0}
+        local end_coords = ArrowAPI.credits[mod.id].matrix or ArrowAPI.DEFAULT_CREDIT_MATRIX
+
+        local iter_count = 0
+        while next(ref_table) do
+            iter_count = iter_count + 1
+            if iter_count > 50 then break end
+
+            local parent_mode = mode
+            mode = (mode == 'row') and 'col' or 'row'
+            depth = depth + 1
+            local possible_sections = {}
+
+            tree[depth] = {mode = mode}
+            for k in pairs(ref_table) do
+                local ref = ArrowAPI.credits[mod.id][k]
+                local pos_start = ref.pos_start
+                local pos_end = ref.pos_end
+
+
+                local parent_start = start_coords
+                local parent_end = end_coords
+                if depth > 1 then
+                    for i, v in ipairs(tree[depth-1]) do
+                        if v.pos_start[parent_mode] <= ref.pos_start[parent_mode] and v.pos_end[parent_mode] >= ref.pos_end[parent_mode] then
+                            parent_start = v.pos_start
+                            parent_end = v.pos_end
+                            break
+                        end
+                    end
+                end
+
+                local no_ref = false
+                for i = #possible_sections, 1, -1 do
+                    if possible_sections[i].pos_start[parent_mode] >= parent_start[parent_mode]
+                    and possible_sections[i].pos_end[parent_mode] <= parent_end[parent_mode]
+                    and ref.pos_start[mode] < possible_sections[i].pos_end[mode] then
+                        pos_start = {col = math.min(pos_start['col'], possible_sections[i].pos_start['col']), row = math.min(pos_start['row'], possible_sections[i].pos_start['row'])}
+                        pos_end = {col = math.max(pos_end['col'], possible_sections[i].pos_end['col']), row =  math.max(pos_end['row'], possible_sections[i].pos_end['row'])}
+                        no_ref = true
+
+                        table.remove(possible_sections, i)
+                    end
+                end
+
+                local possible_section = {
+                    ref_index = not no_ref and k or nil,
+                    pos_start = {col = math.max(start_coords['col'], pos_start['col']), row = math.max(start_coords['row'], pos_start['row'])},
+                    pos_end = {col = math.min(end_coords['col'], pos_end['col']), row = math.min(end_coords['row'], pos_end['row'])}
+                }
+
+                table.insert(possible_sections, possible_section)
+            end
+
+            for _, v in ipairs(possible_sections) do
+                local new_section = copy_table(v)
+                if tree[depth-1] then
+                    for i, parent in ipairs(tree[depth-1]) do
+                        if v.pos_start[parent_mode] >= parent.pos_start[parent_mode] and
+                        v.pos_end[parent_mode] <= parent.pos_end[parent_mode] then
+                            new_section.parent_idx = i
+                        end
+                    end
+                end
+
+                -- clears this index from the ref table
+                if new_section.ref_index then
+                    ref_table[new_section.ref_index] = nil
+                end
+
+                tree[depth][#tree[depth]+1] = new_section
+            end
+        end
+
+        local h_mod = ArrowAPI.DEFAULT_CREDIT_SIZE.h / end_coords.row
+        local w_mod = ArrowAPI.DEFAULT_CREDIT_SIZE.w / end_coords.col
+
+        local nodes = {}
+        mod.ARROW_USE_CREDITS = tree
+
+        return function()
+            for depth_level, tbl in ipairs(mod.ARROW_USE_CREDITS) do
+                nodes[depth_level] = {}
+                for i, sec in ipairs(tbl) do
+                    local w = w_mod * (sec.pos_end.col - sec.pos_start.col)
+                    local h = h_mod * (sec.pos_end.row - sec.pos_start.row)
+                    local node = {
+                        n = tree[depth_level].mode == 'col' and G.UIT.C or G.UIT.R,
+                        config = {align = 'cm', minw = w, minh = h,},
+                        nodes = {{
+                            n = tree[depth_level].mode == 'col' and G.UIT.R or G.UIT.C,
+                            config = {align = 'cm', minw = w, minh = h,},
+                            nodes = {}
+                        }}
+                    }
+
+                    -- only add definition and padding if it represents an index
+                    node.config.padding = 0.05
+                    if sec.ref_index then
+                        local ref = ArrowAPI.credits[mod.id][sec.ref_index]
+                        local base_col_num = 12
+                        local col_mod = h/w
+                        local num_per_col = math.floor(base_col_num * col_mod * (col_mod < 1 and 0.75 or 1) * 1.75)
+                        local num_cols = math.ceil(#ref.contributors/num_per_col)
+                        local mod_scale = 0.85 * math.max(col_mod, 0.45) * (((col_mod < 1 and (num_cols > 1 and 0.65) or 0.9) or 1)) * (col_mod > 1.15 and (num_cols == 1 and 0.45) or 1)
+
+                        node.nodes[1].config.outline_colour = G.C.JOKER_GREY
+                        node.nodes[1].config.r = 0.1
+                        node.nodes[1].config.outline = 1
+
+                        local contributor_nodes = {{
+                            n=G.UIT.C,
+                            config={align = "tm", padding = 0.015},
+                            nodes = {}
+                        }}
+                        local col_nodes = contributor_nodes[1].nodes
+
+                        for _, data in ipairs(ref.contributors) do
+                            local get_name = type(data.name) == 'function' and data.name() or data.name
+                            local scale_fac = math.min(0.8, ArrowAPI.ui.calc_scale_fac(get_name))
+                            col_nodes[#col_nodes+1] = {
+                                n=G.UIT.R,
+                                config={align = "tm"},
+                                nodes = {{
+                                    n=G.UIT.T,
+                                    config={text = get_name, scale = scale_fac * mod_scale * data.name_scale, colour = data.name_colour, shadow = true}
+                                }}
+                            }
+
+                            if #col_nodes >= num_per_col then
+                                contributor_nodes[#contributor_nodes+1] = {n=G.UIT.B, config = {w = 0.15, h = 0.1}}
+                                contributor_nodes[#contributor_nodes+1] = {
+                                    n=G.UIT.C,
+                                    config={align = "tm", padding = 0.015},
+                                    nodes = {}
+                                }
+                                col_nodes = contributor_nodes[#contributor_nodes].nodes
+                            end
+                        end
+
+                        local title = G.localization.misc.dictionary[mod.prefix..'_credits_'..ref.key] and localize(mod.prefix..'_credits_'..ref.key) or localize('arrow_credits_'..ref.key)
+                        local title_fac = math.min(0.7, ArrowAPI.ui.calc_scale_fac(title))
+                        node.nodes[1].nodes = {
+                            {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
+                                {n=G.UIT.T, config={text = title, scale = title_fac*1.4*mod_scale, colour = ref.title_colour, shadow = true}},
+                            }},
+                            {n=G.UIT.R, config={align = "cm", padding = 0}, nodes = contributor_nodes}
+                        }
+                    end
+
+                    table.insert(nodes[depth_level], node)
+                    if sec.parent_idx then
+                        table.insert(nodes[depth_level-1][sec.parent_idx].nodes[1].nodes, node)
+                    end
+                end
+            end
+
+            return {n=G.UIT.ROOT, config={align = "cm", padding = 0.2, colour = G.C.BLACK, r = 0.1, emboss = 0.05, minh = 6, minw = 10}, nodes={
+                {n = G.UIT.R, config = { align = "tm", padding = 0.2 }, nodes = {
+                    {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
+                        {n=G.UIT.T, config={text = mod.display_name, scale = 1, colour = mod.badge_colour, shadow = true}},
+                    }}
+                }},
+                {n=G.UIT.R, config={align = "cm", padding = 0.05, outline_colour = mod.badge_colour, r = 0.1, outline = 1}, nodes = nodes[1]}
+            }}
+        end
+    end,
+
+    create_config_tab = function(mod)
+        return function()
+            local left_settings = { n = G.UIT.C, config = { align = "tm" }, nodes = {} }
+            local right_settings = { n = G.UIT.C, config = { align = "tm" }, nodes = {} }
+            local counts = {left = 0, right = 0}
+
+            for i, v in ipairs(mod.ARROW_USE_CONFIG) do
+                if not v.exclude_from_ui then
+                    local column = counts.right < counts.left and 'right' or 'left'
+                    local nodes = column == 'right' and right_settings.nodes or left_settings.nodes
+
+                    local label = G.localization.misc.dictionary[v.text] and localize(v.text) or v.text
+                    or G.localization.misc.dictionary[mod.prefix..'_options_'..v.key] and localize(mod.prefix..'_options_'..v.key)
+                    or localize('arrow_options_'..v.key)
+                    local main_node = create_toggle({
+                        label = label,
+                        w = 1,
+                        ref_table = mod.config,
+                        ref_value = v.key,
+                        ref_mod = mod,
+                        callback = G.FUNCS.arrow_check_restart
+                    })
+                    main_node.config.align = 'tr'
+                    nodes[#nodes+1] = main_node
+                    counts[column] =  counts[column] + 1
+                end
+            end
+
+            local mod_has_achievement
+            for _, v in pairs(SMODS.Achievements) do
+                if v.mod.id == mod.id then mod_has_achievement = true end
+            end
+
+            local config_ui = { n = G.UIT.R, config = { align = "tm", padding = 0.25 }, nodes = { left_settings, right_settings } }
+            return {
+                n = G.UIT.ROOT,
+                config = {
+                    emboss = 0.05,
+                    minh = 6,
+                    r = 0.1,
+                    minw = 10,
+                    align = "cm",
+                    padding = 0.05,
+                    colour = G.C.BLACK,
+                },
+                nodes = {
+                    config_ui,
+                    mod_has_achievement and {n=G.UIT.R, config={align = "cm", padding = 0.1, minw = 3, maxw = 5 }, nodes={
+                        {n=G.UIT.R, config={align = "cm", minh = 0.6, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, ref_mod = mod, button = "arrow_reset_achievements", shadow = true, focus_args = {nav = 'wide'}}, nodes={
+                            {n=G.UIT.T, config={text = localize{type = 'variable', key = 'arrow_options_reset_achievements', vars = {mod.display_name}}, scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}
+                        }},
+                    }} or nil,
+                    mod_has_achievement and {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
+                        {n=G.UIT.T, config={id = mod.id..'_warn', text = localize('ph_click_confirm'), scale = 0.4, colour = G.C.CLEAR}}
+                    }} or nil
+                }
+            }
+        end
     end
 }
 
