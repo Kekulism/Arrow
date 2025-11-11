@@ -162,75 +162,28 @@ ArrowAPI.game = {
     end,
 
     create_extra_blind = function(blind_source, blind_type, skip_set_blind)
-
-
-
         if not G.GAME then return end
-
-
-
-
-
         local new_extra_blind = arrow_init_extra_blind(0, 0, 0, 0, blind_source)
 
-
         if not skip_set_blind and G.GAME.blind.in_blind then
-
-
             new_extra_blind:extra_set_blind(blind_type)
-
-
         else
-
-
             new_extra_blind.config.blind = blind_type
-
-
             new_extra_blind.name = blind_type.name
-
-
             new_extra_blind.debuff = blind_type.debuff
-
-
             new_extra_blind.mult = blind_type.mult / 2
-
-
             new_extra_blind.disabled = false
-
-
             new_extra_blind.discards_sub = nil
-
-
             new_extra_blind.hands_sub = nil
-
-
             new_extra_blind.boss = not not blind_type.boss
-
-
             new_extra_blind.blind_set = false
-
-
             new_extra_blind.triggered = nil
-
-
             new_extra_blind.prepped = true
-
-
             new_extra_blind:set_text()
-
-
         end
 
-
-
-
-
         G.GAME.arrow_extra_blinds[#G.GAME.arrow_extra_blinds+1] = new_extra_blind
-
-
         return new_extra_blind
-
-
     end,
 
     remove_extra_blinds = function(blind_source)
