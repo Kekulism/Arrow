@@ -146,6 +146,7 @@ ArrowAPI.loading = {
                 end
             end
         else
+            sendDebugMessage('loading cardsleeve '..file_key)
             if CardSleeves and item_type == 'Sleeve' then
                 new_item = CardSleeves.Sleeve(info)
                 for k_, v_ in pairs(new_item) do
@@ -287,7 +288,7 @@ ArrowAPI.loading = {
     end,
 
     filter_type = function(item_type, order)
-         if (item_type == 'Sleeve' and not Cardsleeves) or (item_type == 'Partner' and not Partner_API) then
+         if (item_type == 'Sleeve' and not CardSleeves) or (item_type == 'Partner' and not Partner_API) then
             ArrowAPI.config.update_config(SMODS.current_mod, 'enable_'..item_type..'s', false, order, true)
             return false
         else

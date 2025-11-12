@@ -49,6 +49,9 @@ end
 
 -- helper functions for ui generation
 ArrowAPI.ui = {
+    --- Dynamically creates a scale factor based on the size of a text string
+    --- @param text string Single-line text string
+    --- @param size number size of text, defaults to 0.9
     calc_scale_fac = function(text, size)
         size = size or 0.9
         local font = G.LANG.font
@@ -64,7 +67,7 @@ ArrowAPI.ui = {
         return scale_fac
     end,
 
-     --- Create dynamic badge for a center based on its 'origin' property
+    --- Create dynamic badge for a center based on its 'origin' property
     --- @param center table Center table representing the item
     --- @return table # badge UI tree
     dynamic_badge = function(center, text_scale, maxw)
@@ -154,7 +157,7 @@ ArrowAPI.ui = {
         end
     end,
 
-    -- A table of badge_colors. Backgrounds are prefixed with `co_`, text is prefixed with `te_`
+    -- Stores badge colors under mod.id keys
     badge_colors = {
         ArrowAPI = {
             co_rlm = HEX('FFFFFF'),
@@ -172,11 +175,16 @@ ArrowAPI.ui = {
         },
     },
 
+    --- Stores badge colors for a given mod into ArrowAPI.ui.badge_colors
+    --- @param mod SMODS.Mod|table SMODS.Mod object to add colors for
+    --- @param args table map of colors. Backgrounds are prefixed with `co_`, text is prefixed with `te_`
     add_badge_colors = function(mod, args)
         ArrowAPI['ui']['badge_colors'][mod.id] = copy_table(args)
     end,
 
-    manual_ui_reload = function(hud_offset)
+    --- Reloads the main UI
+    --- @param blind_hud_offset number Manually set a hud offset for the blind. Useful for reloading after a Blind is defeated
+    manual_ui_reload = function(blind_hud_offset)
         if G.HUD then G.HUD:remove(); G.HUD = nil end
         if G.HUD_blind then
             -- manually nil out the blind object so this remove call doesn't destroy it unnecessarily
@@ -190,7 +198,7 @@ ArrowAPI.ui = {
         }
         G.HUD_blind = UIBox{
             definition = create_UIBox_HUD_blind(),
-            config = {major = G.HUD:get_UIE_by_ID('row_blind_bottom'), align = 'bmi', offset = {x=0,y=hud_offset or -10}, bond = 'Weak'}
+            config = {major = G.HUD:get_UIE_by_ID('row_blind_bottom'), align = 'bmi', offset = {x=0,y=blind_hud_offset or -10}, bond = 'Weak'}
         }
 
         G.hand_text_area = {
@@ -207,6 +215,115 @@ ArrowAPI.ui = {
         }
     end,
 
+    --[[
+    --- example input for below function used in Cardsauce
+    ArrowAPI.loading.use_credits(Cardsauce, {
+        matrix = {col = 18.5, row = 7},
+        {
+            key = 'direction',
+            title_colour = G.C.GOLD,
+            pos_start = {col = 0, row = 0},
+            pos_end = {col = 4.5, row = 2.25},
+            contributors = {
+                {name = "BarrierTrio/Gote"},
+                {name = "Kekulism"},
+                {name = "Vivian Giacobbi"},
+            }
+        },
+        {
+            key = 'music',
+            title_colour = G.C.RED,
+            pos_start = {col = 0, row = 2.25},
+            pos_end = {col = 4.5, row = 4.5},
+            contributors = {
+                {name = 'bassclefff', name_scale = 1.1},
+                {name = '(bassclefff.bandcamp.com)', name_colour = G.C.JOKER_GREY, name_scale = 0.8}
+            }
+        },
+        {
+            key = 'voice',
+            title_colour = G.C.BLUE,
+            pos_start = {col = 0, row = 4.5},
+            pos_end = {col = 4.5, row = 7},
+            contributors = {
+                {
+                    name = function()
+                        return G.SETTINGS.roche and 'Austin L. Matthews' or '?????'
+                    end,
+                    name_scale = 1.1
+                },
+                {
+                    name = function()
+                        return G.SETTINGS.roche and '(AmtraxVA)' or '?????'
+                    end,
+                    name_color = G.C.UI.TEXT_INACTIVE,
+                    name_scale = 0.8
+                }
+            }
+        },
+        {
+            key = 'artist',
+            title_colour = G.C.ETERNAL,
+            pos_start = {col = 4.5, row = 0},
+            pos_end = {col = 11.5, row = 7}
+        },
+        {
+            key = 'logo',
+            title_colour = G.C.PURPLE,
+            pos_start = {col = 11.5, row = 0},
+            pos_end = {col = 15, row = 2.5},
+            contributors = {
+                {name = 'AlizarinRed', name_scale = 1.1},
+                {name = '(alizarin.red)', name_colour = G.C.JOKER_GREY, name_scale = 0.8}
+            }
+        },
+        {
+            key = 'graphics',
+            title_colour = G.C.DARK_EDITION,
+            pos_start = {col = 11.5, row = 2.5},
+            pos_end = {col = 15, row = 5},
+            contributors = {
+                {name = "Sir. Gameboy"},
+                {name = "Vivian Giacobbi"},
+            }
+        },
+        {
+            key = 'programmer',
+            title_colour = G.C.ORANGE,
+            pos_start = {col = 15, row = 0},
+            pos_end = {col = 18.5, row = 5},
+            contributors = {
+                {name = "BarrierTrio/Gote"},
+                {name = "Nether"},
+                {name = "Numbuh214"},
+                {name = "Aurelius7309"}
+            }
+        },
+        {
+            key = 'special',
+            title_colour = G.C.GREEN,
+            pos_start = {col = 11.5, row = 5},
+            pos_end = {col = 18.5, row = 7},
+            contributors = {
+                {name = "Vinny"},
+                {name = "Joel"},
+                {name = "Mike"},
+                {name = "tortoise"},
+                {name = "Protokyuuu"},
+                {name = "ShrineFox"},
+                {name = "ReconBox"},
+                {name = "cryobolic"},
+                {name = "SinCityAssassin"},
+                {name = "Aurelius7309"},
+                {name = "Victin"},
+                {name = "TheVoyger1234"},
+            }
+        },
+    })
+    --]]
+
+    --- Procedurally creates the credits tab UI tree for a given mod
+    --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config.use_credits()
     create_credits_tab = function(mod)
         local ref_table = {}
         for i=1, #ArrowAPI.credits[mod.id] do
@@ -215,11 +332,15 @@ ArrowAPI.ui = {
 
         local depth = 0
         local mode = 'row'
+        -- tree is a list of lists, each index in the highest level list is a depth level
         local tree = {}
         local start_coords = {col = 0, row = 0}
         local end_coords = ArrowAPI.credits[mod.id].matrix or ArrowAPI.DEFAULT_CREDIT_MATRIX
 
         local iter_count = 0
+
+        -- Continues arbitrarily until it creates all depth levels required to
+        -- represent the 2D credits grid using rows and columns in alternation
         while next(ref_table) do
             iter_count = iter_count + 1
             if iter_count > 50 then break end
@@ -235,7 +356,9 @@ ArrowAPI.ui = {
                 local pos_start = ref.pos_start
                 local pos_end = ref.pos_end
 
-
+                -- avoids issues on successive iterations by only
+                -- checking row/col bounds within an established parent
+                -- depth 1 items check it across the entire matrix
                 local parent_start = start_coords
                 local parent_end = end_coords
                 if depth > 1 then
@@ -248,6 +371,10 @@ ArrowAPI.ui = {
                     end
                 end
 
+
+                -- expands the possible bounds of a section for the given mode (row/col)
+                -- based on if existing sections overlap it in the relevant direction
+                -- meaning they need to be deferred to a deeper depth level
                 local no_ref = false
                 for i = #possible_sections, 1, -1 do
                     if possible_sections[i].pos_start[parent_mode] >= parent_start[parent_mode]
@@ -297,6 +424,9 @@ ArrowAPI.ui = {
         mod.ARROW_USE_CREDITS = tree
 
         return function()
+            -- this needs to recreate the tree due to vanilla code
+            -- dumping object references. Plan to support objects
+            -- to create hover menu for crediting items in the future
             for depth_level, tbl in ipairs(mod.ARROW_USE_CREDITS) do
                 nodes[depth_level] = {}
                 for i, sec in ipairs(tbl) do
@@ -384,6 +514,8 @@ ArrowAPI.ui = {
         end
     end,
 
+    --- Procedurally creates the config tab UI tree for a given mod
+    --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config.use_config()
     create_config_tab = function(mod)
         return function()
             local left_settings = { n = G.UIT.C, config = { align = "tm" }, nodes = {} }
@@ -459,6 +591,8 @@ local function recursive_text_tint(ui_tree, color, percentage)
 	end
 end
 
+-- reimplementation of vanilla function in order to handle arrow achievements separately
+-- if a mod does not depend on ArrowAPI, it will use the SMODS default
 local ref_ach_tab = buildAchievementsTab
 function buildAchievementsTab(mod, current_page)
     local is_arrow_mod = false
@@ -609,6 +743,7 @@ function buildAchievementsTab(mod, current_page)
             end
         end
 
+        -- adds unique achievement localization in the same structure as center items
 		local key = ach.key..(G.localization.descriptions.Achievements[ach.key..'_hidden'] and not ach.earned and '_hidden' or '')
 		local name_text = localize{type = 'name_text', key = key, set = 'Achievements', vars = loc_vars.vars}
         name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colors = loc_vars.vars and loc_vars.vars.colours, scale = math.min(0.48, ArrowAPI.ui.calc_scale_fac(name_text))}
@@ -659,7 +794,7 @@ function buildAchievementsTab(mod, current_page)
         table.insert(achievements_options, localize('k_page')..' '..tostring(i)..'/'..tostring(#achievement_pages))
     end
 
-	-- needs localization for "Achievments"
+	-- needs localization for "Achievements"
 	local title = page_info.rarity > 0 and localize(mod.prefix..'_ach_rare_'..page_info.rarity) or nil
 
     local t = {{n=G.UIT.C, config={align = "cm", minw = 15}, nodes={
