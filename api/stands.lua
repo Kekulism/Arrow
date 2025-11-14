@@ -132,6 +132,7 @@ ArrowAPI.stands = {
             stand.children.stand_aura.atlas = G.ASSET_ATLAS[stand.ability.evolved and 'arrow_blank_evolved' or 'arrow_blank']
         end
 
+
         ArrowAPI.stands.flare_aura(stand, 0.50)
         G.E_MANAGER:add_event(Event({
             func = function()

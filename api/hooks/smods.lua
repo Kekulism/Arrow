@@ -1,4 +1,4 @@
-function SMODS.current_mod.reset_game_globals(run_start)
+function ArrowAPI.reset_game_globals(run_start)
     if run_start then
         G.GAME.arrow_extra_discounts = {}
         G.GAME.arrow_extra_blinds = G.GAME.arrow_extra_blinds or {}
@@ -6,6 +6,12 @@ function SMODS.current_mod.reset_game_globals(run_start)
         G.GAME.modifiers.consumable_selection_mod = G.GAME.modifiers.consumable_selection_mod or 0
         G.GAME.arrow_last_upgraded_hand = {}
     end
+end
+
+function ArrowAPI.set_ability_reset_keys()
+    return {
+        'evolved'
+    }
 end
 
 local ref_card_collection_uibox = SMODS.card_collection_UIBox

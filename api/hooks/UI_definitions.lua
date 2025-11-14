@@ -264,9 +264,17 @@ end
 --------------------------- Custom Challenge display behavior
 ---------------------------
 
-local ref_challenge_desc = G.UIDEF.challenge_description_tab
+local ref_challenge_desc = G.UIDEF.challenge_description
+function G.UIDEF.challenge_description(_id, daily, is_row)
+    ArrowAPI.eternal_compat_bypass = true
+    local ret = ref_challenge_desc(_id, daily, is_row)
+    ArrowAPI.eternal_compat_bypass = nil
+    return ret
+end
+
+local ref_challenge_tab = G.UIDEF.challenge_description_tab
 function G.UIDEF.challenge_description_tab(args)
-    local ret = ref_challenge_desc(args)
+    local ret = ref_challenge_tab(args)
 
     local ch = G.CHALLENGES[args._id]
     if args._tab == 'Rules' and G.localization.descriptions.Challenge[ch.key] then

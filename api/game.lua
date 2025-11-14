@@ -124,8 +124,8 @@ ArrowAPI.game = {
         card:set_ability(new_card)
         card:set_cost()
 
-        if evolve and old_card.on_evolve and type(old_card.on_evolve) == 'function' then
-            old_card:on_evolve(old_card, card)
+        if evolve and new_card.on_evolve and type(new_card.on_evolve) == 'function' then
+            new_card:on_evolve(card)
         end
 
         if not card.edition and not silent then
@@ -141,15 +141,17 @@ ArrowAPI.game = {
     end,
 
     --- Checks total discovered card centers for a given mod
-    --- @param exclude table | nil An SMODS object to exclude from the count (usually the one calling the check)
+    --- @param mod_id string|nil
+    --- @param set string|nil
+    --- @param exclude table|nil An SMODS object to exclude from the count (usually the one calling the check)
     --- @return integer discovered Number of currently discovered mod cards
     --- @return integer total Total number of mod cards
     check_mod_discoveries = function(mod_id, set, exclude)
         local count = 0
         local discovered = 0
         for k, v in pairs(G.P_CENTERS) do
-            if ((mod_id and v.original_mod and v.original_mod.id == mod_id) or
-            (not mod_id and not v.original_mod)) and (not set or (v.ability and v.ability.set == set))
+            if (not mod_id or (v.original_mod and v.original_mod.id == mod_id))
+            and (not set or (v.set == set))
             and (not exclude or k ~= exclude.key) then
                 count = count + 1
                 if v.discovered and v.unlocked then

@@ -9,6 +9,16 @@ priority = 0
 [[patches]]
 [patches.pattern]
 target = "game.lua"
+pattern = '''if (v.set == 'Voucher' or v.set == 'Joker') and not v.demo then '''
+position = "at"
+payload = '''if (v.set == 'Voucher' or v.set == 'Joker') and not v.demo and not v.no_collection then'''
+match_indent = true
+overwrite = false
+
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
 pattern = '''local replace_card = Card(self.title_top.T.x, self.title_top.T.y, 1.2*G.CARD_W*SC_scale, 1.2*G.CARD_H*SC_scale, G.P_CARDS.S_A, G.P_CENTERS.c_base)'''
 position = "at"
 payload = '''

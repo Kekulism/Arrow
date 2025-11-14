@@ -289,7 +289,7 @@ ArrowAPI.loading = {
 
     filter_type = function(item_type, order)
          if (item_type == 'Sleeve' and not CardSleeves) or (item_type == 'Partner' and not Partner_API) then
-            ArrowAPI.config.update_config(SMODS.current_mod, 'enable_'..item_type..'s', false, order, true)
+            --ArrowAPI.config.update_config(SMODS.current_mod, 'enable_'..item_type..'s', false, order, true)
             return false
         else
             local enabled = SMODS.current_mod.config['enable_'..item_type..'s']
