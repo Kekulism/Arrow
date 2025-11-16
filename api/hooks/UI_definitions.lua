@@ -651,3 +651,138 @@ function create_UIBox_notify_alert(key, type)
     }}
     return t
 end
+
+
+---------------------------
+--------------------------- Music pack selection / HEAVY WIP
+---------------------------
+
+--[[
+function create_album_cover(area, pack)
+    local texture = G.ANIMATION_ATLAS[pack.atlas] or G.ASSET_ATLAS[pack.atlas]
+    local card = Card(
+        area.T.x,
+        area.T.y,
+        G.CARD_W,
+        G.CARD_H,
+        nil,
+        copy_table(G.P_CENTERS.j_joker),
+        {music_pack = pack}
+    )
+
+    local layer = texture.animated and 'animatedSprite' or 'center'
+    local scale = math.max(texture.atlas.px/71, texture.atlas.py/95)
+    if scale < 1 then scale = scale * 1.5 end
+    local W = G.CARD_W*(texture.atlas.px/71)/scale
+    local H = G.CARD_H*(texture.atlas.py/95)/scale
+
+    if texture.animated then
+        card.T.w = W
+        card.T.h = H
+        card.children.animatedSprite = AnimatedSprite(
+            card.T.x, card.T.y, card.T.w, card.T.h,
+            texture,
+            type(texture.display_pos) == 'table' and texture.display_pos or texture.original_sheet
+        )
+        card.children.animatedSprite.T.w = W
+        card.children.animatedSprite.T.h = H
+        card.children.animatedSprite:set_role({major = card, role_type = 'Glued', draw_major = card})
+        card.children.animatedSprite:rescale()
+        card.children.animatedSprite.collide.can = false
+        card.children.animatedSprite.drag.can = false
+        card.children.center:remove()
+        card.children.back:remove()
+        card.no_shadow = true
+        return card
+    end
+
+    card.children[layer]:reset()
+
+    if texture.atlas.px ~= 71 and texture.atlas.py ~= 95 and pack.key ~= 'balatro' then
+        card.T.w = W
+        card.T.h = H
+        card.children[layer] = Sprite(card.T.x, card.T.y, G.CARD_W, G.CARD_H, G.ASSET_ATLAS[texture.atlas.key], card.children.center.sprite_pos)
+        card.children[layer].states.hover = card.states.hover
+        card.children[layer].states.click = card.states.click
+        card.children[layer].states.drag = card.states.drag
+        card.children[layer].states.collide.can = false
+        card.children[layer].states.drag.can = false
+        card.children[layer]:set_role({major = card, role_type = 'Glued', draw_major = card})
+    end
+
+    -- this is probably fucked, I didn't check it much
+    if texture.soul_keys and ArrowAPI.table.contains(texture.soul_keys, texture.keys[1]) and pack.key ~= 'balatro' then
+        card.config[layer].soul_pos = {x = 1 % texture.columns, y = math.floor(1/texture.columns)}
+        card.children.floating_sprite = Sprite(card.T.x, card.T.y, card.T.w, card.T.h, G.ASSET_ATLAS[texture.atlas.key], card.config[layer].soul_pos)
+    end
+
+    return card
+end
+
+function generate_music_pack_areas()
+
+    local areas = {}
+    Malverk.texture_pack_areas_page = {
+        page = 1,
+        total = math.ceil(table.size(TexturePacks)/10),
+    }
+    Malverk.texture_pack_areas_page.text = localize('k_page')..' '..(Malverk.texture_pack_areas_page.page+1)..'/'..Malverk.texture_pack_areas_page.total
+    for i=1, 10 do
+        Malverk.texture_pack_areas[i] = CardArea(G.ROOM.T.w,G.ROOM.T.h, G.CARD_W, G.CARD_H,
+        {card_limit = 1, type = 'shop', highlight_limit = 1, deck_height = 0.75, thin_draw = 1, texture_pack = true, index = i})
+    end
+end
+
+function create_UIBox_music_select()
+
+    ArrowAPI.music_pack_area = CardArea(G.ROOM.T.w, G.ROOM.T.h, 11, G.CARD_H,
+    {type = 'joker', highlight_limit = 1, deck_height = 0.75, thin_draw = 1})
+    ArrowAPI.music_pack_area.ARGS.invisible_area_types = {joker=1}
+
+    -- failsafe
+    if not ArrowAPI.MusicPacks[ArrowAPI.CURRENT_MUSIC] then
+        ArrowAPI.CURRENT_MUSIC = 'balatro'
+    end
+
+    for i, v in ipairs(ArrowAPI.MusicPack.obj_buffer) do
+        local area =
+        local pack = ArrowAPI.MusicPacks[v]
+        local card = create_album_cover(ArrowAPI.music_pack_area, pack)
+        card.params.texture_priority = true
+        Malverk.texture_pack_priority_area:emplace(card)
+    end
+
+
+    -- create the cardareas for texture packs
+
+
+
+    local t = create_UIBox_generic_options({ back_func = 'options', contents = {
+        {n=G.UIT.R, config = {colour = G.C.CLEAR, align = 'cm', minw = 12, minh = 10}, nodes = {
+            {n=G.UIT.C, config={align = "cm", padding = 0.15, r = 0.1, minw = 12}, nodes={
+                {n=G.UIT.R, config = {colour = G.C.BLACK, r = 0.1, minh = 2.5, minw = 12, align = 'cm'}, nodes = {
+                    {n=G.UIT.C, config = {align = 'cm', padding = 0.1, minw = 0.5}, nodes = {{n=G.UIT.T, config = {text = localize('malverk_low'), scale = 0.5, vert = true, colour = G.C.L_BLACK}}}},
+                    {n=G.UIT.C, config = {align = 'cm', minw = 11}, nodes = {
+                        {n = G.UIT.O, config = {object = Malverk.texture_pack_priority_area, colour = G.C.BLUE}}
+                    }},
+                    {n=G.UIT.C, config = {align = 'cm', padding = 0.1, minw = 0.5}, nodes = {{n=G.UIT.T, config = {instance_type = 'UIBOX', text = localize('malverk_high'), scale = 0.5, vert = true, colour = G.C.L_BLACK}}}},
+                }},
+                -- Main Texture Select Display
+                {n=G.UIT.R, config = {colour = G.C.BLACK, r = 0.1, minh = 7.5, minw = 12, align = 'tm'}, nodes = {
+                    generate_texture_pack_areas_ui(),
+                    -- Page cycler
+                    {n=G.UIT.R, config = {align = 'lm'}, nodes ={
+                        EremelUtility.page_cycler({
+                            object_table = TexturePacks,
+                            page_size = 10,
+                            key = 'texture_pack_selector',
+                            switch_func = Malverk.new_change_page
+                        })
+                    }},
+                }},
+            }},
+        }}
+    }})
+    return t
+end
+--]]

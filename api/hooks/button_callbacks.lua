@@ -269,3 +269,19 @@ G.FUNCS.arrow_reset_achievements = function(e)
 		}))
 	end
 end
+
+
+
+
+
+---------------------------
+--------------------------- Music selection menu
+---------------------------
+
+function G.FUNCS.music_button(e)
+	G.SETTINGS.paused = true
+    SMODS.save_mod_config(ArrowAPI)
+	G.FUNCS.overlay_menu({
+		definition = create_UIBox_music_select()
+	})
+end
