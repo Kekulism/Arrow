@@ -41,6 +41,9 @@ G.FUNCS.initPostSplash = function()
 		ArrowAPI.misc.run_challenge_functions(v)
 	end
 
+	TNSMI.save_soundpacks()
+
+
 	return ret
 end
 

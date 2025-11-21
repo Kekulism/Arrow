@@ -1,4 +1,4 @@
-ArrowAPI.config = {
+ArrowAPI.config_tools = {
 
     use_credits = function(mod, extra_args)
         mod.ARROW_USE_CREDITS = true
@@ -100,7 +100,7 @@ ArrowAPI.config = {
             end
         end
 
-        ArrowAPI.config.sort_config(mod)
+        ArrowAPI.config_tools.sort_config(mod)
     end,
 
     sort_config = function(mod)
@@ -130,7 +130,7 @@ ArrowAPI.config = {
                     key = key, value = value, exclude_from_ui = exclude_from_ui, order = order
                 })
 
-                ArrowAPI.config.sort_config(mod)
+                ArrowAPI.config_tools.sort_config(mod)
                 return
             end
 

@@ -5,5 +5,10 @@ return {
 	['enable_Tags'] = true,
 	['enable_Wips'] = true,
 	['enable_ItemCredits'] = true,
-	['enable_DetailedDescs'] = false
+	['enable_DetailedDescs'] = false,
+
+	-- tonsmith config
+	loaded_packs = {'sp_balatro'},
+    rows = 2,
+    cols = 6
 }

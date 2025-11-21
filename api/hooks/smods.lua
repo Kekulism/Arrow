@@ -59,9 +59,22 @@ function SMODS.get_effective_hand_level(base_level, optional_contexts)
     return mod_level.numerator
 end
 
+
+
+
+
+---------------------------
+--------------------------- Added calculation flags
+---------------------------
+
+table.insert(SMODS.other_calculation_keys, 17, 'prevent_downside')
+SMODS.silent_calculation['prevent_downside'] = true
+
 local ref_context_flags = SMODS.update_context_flags
 function SMODS.update_context_flags(context, flags)
     local ret = ref_context_flags(context, flags)
+
+    if flags.prevent_downside then context.downside = false end
 
     if flags.title_card then
         context.title_center = flags.title_center
@@ -75,3 +88,25 @@ function SMODS.update_context_flags(context, flags)
 
     return ret
 end
+
+function SMODS.spectral_downside(card)
+    local downside = true
+    local flags = SMODS.calculate_context({spectral_downside = true, card = card, downside = downside})
+    if flags.prevent_downside then downside = not flags.prevent_downside end
+	return downside
+end
+
+local ref_indv_eff = SMODS.calculate_individual_effect
+SMODS.calculate_individual_effect = function(effect, scored_card, key, amount, from_edition)
+    local ret = ref_indv_eff(effect, scored_card, key, amount, from_edition)
+    if ret then return ret end
+
+    if key == 'prevent_trigger' or key == 'prevent_downside' then
+        return key
+    end
+
+    if key == 'title_center' or key == 'title_front' and key == 'splash_center' or key == 'splash_front' then
+        return { [key] = amount }
+    end
+end
+

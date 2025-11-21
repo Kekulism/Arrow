@@ -3,6 +3,14 @@ ArrowAPI.current_config = copy_table(ArrowAPI.config)
 ArrowAPI.startup_item_check = false
 ArrowAPI.col_stand_hover = nil
 
+-- TNSMI setup, aliased from ArrowAPI
+TNSMI = SMODS.current_mod
+TNSMI.config.loaded_packs.replace_map = {}
+TNSMI.cardareas = {}
+TNSMI.prompt_text_input = ''
+TNSMI.search_text = ''
+
+G.C.SECONDARY_SET.SoundPack = HEX("56A887")
 G.C.STAND = HEX('B85F8E')
 G.C.VHS = HEX('a2615e')
 
@@ -15,6 +23,7 @@ G.ARGS.LOC_COLOURS['rental'] = G.C.RENTAL
 
 local includes = {
 	-- data types
+	'sound',
 	'compat',
 	'math',
 	'config',

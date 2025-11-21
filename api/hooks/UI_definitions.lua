@@ -653,37 +653,37 @@ function create_UIBox_notify_alert(key, type)
 end
 
 
+
+
+
 ---------------------------
---------------------------- Music pack selection / HEAVY WIP
+--------------------------- Tonsmith UI
 ---------------------------
 
---[[
-function create_album_cover(area, pack)
-    local texture = G.ANIMATION_ATLAS[pack.atlas] or G.ASSET_ATLAS[pack.atlas]
+-- Creates a fake soundpack card partially based on the approach Malverk takes
+function tnsmi_create_soundpack_card(area, pack, pos)
+    local atlas = G.ANIMATION_ATLAS[pack.atlas] or G.ASSET_ATLAS[pack.atlas]
+    local size_mod = TNSMI.get_size_mod()
+
+    -- this card is provided a "fake" SoundPack center
+    -- rather than registering an unused item, it fills in the
+    -- fields SMODS.GameObject normally needs to display
+    -- and localize UI for centers
     local card = Card(
         area.T.x,
         area.T.y,
-        G.CARD_W,
-        G.CARD_H,
+        G.CARD_W * size_mod,
+        G.CARD_W * size_mod,
         nil,
-        copy_table(G.P_CENTERS.j_joker),
-        {music_pack = pack}
+        {key = pack.key, name = "Sound Pack", atlas = pack.atlas, pos={x=0,y=0}, set = "SoundPack", label = 'Sound Pack', config = {}, generate_ui = SMODS.Center.generate_ui},
+        {tnsmi_soundpack = pack.key}
     )
 
-    local layer = texture.animated and 'animatedSprite' or 'center'
-    local scale = math.max(texture.atlas.px/71, texture.atlas.py/95)
-    if scale < 1 then scale = scale * 1.5 end
-    local W = G.CARD_W*(texture.atlas.px/71)/scale
-    local H = G.CARD_H*(texture.atlas.py/95)/scale
-
-    if texture.animated then
-        card.T.w = W
-        card.T.h = H
-        card.children.animatedSprite = AnimatedSprite(
-            card.T.x, card.T.y, card.T.w, card.T.h,
-            texture,
-            type(texture.display_pos) == 'table' and texture.display_pos or texture.original_sheet
-        )
+    card.states.drag.can = area == TNSMI.cardareas.priority
+    if atlas.frames then
+        --card.T.w = W
+        --card.T.h = H
+        card.children.animatedSprite = AnimatedSprite(card.T.x, card.T.y, card.T.w, card.T.h, atlas, atlas.pos)
         card.children.animatedSprite.T.w = W
         card.children.animatedSprite.T.h = H
         card.children.animatedSprite:set_role({major = card, role_type = 'Glued', draw_major = card})
@@ -693,96 +693,192 @@ function create_album_cover(area, pack)
         card.children.center:remove()
         card.children.back:remove()
         card.no_shadow = true
+        area:emplace(card, pos)
         return card
     end
 
-    card.children[layer]:reset()
+    area:emplace(card, pos)
 
-    if texture.atlas.px ~= 71 and texture.atlas.py ~= 95 and pack.key ~= 'balatro' then
-        card.T.w = W
-        card.T.h = H
-        card.children[layer] = Sprite(card.T.x, card.T.y, G.CARD_W, G.CARD_H, G.ASSET_ATLAS[texture.atlas.key], card.children.center.sprite_pos)
-        card.children[layer].states.hover = card.states.hover
-        card.children[layer].states.click = card.states.click
-        card.children[layer].states.drag = card.states.drag
-        card.children[layer].states.collide.can = false
-        card.children[layer].states.drag.can = false
-        card.children[layer]:set_role({major = card, role_type = 'Glued', draw_major = card})
+    -- This delay is set in G.FUNCS.tnsmi_toggle_soundpack for juice
+    -- when TNSMI.dissolve_flag is set, the next pack created of that key
+    -- will materialize rather than instantly appearing
+    -- so it appears to pop out of one cardarea and pop into the next
+    if TNSMI.dissolve_flag == pack.key then
+        card.states.visible = false
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.15,
+            blocking = false,
+            blockable = false,
+            func = (function()
+                card:start_materialize(nil, nil, 0.25)
+                return true
+            end)
+        }))
+
+        TNSMI.dissolve_flag = nil
     end
-
-    -- this is probably fucked, I didn't check it much
-    if texture.soul_keys and ArrowAPI.table.contains(texture.soul_keys, texture.keys[1]) and pack.key ~= 'balatro' then
-        card.config[layer].soul_pos = {x = 1 % texture.columns, y = math.floor(1/texture.columns)}
-        card.children.floating_sprite = Sprite(card.T.x, card.T.y, card.T.w, card.T.h, G.ASSET_ATLAS[texture.atlas.key], card.config[layer].soul_pos)
-    end
-
-    return card
 end
 
-function generate_music_pack_areas()
+--- Definition for the Soundpack Overlay Menu
+function tnsmi_create_UIBox_soundpacks()
 
-    local areas = {}
-    Malverk.texture_pack_areas_page = {
-        page = 1,
-        total = math.ceil(table.size(TexturePacks)/10),
+    -- creates cardareas only once upon menu load to prevent any unnecessary calc
+    -- updates occur within the existing cardareas
+    local size_mod = TNSMI.get_size_mod()
+    if TNSMI.cardareas.priority then TNSMI.cardareas.priority:remove() end
+    TNSMI.cardareas.priority = CardArea(0, 0, G.CARD_W * TNSMI.config.cols * size_mod * 1.1, G.CARD_H * size_mod,
+        {card_limit = TNSMI.config.cols, type = 'soundpack', highlight_limit = 99}
+    )
+
+    for _, v in ipairs(TNSMI.config.loaded_packs) do
+        tnsmi_create_soundpack_card(TNSMI.cardareas.priority, TNSMI.SoundPacks[v], 'front')
+    end
+
+    -- these are likely unnecessary because area references get cleaned when UI is removed (I think)
+    for i = #TNSMI.cardareas, 1, -1 do
+        TNSMI.cardareas[i]:remove()
+        TNSMI.cardareas[i] = nil
+    end
+
+    local area_nodes = {}
+    for i=1, TNSMI.config.rows do
+        TNSMI.cardareas[i] = CardArea(0, 0, G.CARD_W * TNSMI.config.cols * size_mod * 1.1, G.CARD_H * size_mod,
+            {card_limit = TNSMI.config.cols, highlight_limit = 99, type = 'soundpack'}
+        )
+
+        area_nodes[#area_nodes+1] = {n = G.UIT.R, config = {align = "cl", colour = G.C.CLEAR}, nodes = {
+            {n = G.UIT.O, config = {id = 'tnsmi_area_'..i, object = TNSMI.cardareas[i]}}
+        }}
+    end
+
+    -- Cycle config is stored in this global variable in order to change the state of the
+    -- option cycle on the fly when filtering search results. Vanilla balatro expects
+    -- they're only changed upon complete menu reload
+    TNSMI.cycle_config = {
+        options = {},
+        w = 4.5,
+        cycle_shoulders = true,
+        opt_callback = 'tnsmi_soundpacks_page',
+        focus_args = {snap_to = true, nav = 'wide'},
+        current_option = 1,
+        colour = G.C.RED,
+        no_pips = true,
     }
-    Malverk.texture_pack_areas_page.text = localize('k_page')..' '..(Malverk.texture_pack_areas_page.page+1)..'/'..Malverk.texture_pack_areas_page.total
-    for i=1, 10 do
-        Malverk.texture_pack_areas[i] = CardArea(G.ROOM.T.w,G.ROOM.T.h, G.CARD_W, G.CARD_H,
-        {card_limit = 1, type = 'shop', highlight_limit = 1, deck_height = 0.75, thin_draw = 1, texture_pack = true, index = i})
-    end
+
+    G.FUNCS.tnsmi_reload_soundpack_cards()
+
+    local opt_cycle = create_option_cycle(TNSMI.cycle_config)
+    opt_cycle.nodes[2].nodes[1].nodes[1].config.func = 'tnsmi_shoulder_buttons'
+    opt_cycle.nodes[2].nodes[1].nodes[3].config.func = 'tnsmi_shoulder_buttons'
+
+
+    local t = {
+        {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, r = 0.2, minh = 0.8, padding = 0.1}, nodes = {
+            {n = G.UIT.C, config = {align = "cl"}, nodes = {
+                {n = G.UIT.T, config = {align = 'cl', text = localize("tnsmi_manager_loaded"), padding = 0.1, scale = 0.25, colour = lighten(G.C.GREY,0.2), vert = true}},
+            }},
+            {n = G.UIT.C, config = {align = "cr", func = 'tnsmi_change_priority'}, nodes = {
+                {n = G.UIT.O, config = {align = 'cr', minw = 6, object = TNSMI.cardareas.priority}}
+            }},
+        }},
+        {n = G.UIT.R, config = {align = "cr", padding = 0}, nodes = {
+            {n = G.UIT.C, config = {align = "cr", padding = 0.1}, nodes = {
+                 {n = G.UIT.T, config = {ref_table = TNSMI, ref_value = 'search_text', scale = 0.25, colour = lighten(G.C.GREY, 0.2)}},
+            }},
+            {n = G.UIT.C, config = {align = "cr", colour = {G.C.L_BLACK[1], G.C.L_BLACK[2], G.C.L_BLACK[3], 0.5}, r = 0.2, padding = 0.1, minw = 3.5}, nodes = {
+                create_text_input({max_length = 12, w = 3.5, ref_table = TNSMI, ref_value = 'prompt_text_input'}),
+                {n = G.UIT.C, config = {align = "cm", minw = 0.2, minh = 0.2, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, shadow = true, button = "tnsmi_reload_soundpack_cards"}, nodes = {
+                    {n = G.UIT.R, config = {align = "cm", padding = 0.05, minw = 1.5}, nodes = {
+                        {n = G.UIT.T, config = {text = localize("tnsmi_filter_label"), scale = 0.4, colour = G.C.UI.TEXT_LIGHT}}
+                    }}
+                }},
+            }},
+
+        }},
+
+        {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, r = 0.2, minh = 4, padding = 0.1}, nodes = {
+            {n = G.UIT.C, config = {align = "cm", colour = G.C.CLEAR}, nodes = area_nodes}
+        }},
+        opt_cycle
+    }
+
+    -- uses the same function as most Overlay Menu calls
+    return create_UIBox_generic_options({ contents = t, back_func = 'settings', snap_back = nil })
 end
 
-function create_UIBox_music_select()
+--- Definition for the soundpack button that appears in the Options > Audio menu
+function G.UIDEF.tnsmi_soundpack_button(card)
+    local priority = card.area and card.area == TNSMI.cardareas.priority
+    local text = priority and 'b_remove' or 'b_select'
+    local color = priority and  G.C.RED or G.C.GREEN
+    return {
+        n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+            {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.5*card.T.h, hover = true, shadow = true, colour = color, one_press = true, button = 'tnsmi_toggle_soundpack'}, nodes={
+                {n=G.UIT.T, config={text = localize(text), colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
+            }},
+        }
+    }
+end
 
-    ArrowAPI.music_pack_area = CardArea(G.ROOM.T.w, G.ROOM.T.h, 11, G.CARD_H,
-    {type = 'joker', highlight_limit = 1, deck_height = 0.75, thin_draw = 1})
-    ArrowAPI.music_pack_area.ARGS.invisible_area_types = {joker=1}
-
-    -- failsafe
-    if not ArrowAPI.MusicPacks[ArrowAPI.CURRENT_MUSIC] then
-        ArrowAPI.CURRENT_MUSIC = 'balatro'
+-- This function is weird as hell
+-- there's no easy way to set a tab other than in the tab definition function
+-- So this kinda fudges it to set the audio tab as chosen if tabs are being created from the soundpack menu (I.E. back to the settings menu)
+local ref_create_tabs = create_tabs
+function create_tabs(args)
+    if args.tabs then
+        local reset_chosen = false
+        for i = #args.tabs, 1, -1 do
+            if reset_chosen then
+                args.tabs[i].chosen = nil
+            elseif args.tabs[i].tab_definition_function_args == 'Audio' and G.OVERLAY_MENU.config.id == 'tnsmi_soundpack_menu' then
+                args.tabs[i].chosen = true
+                reset_chosen = false
+            end
+        end
     end
 
-    for i, v in ipairs(ArrowAPI.MusicPack.obj_buffer) do
-        local area =
-        local pack = ArrowAPI.MusicPacks[v]
-        local card = create_album_cover(ArrowAPI.music_pack_area, pack)
-        card.params.texture_priority = true
-        Malverk.texture_pack_priority_area:emplace(card)
-    end
+    return ref_create_tabs(args)
+end
 
-
-    -- create the cardareas for texture packs
-
-
-
-    local t = create_UIBox_generic_options({ back_func = 'options', contents = {
-        {n=G.UIT.R, config = {colour = G.C.CLEAR, align = 'cm', minw = 12, minh = 10}, nodes = {
-            {n=G.UIT.C, config={align = "cm", padding = 0.15, r = 0.1, minw = 12}, nodes={
-                {n=G.UIT.R, config = {colour = G.C.BLACK, r = 0.1, minh = 2.5, minw = 12, align = 'cm'}, nodes = {
-                    {n=G.UIT.C, config = {align = 'cm', padding = 0.1, minw = 0.5}, nodes = {{n=G.UIT.T, config = {text = localize('malverk_low'), scale = 0.5, vert = true, colour = G.C.L_BLACK}}}},
-                    {n=G.UIT.C, config = {align = 'cm', minw = 11}, nodes = {
-                        {n = G.UIT.O, config = {object = Malverk.texture_pack_priority_area, colour = G.C.BLUE}}
-                    }},
-                    {n=G.UIT.C, config = {align = 'cm', padding = 0.1, minw = 0.5}, nodes = {{n=G.UIT.T, config = {instance_type = 'UIBOX', text = localize('malverk_high'), scale = 0.5, vert = true, colour = G.C.L_BLACK}}}},
+-- Most of the old config menu was moved here for better vanilla integration
+-- Some minor reorganization here, mostly visually
+local ref_settings_tab = G.UIDEF.settings_tab
+function G.UIDEF.settings_tab(tab)
+    if tab == 'Audio' then
+        return {n=G.UIT.ROOT, config={align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes={
+            create_slider({label = localize('b_set_master_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'volume', min = 0, max = 100}),
+            create_slider({label = localize('b_set_music_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'music_volume', min = 0, max = 100}),
+            create_slider({label = localize('b_set_game_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'game_sounds_volume', min = 0, max = 100}),
+            {n = G.UIT.R, config = {align = "cm", padding = 0.1, minh = 2}, nodes = {
+                {n = G.UIT.C, config = {align = "cm", padding = 0.1, minh = 2.5}, nodes = {
+                    UIBox_button{ label = {localize("tnsmi_manager_pause")}, button = "tnsmi_packs_button", minw = 4, colour = G.C.PALE_GREEN},
                 }},
-                -- Main Texture Select Display
-                {n=G.UIT.R, config = {colour = G.C.BLACK, r = 0.1, minh = 7.5, minw = 12, align = 'tm'}, nodes = {
-                    generate_texture_pack_areas_ui(),
-                    -- Page cycler
-                    {n=G.UIT.R, config = {align = 'lm'}, nodes ={
-                        EremelUtility.page_cycler({
-                            object_table = TexturePacks,
-                            page_size = 10,
-                            key = 'texture_pack_selector',
-                            switch_func = Malverk.new_change_page
-                        })
+                {n = G.UIT.C, config = {align = "cm", padding = 0.1, minh = 2.5}, nodes = {
+                    {n = G.UIT.R, config = {align = "cl", padding = 0.1}, nodes = {
+                        {n = G.UIT.C, config = {align = "cl", minw = 2.5}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.T, config = {align = "cr", text = localize("tnsmi_cfg_rows")..": ", colour = G.C.WHITE, scale = 0.3}}}},
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.O, config = {align = "cr", object = DynaText{string = {{ref_table = TNSMI.config, ref_value = "rows"}}, colours = {G.C.WHITE}, scale = 0.3}}}}},
+                        }},
+                        {n = G.UIT.C, config = {align = "cl", minw = 0.4}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"-"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"rows",-1}}}},
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"+"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"rows",1}}}},
+                        }},
+                    }},
+                    {n = G.UIT.R, config = {align = "cl", padding = 0.1}, nodes = {
+                        {n = G.UIT.C, config = {align = "cl", minw = 2.5}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.T, config = {align = "cr", text = localize("tnsmi_cfg_cols")..": ", colour = G.C.WHITE, scale = 0.3}}}},
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.O, config = {align = "cr", object = DynaText{string = {{ref_table = TNSMI.config, ref_value = "cols"}}, colours = {G.C.WHITE}, scale = 0.3}}}}},
+                        }},
+                        {n = G.UIT.C, config = {align = "cl", minw = 0.4}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"-"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"cols",-1}}}},
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"+"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"cols",1}}}},
+                        }},
                     }},
                 }},
             }},
         }}
-    }})
-    return t
+    end
+
+     return ref_settings_tab(tab)
 end
---]]

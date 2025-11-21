@@ -134,3 +134,39 @@ function Card:set_eternal(_eternal)
         self.ability.eternal = _eternal
     end
 end
+
+
+
+
+
+---------------------------
+--------------------------- Tonsmith highlight behavior
+---------------------------
+
+local ref_card_highlight = Card.highlight
+function Card:highlight(is_higlighted)
+    if not self.params or not self.params.tnsmi_soundpack then
+        return ref_card_highlight(self, is_higlighted)
+    end
+
+    self.highlighted = is_higlighted
+    if self.highlighted and self.area then
+        -- unhighlight all other cards even in different cardareas
+        -- so you can only highlight one "available" card at once
+        for _, pack_area in ipairs(TNSMI.cardareas) do
+            for _, v in ipairs(pack_area.highlighted) do
+                if v ~= self then
+                    pack_area:remove_from_highlighted(v)
+                end
+            end
+        end
+
+        self.children.use_button = UIBox{
+            definition = G.UIDEF.tnsmi_soundpack_button(self),
+            config = {align = "bmi", offset = {x=0,y=0.5}, parent = self}
+        }
+    elseif self.children.use_button then
+        self.children.use_button:remove()
+        self.children.use_button = nil
+    end
+end

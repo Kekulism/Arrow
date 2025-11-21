@@ -67,16 +67,3 @@ local card = Card(
     G.P_CARDS[splash_front], G.P_CENTERS[splash_center])
 '''
 match_indent = true
-
-# SMODS.calculate_individual_effect()
-[[patches]]
-[patches.pattern]
-target = '=[SMODS _ "src/utils.lua"]'
-pattern = '''if key == 'debuff' then'''
-position = "before"
-payload = '''if key == 'title_center' or key == 'title_front' and key == 'splash_center' or key == 'splash_front' then
-    return { [key] = amount }
-end
-'''
-match_indent = true
-times = 1

@@ -323,7 +323,7 @@ ArrowAPI.ui = {
     --]]
 
     --- Procedurally creates the credits tab UI tree for a given mod
-    --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config.use_credits()
+    --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config_tools.use_credits()
     create_credits_tab = function(mod)
         local ref_table = {}
         for i=1, #ArrowAPI.credits[mod.id] do
@@ -515,7 +515,7 @@ ArrowAPI.ui = {
     end,
 
     --- Procedurally creates the config tab UI tree for a given mod
-    --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config.use_config()
+    --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config_tools.use_config()
     create_config_tab = function(mod)
         return function()
             local left_settings = { n = G.UIT.C, config = { align = "tm" }, nodes = {} }

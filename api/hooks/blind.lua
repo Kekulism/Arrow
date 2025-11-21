@@ -837,6 +837,7 @@ function Blind:load(blindTable)
 	self.in_blind = blindTable.in_blind
 	self.config.blind = G.P_BLINDS[blindTable.config_blind] or {}
 
+	self.effect = blindTable.effect
     self.name = blindTable.name
     self.debuff = blindTable.debuff
     self.mult = blindTable.mult

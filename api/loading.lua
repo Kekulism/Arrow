@@ -32,7 +32,7 @@ ArrowAPI.loading = {
                     -- add to ordered config list
                     local key = 'enable_'..v.key..'s'
                     if mod.config[key] == nil then
-                        ArrowAPI.config.update_config(mod, key, true, order)
+                        ArrowAPI.config_tools.update_config(mod, key, true, order)
                         ArrowAPI.loading.write_default_config(mod)
                     end
                 end
@@ -192,7 +192,7 @@ ArrowAPI.loading = {
         if not ArrowAPI.BATCH_LOAD and mod.ARROW_USE_CONFIG then
             local key = 'enable_'..item_type..'s'
             if mod.config[key] == nil then
-                ArrowAPI.config.update_config(mod, key, true, order_in_type)
+                ArrowAPI.config_tools.update_config(mod, key, true, order_in_type)
                 ArrowAPI.loading.write_default_config(mod)
             end
         end
@@ -289,7 +289,6 @@ ArrowAPI.loading = {
 
     filter_type = function(item_type, order)
          if (item_type == 'Sleeve' and not CardSleeves) or (item_type == 'Partner' and not Partner_API) then
-            --ArrowAPI.config.update_config(SMODS.current_mod, 'enable_'..item_type..'s', false, order, true)
             return false
         else
             local enabled = SMODS.current_mod.config['enable_'..item_type..'s']

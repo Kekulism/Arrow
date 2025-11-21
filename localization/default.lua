@@ -66,18 +66,27 @@ return {
 			arrow_options_enable_Vouchers = "Vouchers",
 			arrow_options_enable_Editions = "Editions",
 
+            --- tonsmth loc
+            k_soundpack = 'Sound Pack',
+            b_remove = 'Remove',
+            tnsmi_cfg_rows = "Rows to display",
+            tnsmi_cfg_cols = "Packs per row",
+            tnsmi_manager_pause = "Soundpacks",
+            tnsmi_manager_loaded = "DRAG FOR PRIORITY",
+            tnsmi_filter_label = "FILTER",
 
+            -- stand localization
             b_stand_cards = "Stands",
             b_evolved_stand_cards = "Evolved Stands",
-            b_vhs_cards = "VHS Tapes",
-            k_vhs = "VHS Tape",
             k_stand = "Stand",
             k_evolved_stand = "Evolved Stand",
             k_stand_stickers = "Stand Stickers",
-
             k_stand_evolved = 'Evolved!',
-            k_vhs_destroyed = "Fin!",
 
+            -- vhs localization
+            b_vhs_cards = "VHS Tapes",
+            k_vhs = "VHS Tape",
+            k_vhs_destroyed = "Fin!",
             b_activate = "PLAY",
             b_deactivate = "PAUSE",
 
@@ -97,6 +106,7 @@ return {
         },
         v_dictionary = {
             arrow_options_reset_achievements = "Reset #1# Achievements",
+            tnsmi_search_text = "#1#-#2# of #3# results"
         },
         v_text = {
 			-- general behavior
@@ -111,6 +121,21 @@ return {
 		},
     },
     descriptions = {
+        SoundPack = {
+            sp_balatro = {
+                name = "Balatro OST",
+                text = {
+                    "{C:blue,E:1}Luis Clemente{}",
+                    "{C:blue,E:1}(LouisF){}"
+                }
+            },
+            sp_csau_cardsauce = {
+                name = "Cardsauce OST",
+                text = {
+                    "{C:attention,E:1}Bassclefff{}"
+                }
+            },
+        },
         Other = {
             vhs_activation = {
                 name = "VHS Playing",
