@@ -195,7 +195,6 @@ ArrowAPI.colors = {
     end,
 
     use_custom_palette = function(set, saved_index)
-        --[[
         local palette = ArrowAPI.colors.palettes[set]
         if set == 'Background' then
             if  saved_index then
@@ -336,7 +335,6 @@ ArrowAPI.colors = {
         end
 
         collectgarbage("restart")
-        --]]
     end,
 }
 

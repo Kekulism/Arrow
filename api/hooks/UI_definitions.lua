@@ -804,6 +804,7 @@ function G.UIDEF.settings_tab(tab)
     if tab == 'Palettes' then
         G.SETTINGS.paused = true
         ArrowAPI.palette_ui_config.open_palette = nil
+        if G.OVERLAY_MENU then G.OVERLAY_MENU:remove() end
         G.FUNCS.overlay_menu{
             definition = arrow_create_UIBox_palette_menu(),
             config = {offset = {x = 0, y = 10}}

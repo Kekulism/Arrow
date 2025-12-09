@@ -675,6 +675,7 @@ function G.FUNCS.arrow_save_palette(e)
     SMODS.save_mod_config(ArrowAPI)
 
     -- kinda have to recreate it
+    if G.OVERLAY_MENU then G.OVERLAY_MENU:remove() end
     G.FUNCS.overlay_menu{
         definition = arrow_create_UIBox_palette_menu(),
         config = {offset = {x = 0, y = 0}}
@@ -695,6 +696,7 @@ function G.FUNCS.arrow_delete_palette(e)
     ArrowAPI.colors.use_custom_palette(set, idx - 1)
 
     -- kinda have to recreate it
+    if G.OVERLAY_MENU then G.OVERLAY_MENU:remove() end
     G.FUNCS.overlay_menu{
         definition = arrow_create_UIBox_palette_menu(),
         config = {offset = {x = 0, y = 0}}
@@ -723,6 +725,7 @@ function G.FUNCS.arrow_load_palette_preset(args)
     ArrowAPI.palette_ui_config.name_input = ArrowAPI.config.saved_palettes[set][args.cycle_config.current_option].name
 
     -- kinda have to recreate it
+    if G.OVERLAY_MENU then G.OVERLAY_MENU:remove() end
     G.FUNCS.overlay_menu{
         definition = arrow_create_UIBox_palette_menu(),
         config = {offset = {x = 0, y = 0}}
