@@ -28,4 +28,6 @@ ArrowAPI.pseudorandom = {
         G.GAME.pseudorandom.predicts = {}
         return G.GAME.pseudorandom.predict_mode
     end
+
+
 }

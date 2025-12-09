@@ -1,6 +1,7 @@
 local packInfo = {
     name = 'Mega Analog',
-    alerted = true,
+    atlas = 'boosters',
+    pos = {x = 3, y = 0},
     config = {
         extra = 8,
         choose = 2,

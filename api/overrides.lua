@@ -3,6 +3,7 @@
 ---------------------------
 
 SMODS.Consumable:take_ownership('c_strength', {
+    atlas = 'arrow_tarots',
     config = { extra = 1, min_highlighted = 1, max_highlighted = 2 },
     loc_vars = function(self, info_queue, card)
         local multi = card.ability.max_highlighted ~= 1
@@ -73,6 +74,7 @@ SMODS.Consumable:take_ownership('c_strength', {
 }, true)
 
 SMODS.Consumable:take_ownership('hanged_man', {
+    atlas = 'arrow_tarots',
     loc_vars = function(self, info_queue, card)
         local multi = card.ability.max_highlighted ~= 1
         return {
@@ -89,6 +91,7 @@ SMODS.Consumable:take_ownership('hanged_man', {
 }, true)
 
 SMODS.Consumable:take_ownership('death', {
+    atlas = 'arrow_tarots',
     loc_vars = function(self, info_queue, card)
         local multi = (card.ability.max_highlighted - 1) ~= 1
         return {
@@ -179,6 +182,7 @@ local enhance_convert_keys = {
 for _, v in ipairs(enhance_convert_keys) do
     local old_center = G.P_CENTERS[v]
     local mod_table = {
+        atlas = 'arrow_tarots',
         config = {
             mod_conv = old_center.config.mod_conv,
             min_highlighted = old_center.config.min_highlighted or 1,
@@ -267,6 +271,7 @@ local suit_convert_keys = {
 for _, v in ipairs(suit_convert_keys) do
     local old_center = G.P_CENTERS[v]
     local mod_table = {
+        atlas = 'arrow_tarots',
         config = {
             suit_conv = old_center.config.suit_conv,
             min_highlighted = old_center.config.min_highlighted or 1,
@@ -349,10 +354,17 @@ end
 
 -- TODO: better way to do the localization here
 -- this tries to do it automatically, but it doesn't support different languages
-local seal_keys = {'c_talisman', 'c_trance', 'c_medium', 'c_deja_vu'}
-for _, v in ipairs(seal_keys) do
-    local old_center = G.P_CENTERS[v]
+local seal_keys = {
+    ['c_talisman'] = {x = 3, y = 1},
+    ['c_trance'] = {x = 3, y = 2},
+    ['c_medium'] = {x = 4, y = 2},
+    ['c_deja_vu'] = {x = 1, y = 2}
+}
+for k, pos in pairs(seal_keys) do
+    local old_center = G.P_CENTERS[k]
     local mod_table = {
+        atlas = 'arrow_spectrals',
+        pos = pos,
         config = {
             extra = old_center.config.extra,
             min_highlighted = old_center.config.min_highlighted or 1,
@@ -408,11 +420,13 @@ for _, v in ipairs(seal_keys) do
         end
     }
 
-    SMODS.Consumable:take_ownership(v, mod_table, true)
+    SMODS.Consumable:take_ownership(k, mod_table, true)
 end
 
 local old_cryptid = G.P_CENTERS['c_cryptid']
 SMODS.Consumable:take_ownership('c_cryptid', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 5, y = 2},
     config = {
         extra = old_cryptid.config.extra,
         min_highlighted = old_cryptid.config.min_highlighted or 1,
@@ -476,6 +490,8 @@ SMODS.Consumable:take_ownership('c_cryptid', {
 }, true)
 
 SMODS.Consumable:take_ownership('aura', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 4, y = 1},
     config = {min_highlighted = 1, max_highlighted = 1},
     loc_vars = function(self, info_queue, card)
         local multi = card.ability.max_highlighted ~= 1
@@ -536,34 +552,13 @@ SMODS.Consumable:take_ownership('aura', {
 --------------------------- Batch level behavior
 ---------------------------
 
-SMODS.Consumable:take_ownership('c_black_hole',
-    {
-        use = function(self, card, area, copier)
-            update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize('k_all_hands'),chips = '...', mult = '...', level=''})
-            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2, func = function()
-                play_sound('tarot1')
-                card:juice_up(0.8, 0.5)
-                G.TAROT_INTERRUPT_PULSE = true
-                return true end }))
-            update_hand_text({delay = 0}, {mult = '+', StatusText = true})
-            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.9, func = function()
-                play_sound('tarot1')
-                card:juice_up(0.8, 0.5)
-                return true end }))
-            update_hand_text({delay = 0}, {chips = '+', StatusText = true})
-            G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.9, func = function()
-                play_sound('tarot1')
-                card:juice_up(0.8, 0.5)
-                G.TAROT_INTERRUPT_PULSE = nil
-                return true end }))
-            update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {level='+1'})
-            delay(1.3)
-            ArrowAPI.game.batch_level_up(card, SMODS.PokerHands)
-            update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
-        end,
-    },
-    true
-)
+SMODS.Consumable:take_ownership('c_black_hole', {
+    pos = {x = 9, y = 0},
+    atlas = 'arrow_spectrals',
+    use = function(self, card, area, copier)
+        ArrowAPI.game.batch_level_up(card, G.handlist)
+    end,
+}, true)
 
 
 
@@ -834,6 +829,8 @@ SMODS.Joker:take_ownership('j_perkeo', {
 ---------------------------
 
 SMODS.Consumable:take_ownership('sigil', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 6, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
         juice_flip(used_tarot)
@@ -859,8 +856,10 @@ SMODS.Consumable:take_ownership('sigil', {
         end
         delay(0.5)
     end,
-})
+}, true)
 SMODS.Consumable:take_ownership('ouija', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 7, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
         juice_flip(used_tarot)
@@ -891,7 +890,7 @@ SMODS.Consumable:take_ownership('ouija', {
         end
         delay(0.5)
     end,
-})
+}, true)
 local function random_destroy(used_tarot)
     local destroyed_cards = {}
     local downside = SMODS.spectral_downside(used_tarot)
@@ -928,6 +927,8 @@ local function random_destroy(used_tarot)
 end
 
 SMODS.Consumable:take_ownership('grim', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 1, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
         local destroyed_cards = random_destroy(used_tarot)
@@ -965,9 +966,11 @@ SMODS.Consumable:take_ownership('grim', {
             SMODS.calculate_context({ remove_playing_cards = true, removed = destroyed_cards })
         end
     end
-})
+}, true)
 
 SMODS.Consumable:take_ownership('familiar', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 0, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
         local destroyed_cards = random_destroy(used_tarot)
@@ -1009,9 +1012,11 @@ SMODS.Consumable:take_ownership('familiar', {
             SMODS.calculate_context({ remove_playing_cards = true, removed = destroyed_cards })
         end
     end
-})
+}, true)
 
 SMODS.Consumable:take_ownership('incantation', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 2, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
         local destroyed_cards = random_destroy(used_tarot)
@@ -1053,10 +1058,12 @@ SMODS.Consumable:take_ownership('incantation', {
             SMODS.calculate_context({ remove_playing_cards = true, removed = destroyed_cards })
         end
     end
-})
+}, true)
 
 
 SMODS.Consumable:take_ownership('ankh', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 0, y = 2},
     use = function(self, card, area, copier)
         --Need to check for edgecases - if there are max Jokers and all are eternal OR there is a max of 1 joker this isn't possible already
         --If there are max Jokers and exactly 1 is not eternal, that joker cannot be the one selected
@@ -1100,9 +1107,11 @@ SMODS.Consumable:take_ownership('ankh', {
             end
         }))
     end
-})
+}, true)
 
 SMODS.Consumable:take_ownership('hex', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 2, y = 2},
     use = function(self, card, area, copier)
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
@@ -1129,9 +1138,11 @@ SMODS.Consumable:take_ownership('hex', {
         }))
         delay(0.6)
     end
-})
+}, true)
 
 SMODS.Consumable:take_ownership('ectoplasm', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 8, y = 1},
     use = function(self, card, area, copier)
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
@@ -1153,9 +1164,11 @@ SMODS.Consumable:take_ownership('ectoplasm', {
         }))
         delay(0.6)
     end
-})
+}, true)
 
 SMODS.Consumable:take_ownership('wraith', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 5, y = 1},
     use = function(self, card, area, copier)
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
@@ -1174,9 +1187,11 @@ SMODS.Consumable:take_ownership('wraith', {
         }))
         delay(0.6)
     end
-})
+}, true)
 
 SMODS.Consumable:take_ownership('immolate', {
+    atlas = 'arrow_spectrals',
+    pos = {x = 9, y = 1},
     use = function(self, card, area, copier)
         local destroyed_cards = {}
         local downside = SMODS.spectral_downside(card)
@@ -1230,4 +1245,365 @@ SMODS.Consumable:take_ownership('immolate', {
             SMODS.calculate_context({ remove_playing_cards = true, removed = destroyed_cards })
         end
     end
-})
+}, true)
+
+
+
+
+
+---------------------------
+--------------------------- Remaining overrides for palette correction
+---------------------------
+
+SMODS.Atlas({key = 'tarots', path = 'tarots.png', px = 71, py = 95})
+SMODS.Atlas({key = 'planets', path = 'planets.png', px = 71, py = 95})
+SMODS.Atlas({key = 'spectrals', path = 'spectrals.png', px = 71, py = 95})
+SMODS.Atlas({key = 'tags', path = 'tags/tags.png', px = 34, py = 34})
+
+SMODS.Joker:take_ownership('8_ball', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 3, y = 2}}, true)
+SMODS.Joker:take_ownership('fortune_teller', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 4, y = 2}}, true)
+SMODS.Joker:take_ownership('cartomancer', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 5, y = 2}}, true)
+SMODS.Joker:take_ownership('supernova', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 4, y = 0}}, true)
+SMODS.Joker:take_ownership('constellation', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 5, y = 0}, soul_pos = {x = 6, y = 0}, no_soul_shadow = true}, true)
+SMODS.Joker:take_ownership('astronomer', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 7, y = 0}}, true)
+SMODS.Joker:take_ownership('satellite', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 8, y = 0}}, true)
+SMODS.Joker:take_ownership('seance', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 7, y = 2}}, true)
+SMODS.Joker:take_ownership('sixth_sense', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 8, y = 2}}, true)
+
+SMODS.Consumable:take_ownership('fool', {atlas = 'arrow_tarots'}, true)
+SMODS.Consumable:take_ownership('high_priestess', {atlas = 'arrow_tarots'}, true)
+SMODS.Consumable:take_ownership('emperor', {atlas = 'arrow_tarots'}, true)
+SMODS.Consumable:take_ownership('wheel_of_fortune', {atlas = 'arrow_tarots'}, true)
+SMODS.Consumable:take_ownership('hermit', {atlas = 'arrow_tarots'}, true)
+SMODS.Consumable:take_ownership('temperance', {atlas = 'arrow_tarots'}, true)
+SMODS.Consumable:take_ownership('judgement', {atlas = 'arrow_tarots'}, true)
+
+SMODS.Consumable:take_ownership('mercury', {atlas = 'arrow_planets', pos = {x = 4, y = 1}}, true)
+SMODS.Consumable:take_ownership('venus', {atlas = 'arrow_planets', pos = {x = 5, y = 1}}, true)
+SMODS.Consumable:take_ownership('earth', {atlas = 'arrow_planets', pos = {x = 6, y = 1}}, true)
+SMODS.Consumable:take_ownership('mars', {atlas = 'arrow_planets', pos = {x = 7, y = 1}}, true)
+SMODS.Consumable:take_ownership('jupiter', {atlas = 'arrow_planets', pos = {x = 8, y = 1}}, true)
+SMODS.Consumable:take_ownership('saturn', {atlas = 'arrow_planets', pos = {x = 2, y = 2}}, true)
+SMODS.Consumable:take_ownership('uranus', {atlas = 'arrow_planets', pos = {x = 3, y = 2}}, true)
+SMODS.Consumable:take_ownership('neptune', {atlas = 'arrow_planets', pos = {x = 4, y = 2}}, true)
+SMODS.Consumable:take_ownership('pluto', {atlas = 'arrow_planets', pos = {x = 5, y = 2}}, true)
+SMODS.Consumable:take_ownership('eris', {atlas = 'arrow_planets', pos = {x = 6, y = 2}}, true)
+SMODS.Consumable:take_ownership('ceres', {atlas = 'arrow_planets', pos = {x = 7, y = 2}}, true)
+SMODS.Consumable:take_ownership('planet_x', {atlas = 'arrow_planets', pos = {x = 8, y = 2}}, true)
+
+SMODS.Consumable:take_ownership('soul', {atlas = 'arrow_spectrals', pos = {x = 2, y = 0}}, true)
+
+SMODS.Voucher:take_ownership('tarot_merchant', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 10, y = 0}}, true)
+SMODS.Voucher:take_ownership('tarot_tycoon', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 10, y = 1}}, true)
+SMODS.Voucher:take_ownership('planet_merchant', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 9, y = 2}}, true)
+SMODS.Voucher:take_ownership('planet_tycoon', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 10, y = 0}}, true)
+SMODS.Voucher:take_ownership('telescope', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 10, y = 1}}, true)
+SMODS.Voucher:take_ownership('observatory', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 10, y = 2}}, true)
+
+SMODS.Back:take_ownership('magic', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 7, y = 2}}, true)
+SMODS.Back:take_ownership('nebula', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 0, y = 2}}, true)
+SMODS.Back:take_ownership('zodiac', {atlas = 'arrow_planets', palette_set = {'Planet', 'Tarot'}, pos = {x = 1, y = 2}}, true)
+SMODS.Back:take_ownership('ghost', {atlas = 'arrow_spectrals', palette_set = 'Spectral',  pos = {x = 4, y = 0}}, true)
+
+SMODS.Booster:take_ownership('arcana_normal_1', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 9, y = 2}}, true)
+SMODS.Booster:take_ownership('arcana_normal_2', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 10, y = 2}}, true)
+SMODS.Booster:take_ownership('arcana_normal_3', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 11, y = 0}}, true)
+SMODS.Booster:take_ownership('arcana_normal_4', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 12, y = 0}}, true)
+SMODS.Booster:take_ownership('arcana_jumbo_1', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 11, y = 1}}, true)
+SMODS.Booster:take_ownership('arcana_jumbo_2', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 12, y = 1}}, true)
+SMODS.Booster:take_ownership('arcana_mega_1', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 11, y = 2}}, true)
+SMODS.Booster:take_ownership('arcana_mega_2', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 12, y = 2}}, true)
+
+SMODS.Booster:take_ownership('celestial_normal_1', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 0, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_normal_2', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 1, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_normal_3', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 2, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_normal_4', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 3, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_jumbo_1', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 0, y = 1}}, true)
+SMODS.Booster:take_ownership('celestial_jumbo_2', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 1, y = 1}}, true)
+SMODS.Booster:take_ownership('celestial_mega_1', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 2, y = 1}}, true)
+SMODS.Booster:take_ownership('celestial_mega_2', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 3, y = 1}}, true)
+
+SMODS.Booster:take_ownership('spectral_normal_1', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 5, y = 0}}, true)
+SMODS.Booster:take_ownership('spectral_normal_2', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 6, y = 0}}, true)
+SMODS.Booster:take_ownership('spectral_jumbo_1', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 7, y = 0}}, true)
+SMODS.Booster:take_ownership('spectral_mega_1', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 8, y = 0}}, true)
+
+SMODS.Tag:take_ownership('charm', {atlas = 'arrow_tags', palette_set = 'Tarot', pos = {x = 0, y = 0}}, true)
+SMODS.Tag:take_ownership('meteor', {atlas = 'arrow_tags', palette_set = 'Planet', pos = {x = 1, y = 0}}, true)
+SMODS.Tag:take_ownership('ethereal', {atlas = 'arrow_tags', palette_set = 'Spectral', pos = {x = 2, y = 0}}, true)
+
+SMODS.Seal:take_ownership('Purple', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 8, y = 2}}, true)
+SMODS.Seal:take_ownership('Blue', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 9, y = 1}}, true)
+
+
+
+
+
+---------------------------
+--------------------------- Overrides for vanilla card localization
+---------------------------
+
+--------------------------- suit jokers
+SMODS.Joker:take_ownership('lusty_joker', {
+    palette_set = 'Hearts',
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra.s_mult,
+            localize('Hearts', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Hearts']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Lusty Joker',
+            text = {
+                "Played cards with",
+                "{V:1}#2#{} suit give",
+                "{C:mult}+#1#{} Mult when scored",
+            }
+        },
+    }
+}, true)
+
+SMODS.Joker:take_ownership('wrathful_joker', {
+    palette_set = 'Spades',
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra.s_mult,
+            localize('Spades', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Spades']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Wrathful Joker',
+            text = {
+                "Played cards with",
+                "{V:1}#2#{} suit give",
+                "{C:mult}+#1#{} Mult when scored",
+            }
+        },
+    }
+}, true)
+
+SMODS.Joker:take_ownership('gluttenous_joker', {
+    palette_set = 'Clubs',
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra.s_mult,
+            localize('Clubs', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Clubs']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Gluttenous Joker',
+            text = {
+                "Played cards with",
+                "{V:1}#2#{} suit give",
+                "{C:mult}+#1#{} Mult when scored",
+            }
+        },
+    }
+}, true)
+
+SMODS.Joker:take_ownership('greedy_joker', {
+    palette_set = 'Diamonds',
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra.s_mult,
+            localize('Diamonds', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Diamonds']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Greedy Joker',
+            text = {
+                "Played cards with",
+                "{V:1}#2#{} suit give",
+                "{C:mult}+#1#{} Mult when scored",
+            }
+        },
+    }
+}, true)
+
+--------------------------- blackboard and flower pot
+SMODS.Joker:take_ownership('blackboard', {
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra,
+            localize('Spades', 'suits_plural'),
+            localize('Clubs', 'suits_plural'),
+            colours = {
+                G.C.SUITS['Spades'],
+                G.C.SUITS['Clubs']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Blackboard',
+            text = {
+                "{X:red,C:white} X#1# {} Mult if all",
+                "cards held in hand",
+                "are {V:1}#2#{} or {V:2}#3#{}"
+            }
+        },
+    }
+}, true)
+
+SMODS.Joker:take_ownership('flower_pot', {
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra,
+            localize('Diamonds', 'suits_plural'),
+            localize('Clubs', 'suits_plural'),
+            localize('Hearts', 'suits_plural'),
+            localize('Spades', 'suits_plural'),
+            colours = {
+                G.C.SUITS['Diamonds'],
+                G.C.SUITS['Clubs'],
+                G.C.SUITS['Hearts'],
+                G.C.SUITS['Spades']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Flower Pot',
+            text = {
+                "{X:mult,C:white}X#1#{} Mult if poker",
+                "hand contains a",
+                "{V:1}#2#{} card, {V:2}#3#{} card,",
+                "{V:3}#4#{} card, and {V:4}#5#{} card"
+            },
+            unlock = {
+                "Reach Ante",
+                "level {E:1,C:attention}#1#"
+            }
+        },
+    }
+}, true)
+
+
+--------------------------- gem jokers
+SMODS.Joker:take_ownership('bloodstone', {
+    palette_set = 'Hearts',
+    loc_vars = function(self, info_queue, card)
+        local a, b = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'bloodstone')
+        return { vars = {
+            a, b,
+            card.ability.extra.Xmult,
+            localize('Hearts', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Hearts']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Bloodstone',
+            text = {
+                "{C:green}#1# in #2#{} chance for",
+                "played cards with",
+                "{V:1}#4#{} suit to give",
+                "{X:mult,C:white} X#3# {} Mult when scored",
+            },
+            unlock = {
+                "Have at least {E:1,C:attention}#1#",
+                "cards with {E:1,C:attention}#2#",
+                "suit in your deck"
+            }
+        },
+    }
+}, true)
+
+SMODS.Joker:take_ownership('onyx_agate', {
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra,
+            localize('Clubs', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Clubs']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Onyx Agate',
+            text = {
+                "Played cards with",
+                "{V:1}#2#{} suit give",
+                "{C:mult}+#1#{} Mult when scored",
+            },
+            unlock = {
+                "Have at least {E:1,C:attention}#1#",
+                "cards with {E:1,C:attention}#2#",
+                "suit in your deck"
+            }
+        },
+    }
+}, true)
+
+SMODS.Joker:take_ownership('arrowhead', {
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra,
+            localize('Spades', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Spades']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Arrowhead',
+            text = {
+                "Played cards with",
+                "{V:1}#2#{} suit give",
+                "{C:chips}+#1#{} Chips when scored",
+            },
+            unlock = {
+                "Have at least {E:1,C:attention}#1#",
+                "cards with {E:1,C:attention}#2#",
+                "suit in your deck"
+            }
+        },
+    }
+}, true)
+
+SMODS.Joker:take_ownership('rough_gem', {
+    loc_vars = function(self, info_queue, card)
+        return { vars = {
+            card.ability.extra,
+            localize('Diamonds', 'suits_singular'),
+            colours = {
+                G.C.SUITS['Diamonds']
+            }
+        }}
+    end,
+    loc_txt = {
+        ['default'] = {
+            name = 'Rough Gem',
+            text = {
+                "Played cards with",
+                "{V:1}#2#{} suit earn",
+                "{C:money}$#1#{} when scored",
+            },
+            unlock = {
+                "Have at least {E:1,C:attention}#1#",
+                "cards with {E:1,C:attention}#2#",
+                "suit in your deck"
+            }
+        },
+    }
+}, true)

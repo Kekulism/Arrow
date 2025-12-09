@@ -24,24 +24,34 @@ end
 
 local ref_buy_shop = G.FUNCS.buy_from_shop
 G.FUNCS.buy_from_shop = function(e)
-    ref_buy_shop(e)
-    local c1 = e.config.ref_table
-    if c1 and c1:is(Card) then
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            delay = 0.1,
-            func = function()
-                if c1.ability.consumeable then
-                    if c1.config.center.set == 'Stand' then
-                        inc_career_stat('c_stands_bought', 1)
-                    elseif c1.config.center.set == 'VHS' then
-                        inc_career_stat('c_vhss_bought', 1)
+    local card = e.config.ref_table
+
+    local ret = ref_buy_shop(e)
+    if ret ~= false then
+        G.GAME.shop_dollars_spent = G.GAME.shop_dollars_spent + card.cost
+        if card and card:is(Card) then
+            G.E_MANAGER:add_event(Event({
+                trigger = 'after',
+                delay = 0.1,
+                func = function()
+                    if card.ability.consumeable then
+                        if card.config.center.set == 'Stand' then
+                            inc_career_stat('c_stands_bought', 1)
+                        elseif card.config.center.set == 'VHS' then
+                            inc_career_stat('c_vhss_bought', 1)
+                        end
                     end
+                    return true
                 end
-                return true
-            end
-        }))
+            }))
+        end
     end
+end
+
+local ref_reroll_shop = G.FUNCS.reroll_shop
+G.FUNCS.reroll_shop = function(e)
+    G.GAME.rerolls_this_round = G.GAME.rerolls_this_round + 1
+    return ref_reroll_shop(e)
 end
 
 
@@ -281,8 +291,8 @@ end
 function G.FUNCS.tnsmi_change_pack_display(e) -- e represents the node
     TNSMI.config[e.config.ref_table[1]] = TNSMI.config[e.config.ref_table[1]] + e.config.ref_table[2]
 
-    TNSMI.config.rows = math.max(1, math.min(4, TNSMI.config.rows))
-    TNSMI.config.cols =  math.max(1, math.min(16, TNSMI.config.cols))
+    TNSMI.config.rows = math.max(1, math.min(3, TNSMI.config.rows))
+    TNSMI.config.cols =  math.max(1, math.min(8, TNSMI.config.cols))
 
     SMODS.save_mod_config(TNSMI)
 end
@@ -408,12 +418,12 @@ G.FUNCS.tnsmi_reload_soundpack_cards = function()
 
     local end_index = math.min(start_index + num_per_page, #soundpack_cards)
     local page_total = math.min(start_index + num_per_page, #soundpack_cards) - start_index
-    local final_cols = page_total % TNSMI.config.cols
-    final_cols = final_cols ~= 0 and final_cols or TNSMI.config.cols
+    local final_cols = page_total > TNSMI.config.cols and page_total % TNSMI.config.cols or page_total
+    if final_cols == 0 then final_cols = TNSMI.config.cols end
 
     -- adjusts the size of the cardareas based on the current size mod, determined by the rows/cols
     -- makes it easier to fit more into frame
-    TNSMI.cardareas[#TNSMI.cardareas].T.w = G.CARD_W * final_cols * TNSMI.get_size_mod() * 1.1
+    TNSMI.cardareas[#TNSMI.cardareas].T.w = G.CARD_W * final_cols * 0.965
 
     for i=(start_index+1), end_index do
         local pack = TNSMI.SoundPacks[soundpack_cards[i]]
@@ -467,4 +477,257 @@ G.FUNCS.tnsmi_toggle_soundpack = function(e)
             return true
         end)
     }))
+end
+
+
+
+
+
+---------------------------
+--------------------------- Palette widget callbacks
+---------------------------
+
+local function update_hex_input(color)
+    local new_hex_string = string.upper(tostring(string.format("%02x", color[1])..string.format("%02x", color[2])..string.format("%02x", color[3])))
+    ArrowAPI.palette_ui_config.last_hex_input = ArrowAPI.palette_ui_config.hex_input
+    ArrowAPI.palette_ui_config.hex_input = new_hex_string
+    local args = ArrowAPI.palette_ui_config.hex_input_config
+
+    for i = 1, args.max_length do
+        local new_letter = new_hex_string:sub(i, i)
+        args.text.letters[i] = new_letter
+    end
+end
+
+function G.FUNCS.arrow_rgb_slider(e, update_only)
+    local arrow = e.parent.children[1].children[1].config.object
+    local fill = e.children[1]
+    e.states.drag.can = true -- parent
+    fill.states.drag.can = true -- child/fill
+    arrow.states.drag.can = true -- child/fill
+
+    if update_only or (G.CONTROLLER and G.CONTROLLER.dragging.target and
+    (G.CONTROLLER.dragging.target == e or
+    G.CONTROLLER.dragging.target == fill)) then
+        local rt = fill.config.ref_table
+        if not update_only then
+           rt.ref_table[rt.ref_value] = math.floor(math.min(rt.max,math.max(rt.min, rt.min + (rt.max - rt.min)*(G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w)))
+            ArrowAPI.palette_changed_flag = true
+        end
+        rt.text = string.format("%.0f", rt.ref_table[rt.ref_value])
+        arrow.role.offset = {x = e.T.w * (rt.ref_table[rt.ref_value] / rt.max) - arrow.T.w / 2, y = 0}
+    end
+end
+
+function G.FUNCS.arrow_palette_button(e)
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    local idx = e.config.palette_idx
+    ArrowAPI.palette_ui_config.open_palette.idx = idx
+    local current_palette = ArrowAPI.colors.palettes[set].current_palette
+    local color = (idx == 0 and current_palette.badge_colour) or not current_palette[idx].default and current_palette[idx] or ArrowAPI.colors.palettes[set].default_palette[idx]
+    ArrowAPI.palette_ui_config.rgb[1] = color[1]
+    ArrowAPI.palette_ui_config.rgb[2] = color[2]
+    ArrowAPI.palette_ui_config.rgb[3] = color[3]
+    if idx == 0 then
+        ArrowAPI.palette_ui_config.rgb[1] = math.floor(ArrowAPI.palette_ui_config.rgb[1] * 255)
+        ArrowAPI.palette_ui_config.rgb[2] = math.floor(ArrowAPI.palette_ui_config.rgb[2] * 255)
+        ArrowAPI.palette_ui_config.rgb[3] = math.floor(ArrowAPI.palette_ui_config.rgb[3] * 255)
+    end
+
+    update_hex_input(ArrowAPI.palette_ui_config.rgb)
+
+    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = e
+
+    G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
+    G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
+    G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('b_slider'), true)
+end
+
+function G.FUNCS.arrow_palette_reset(e)
+    if ArrowAPI.palette_ui_config.open_palette.idx ~= e.config.palette_idx then
+        return
+    end
+    local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
+    local idx = e.config.palette_idx
+    local default_color = idx == 0 and palette.default_palette.badge_colour or palette.default_palette[idx]
+    local palette_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+    palette_color[1] = default_color[1]
+    palette_color[2] = default_color[2]
+    palette_color[3] = default_color[3]
+    ArrowAPI.palette_ui_config.rgb[1] = default_color[1]
+    ArrowAPI.palette_ui_config.rgb[2] = default_color[2]
+    ArrowAPI.palette_ui_config.rgb[3] = default_color[3]
+
+    if idx == 0 then
+        palette_color[4] = 1
+        ArrowAPI.palette_ui_config.rgb[1] = math.floor(ArrowAPI.palette_ui_config.rgb[1] * 255)
+        ArrowAPI.palette_ui_config.rgb[2] = math.floor(ArrowAPI.palette_ui_config.rgb[2] * 255)
+        ArrowAPI.palette_ui_config.rgb[3] = math.floor(ArrowAPI.palette_ui_config.rgb[3] * 255)
+    end
+
+    update_hex_input(ArrowAPI.palette_ui_config.rgb)
+
+    local current_button = G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref
+    current_button.config.colour = {ArrowAPI.palette_ui_config.rgb[1]/255, ArrowAPI.palette_ui_config.rgb[2]/255, ArrowAPI.palette_ui_config.rgb[3]/255, 1}
+
+    -- update sliders
+    G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
+    G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
+    G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('b_slider'), true)
+
+    -- do I want to auto update?
+    -- ArrowAPI.colors.use_custom_palette(set)
+end
+
+function G.FUNCS.arrow_update_selected_colour(e)
+    local rgb = ArrowAPI.palette_ui_config.rgb
+    e.config.colour = {rgb[1]/255, rgb[2]/255, rgb[3]/255, 1}
+
+    if not ArrowAPI.palette_changed_flag then return end
+    e.config.button_ref.config.colour = {rgb[1]/255, rgb[2]/255, rgb[3]/255, 1}
+
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    local palette = ArrowAPI.colors.palettes[set]
+    local idx = ArrowAPI.palette_ui_config.open_palette.idx
+    local current_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+
+    current_color[1] = rgb[1]
+    current_color[2] = rgb[2]
+    current_color[3] = rgb[3]
+
+    update_hex_input(current_color)
+
+    if idx == 0 then
+        current_color[1] = current_color[1]/255
+        current_color[2] = current_color[2]/255
+        current_color[3] = current_color[3]/255
+        current_color[4] = 1
+    end
+
+    ArrowAPI.palette_changed_flag = nil
+    G.OVERLAY_MENU:recalculate()
+end
+
+function G.FUNCS.arrow_apply_palette(e)
+    ArrowAPI.colors.use_custom_palette(ArrowAPI.palette_ui_config.open_palette.set)
+end
+
+function G.FUNCS.arrow_can_save_palette(e)
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    local palette = ArrowAPI.colors.palettes[set]
+    local valid_save = ArrowAPI.palette_ui_config.name_input ~= 'Default' or #ArrowAPI.config.saved_palettes[set] >= 12
+    if valid_save and ArrowAPI.palette_ui_config.name_input ~= palette.current_palette.name then
+        for i=1, #ArrowAPI.config.saved_palettes[set] do
+            if ArrowAPI.palette_ui_config.name_input == ArrowAPI.config.saved_palettes[set][i].name then
+                valid_save = false
+                break
+            end
+        end
+    end
+
+    if not valid_save then
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    else
+        e.config.colour = G.C.BLUE
+        e.config.button = 'arrow_save_palette'
+    end
+end
+
+function G.FUNCS.arrow_save_palette(e)
+    -- enable this palette first
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    ArrowAPI.colors.use_custom_palette(set)
+
+    local palette = ArrowAPI.colors.palettes[set]
+    if ArrowAPI.palette_ui_config.name_input == palette.current_palette.name then
+        -- just save
+        for i, v in ipairs(ArrowAPI.config.saved_palettes[set]) do
+            if v.name == palette.current_palette.name then
+                if set ~= 'Background' then
+                    ArrowAPI.config.saved_palettes[set][i].badge_colour = copy_table(palette.current_palette.badge_colour)
+                end
+
+                for j, color in ipairs(palette.current_palette) do
+                    local default = palette.default_palette[j]
+                    local is_default = (color[1] == default[1] and color[2] == default[2] and color[3] == default[3])
+                    ArrowAPI.config.saved_palettes[set][i][j] = {key = default.key, default = is_default, color[1], color[2], color[3]}
+                end
+                SMODS.save_mod_config(ArrowAPI)
+                return
+            end
+        end
+
+        return
+    end
+
+    local new_idx = #ArrowAPI.config.saved_palettes[set]+1
+    local save_palette = {name = ArrowAPI.palette_ui_config.name_input, badge_colour = set ~= 'Background' and copy_table(palette.current_palette.badge_colour) or nil}
+    for i = 1, #palette.current_palette do
+        local current_color = palette.current_palette[i]
+        save_palette[i] = {key = current_color.key, default = current_color.default, current_color[1], current_color[2], current_color[3]}
+    end
+
+    palette.last_palette = copy_table(save_palette)
+    palette.current_palette = save_palette
+    ArrowAPI.config.saved_palettes[set][new_idx] = save_palette
+    ArrowAPI.config.saved_palettes[set].saved_index = new_idx
+    SMODS.save_mod_config(ArrowAPI)
+
+    -- kinda have to recreate it
+    G.FUNCS.overlay_menu{
+        definition = arrow_create_UIBox_palette_menu(),
+        config = {offset = {x = 0, y = 0}}
+    }
+    G.ROOM.jiggle = 0
+
+    local open_idx = ArrowAPI.palette_ui_config.open_palette.idx
+    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..open_idx)
+    G.OVERLAY_MENU:recalculate()
+end
+
+function G.FUNCS.arrow_delete_palette(e)
+    -- enable this palette first
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    local idx = ArrowAPI.config.saved_palettes[set].saved_index
+    table.remove(ArrowAPI.config.saved_palettes[set], idx)
+
+    ArrowAPI.colors.use_custom_palette(set, idx - 1)
+
+    -- kinda have to recreate it
+    G.FUNCS.overlay_menu{
+        definition = arrow_create_UIBox_palette_menu(),
+        config = {offset = {x = 0, y = 0}}
+    }
+    G.ROOM.jiggle = 0
+
+    local open_idx = ArrowAPI.palette_ui_config.open_palette.idx
+    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..open_idx)
+    G.OVERLAY_MENU:recalculate()
+end
+
+function G.FUNCS.arrow_can_delete_palette(e)
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    if ArrowAPI.colors.palettes[set].current_palette.name == 'Default' or #ArrowAPI.config.saved_palettes[set] <= 1 then
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    else
+        e.config.colour = G.C.RED
+        e.config.button = 'arrow_delete_palette'
+    end
+end
+
+function G.FUNCS.arrow_load_palette_preset(args)
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    ArrowAPI.config.saved_palettes[set].saved_index = args.cycle_config.current_option
+    ArrowAPI.palette_ui_config.name_input = ArrowAPI.config.saved_palettes[set][args.cycle_config.current_option].name
+
+    -- kinda have to recreate it
+    G.FUNCS.overlay_menu{
+        definition = arrow_create_UIBox_palette_menu(),
+        config = {offset = {x = 0, y = 0}}
+    }
+    G.ROOM.jiggle = 0
+    local open_idx = ArrowAPI.palette_ui_config.open_palette.idx
+    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..open_idx)
 end

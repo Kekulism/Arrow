@@ -64,6 +64,7 @@ ArrowAPI.loading = {
         end
 
         info.key = file_key
+        local skip_atlas = not not info.atlas
         if item_type == 'Challenge' then
             info.button_colour = info.button_colour or SMODS.current_mod.badge_colour
         elseif item_type == 'Achievement' then
@@ -78,8 +79,8 @@ ArrowAPI.loading = {
                 info.rarity = 0
             end
         elseif item_type ~= 'Edition' then
-            info.atlas = file_key
-            info.pos = { x = 0, y = 0 }
+            info.atlas = info.atlas or file_key
+            info.pos = info.pos or { x = 0, y = 0 }
             if item_type == 'Stake' then
                 info.sticker_atlas = file_key..'_sticker'
                 info.sticker_pos = { x = 0, y = 0 }
@@ -127,9 +128,22 @@ ArrowAPI.loading = {
                 if info_queue and ArrowAPI.current_config['enable_ItemCredits'] then
                     local vars = (type(info.artist) == 'function' and info:artist()) or (type(info.artist) == 'table' and info.artist) or {info.artist}
                     info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
+
+                    -- add this automatically
+                    if item_type == 'VHS' then
+                        info_queue[#info_queue+1] = {key = "vhs_activation", set = "Other"}
+                    end
                 end
 
                 local ret = ref_loc_vars(self, info_queue, card)
+
+                -- always supply runtime vars
+                if item_type == 'VHS' then
+                    ret = ret or {}
+                    ret.vars = ret.vars or {}
+                    table.insert(ret.vars, card.ability.runtime-card.ability.uses)
+                end
+
                 if ret and ret.key == self.key and ArrowAPI.current_config['enable_DetailedDescs'] then
                     ret.key = ret.key..'_detailed'
                 end
@@ -140,26 +154,28 @@ ArrowAPI.loading = {
         local new_item
         if SMODS[smods_item] then
             new_item = SMODS[smods_item](info)
-            for k_, v_ in pairs(new_item) do
-                if type(v_) == 'function' then
-                    new_item[k_] = info[k_]
-                end
-            end
         else
-            sendDebugMessage('loading cardsleeve '..file_key)
-            if CardSleeves and item_type == 'Sleeve' then
+            if item_type == 'SoundPack' then
+                new_item = TNSMI.SoundPack(info)
+            elseif CardSleeves and item_type == 'Sleeve' then
                 new_item = CardSleeves.Sleeve(info)
-                for k_, v_ in pairs(new_item) do
-                    if type(v_) == 'function' then
-                        new_item[k_] = info[k_]
-                    end
-                end
             elseif Partner_API and item_type == 'Partner' then
                 new_item = Partner_API.Partner(info)
-                for k_, v_ in pairs(new_item) do
-                    if type(v_) == 'function' then
-                        new_item[k_] = info[k_]
-                    end
+            end
+        end
+
+        assert(new_item, 'Item '..info.key..' of type '..item_type..' failed to load')
+
+        for k_, v_ in pairs(new_item) do
+            if type(v_) == 'function' then
+                new_item[k_] = info[k_]
+            end
+        end
+
+        if info.pools and next(info.pools) then
+            for k, _ in pairs(info.pools) do
+                if k ~= new_item.set then
+                    SMODS.insert_pool(G.P_CENTER_POOLS[k], new_item)
                 end
             end
         end
@@ -182,7 +198,12 @@ ArrowAPI.loading = {
                         end
 
                         if not found_contrib then
-                            table.insert(v.contributors, {name = name, name_colour = G.C.UI.TEXT_LIGHT, name_scale = 1})
+                            table.insert(v.contributors, {
+                                name = name,
+                                name_colour = G.C.UI.TEXT_LIGHT,
+                                name_scale = 1,
+                                {key = new_item.key, item_type = smods_item}
+                            })
                         end
                     end
                 end
@@ -197,7 +218,7 @@ ArrowAPI.loading = {
             end
         end
 
-        if item_type == 'Challenge' or item_type == 'Achievement' or item_type == 'Edition' then
+        if skip_atlas or item_type == 'Challenge' or item_type == 'Achievement' or item_type == 'Edition' then
             return true
         end
 
@@ -213,8 +234,24 @@ ArrowAPI.loading = {
                 width = 29
                 height = 29
                 SMODS.Atlas({ key = file_key..'_sticker', path = "stickers/" .. file_key .. "_sticker.png", px = 71, py = 95 })
+            elseif item_type == 'SoundPack' then
+                if info.atlas == 'arrow_sp_default' then return true end
+                height = 71
             end
-            SMODS.Atlas({ key = file_key, path = folder_key .. "/" .. file_key .. ".png", px = new_item.width or width, py = new_item.height or height })
+            local atlas_args = {
+                key = file_key,
+                path = folder_key .. "/" .. file_key .. ".png",
+                px = new_item.width or width,
+                py = new_item.height or height
+            }
+
+            if info.animation then
+                atlas_args.frames = info.animation.frames
+                atlas_args.fps = info.animation.fps
+                atlas_args.atlas_table = 'ANIMATION_ATLAS'
+            end
+
+            SMODS.Atlas(atlas_args)
         end
         return true
     end,
@@ -274,7 +311,7 @@ ArrowAPI.loading = {
     filter_item = function(item)
         if item.dependencies then
             for k, _ in pairs(item.dependencies.config or {}) do
-                if SMODS.current_mod.config['enable_'..k..'s'] == false then
+                if SMODS.current_mod.config['enable_'..k] == false then
                     return false
                 end
             end

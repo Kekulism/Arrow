@@ -1,6 +1,7 @@
 local packInfo = {
     name = 'Analog',
-    alerted = true,
+    atlas = 'boosters',
+    pos = {x = 2, y = 0},
     config = {
         extra = 6,
         choose = 1,

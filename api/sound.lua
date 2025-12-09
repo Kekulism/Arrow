@@ -1,6 +1,5 @@
-SMODS.Atlas({key = 'default_soundpack', path = 'default_soundpack.png', px = 71, py = 71, prefix_config = false})
-SMODS.Atlas({key = 'sp_balatro', path = 'sp_balatro.png', px = 71, py = 75, prefix_config = false})
-SMODS.Atlas({key = 'thumb' , path = 'thumb.png', px = 71, py = 71, prefix_config = false})
+SMODS.Atlas({key = 'sp_default', path = 'soundpacks/sp_default.png', px = 71, py = 71})
+SMODS.Atlas({key = 'sp_balatro', path = 'soundpacks/sp_balatro.png', px = 71, py = 71})
 
 TNSMI.SoundPacks = {}
 TNSMI.SoundPack = SMODS.GameObject:extend ({
@@ -8,10 +7,7 @@ TNSMI.SoundPack = SMODS.GameObject:extend ({
     set = 'SoundPack',
     obj_table = TNSMI.SoundPacks,
     class_prefix = "sp",
-    prefix_config = {
-        atlas = false
-    },
-    atlas = 'default_soundpack',
+    atlas = 'sp_default',
     required_params = {
         'key',
         'sound_table'
@@ -114,13 +110,9 @@ function TNSMI.save_soundpacks()
     SMODS.save_mod_config(TNSMI)
 end
 
-function TNSMI.get_size_mod()
-    return (1 - (TNSMI.config.rows - 1) * 0.2)
-end
-
 TNSMI.SoundPack({
     key = 'sp_balatro',
-    atlas = 'sp_balatro',
+    atlas = 'arrow_sp_balatro',
     prefix_config = false,
     sound_table = {
         { key = "ambientFire1" },

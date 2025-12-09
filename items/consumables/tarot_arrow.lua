@@ -1,6 +1,8 @@
 local consumInfo = {
     name = 'The Arrow',
     set = 'Tarot',
+    atlas = 'tarots',
+    pos = {x = 2, y = 2},
     cost = 3,
     alerted = true,
     origin = {

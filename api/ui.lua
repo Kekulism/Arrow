@@ -51,7 +51,7 @@ end
 ArrowAPI.ui = {
     --- Dynamically creates a scale factor based on the size of a text string
     --- @param text string Single-line text string
-    --- @param size number size of text, defaults to 0.9
+    --- @param size number | nil size of text, defaults to 0.9
     calc_scale_fac = function(text, size)
         size = size or 0.9
         local font = G.LANG.font
@@ -468,7 +468,7 @@ ArrowAPI.ui = {
                             local scale_fac = math.min(0.8, ArrowAPI.ui.calc_scale_fac(get_name))
                             col_nodes[#col_nodes+1] = {
                                 n=G.UIT.R,
-                                config={align = "tm"},
+                                config={align = "tm", r = 0.1, colour = G.C.BLACK, hover = true, on_demand_tooltip = (not data.no_tooltip and #data > 0) and {filler =  {func = create_UIBox_credit_tooltip, args = data}} or nil},
                                 nodes = {{
                                     n=G.UIT.T,
                                     config={text = get_name, scale = scale_fac * mod_scale * data.name_scale, colour = data.name_colour, shadow = true}

@@ -1,5 +1,4 @@
 ArrowAPI.config_tools = {
-
     use_credits = function(mod, extra_args)
         mod.ARROW_USE_CREDITS = true
         extra_args = extra_args or {}
@@ -15,7 +14,8 @@ ArrowAPI.config_tools = {
                     local contrib = {
                         name = v.name,
                         name_colour = v.name_colour or G.C.UI.TEXT_LIGHT,
-                        name_scale = v.name_scale or 1
+                        name_scale = v.name_scale or 1,
+                        no_tooltip = v.no_tooltip
                     }
                     contrib_table[#contrib_table+1] = contrib
                 end

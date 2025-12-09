@@ -1,10 +1,39 @@
+local spec_palette = {
+	name = 'Spectrans',
+	badge_colour = SMODS.Gradient({key = 'spectral', colours = {HEX('F98899'), HEX('5BA6DD')}, cycle = 3.5 }),
+	{key = '94114151', 93, 141, 181},
+	{key = '7887121', 81, 110, 146},
+	{key = '99143225', 94, 181, 240},
+	{key = '91127193', 91, 166, 221},
+	{key = '19917874', 245, 169, 184},
+	{key = '167156103', 249, 136, 153},
+	{key = '122164242', 91, 206, 250},
+	{key = '232214127', 248, 196, 203},
+	{key = '13913197', 251, 113, 131},
+	{key = '616896', 51, 65, 89},
+	{key = '92120125', 132, 140, 174},
+	{key = '82100162', 86, 136, 168},
+	{key = '10610181', 171, 94, 105},
+	{key = '114151217', 89, 135, 187},
+	{key = '169226242', 198, 233, 244},
+	{key = '225235133', 250, 222, 227},
+	{key = '192223174', 252, 190, 198},
+	{key = '207229185', 251, 177, 188},
+	{key = '144226249', 156, 219, 249},
+	{key = '239241156', 250, 219, 223},
+	{key = '137198234', 156, 209, 235},
+	{key = '25584104', 251, 113, 131},
+    {key = '1706492', 179, 94, 105}
+}
 
 -- blank function that is run on starting the main menu,
 -- other parts of the mod can hook into this to run code
 -- that needs to be run after the game has initialized
-local ref_post_splash = G.FUNCS.initPostSplash or function() end
-G.FUNCS.initPostSplash = function()
-	local ret = ref_post_splash()
+function Game:init_post_splash()
+
+	G.shared_soul.atlas = G.ASSET_ATLAS['arrow_spectrals']
+	G.shared_soul:set_sprite_pos({x = 9, y = 5})
+
 	ArrowAPI.loading.disable_empty()
 
 	for _, mod in pairs(SMODS.Mods) do
@@ -41,10 +70,7 @@ G.FUNCS.initPostSplash = function()
 		ArrowAPI.misc.run_challenge_functions(v)
 	end
 
-	TNSMI.save_soundpacks()
-
-
-	return ret
+	ArrowAPI.colors.setup_palettes()
 end
 
 local ps_ref = Game.prep_stage
@@ -53,7 +79,18 @@ function Game:prep_stage(new_stage, new_state, new_game_obj)
 
     if not ArrowAPI.INIT_POST_SPLASH then
         ArrowAPI.INIT_POST_SPLASH = true
-        G.FUNCS.initPostSplash()
+
+		-- prune the config of any packs that don't correspond to an object
+		-- meaning that a mod was unloaded
+		for i = #TNSMI.config.loaded_packs, 1, -1 do
+			-- Save the priority to the config file.
+			if not TNSMI.SoundPacks[TNSMI.config.loaded_packs[i]] then
+				table.remove(TNSMI.config.loaded_packs, i)
+			end
+		end
+		TNSMI.save_soundpacks()
+
+        self:init_post_splash()
     end
 end
 

@@ -1,6 +1,8 @@
 local consumInfo = {
     name = 'The Diary',
     set = "Spectral",
+    atlas = 'spectrals',
+    pos = {x = 6, y = 2},
     cost = 4,
     alerted = true,
     origin = {

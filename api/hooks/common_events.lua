@@ -25,9 +25,7 @@ end
 ---------------------------
 
 local ref_background_blind = ease_background_colour_blind
-function ease_background_colour_blind(...)
-    local args = {...}
-    local state = args[1]
+function ease_background_colour_blind(state, blind_override)
     if state == G.STATES.ROUND_EVAL then
         -- reset the table references so the gradients aren't active anymore
         if G.GAME.arrow_gradient_background then
@@ -125,7 +123,22 @@ function ease_background_colour_blind(...)
         end
     end
 
-    return ref_background_blind(...)
+    -- basically just copies the vanilla logic to replace with the showdown colors
+    local blindname = ((blind_override or (G.GAME.blind and G.GAME.blind.name ~= '' and G.GAME.blind.name)) or 'Small Blind')
+	blindname = (blindname == '' and 'Small Blind' or blindname)
+
+	for _, v in pairs(G.P_BLINDS) do
+		if v.name == blindname and v.boss and v.boss.showdown then
+			if G.GAME.blind then
+                G.GAME.blind:change_colour()
+            end
+
+            ease_background_colour{new_colour = G.C.BLIND.SHOWDOWN_COL_1, special_colour = G.C.BLIND.SHOWDOWN_COL_2, tertiary_colour = darken(G.C.BLACK, 0.4), contrast = 3}
+            return
+		end
+	end
+
+    return ref_background_blind(state, blind_override)
 end
 
 -- evil bad overwrite

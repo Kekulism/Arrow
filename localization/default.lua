@@ -66,6 +66,16 @@ return {
 			arrow_options_enable_Vouchers = "Vouchers",
 			arrow_options_enable_Editions = "Editions",
 
+            -- color loc
+            b_set_palettes = 'Palettes',
+            b_pal_tarot = 'Tarot',
+            b_pal_planet = 'Planet',
+            b_pal_spectral = 'Spectral',
+            b_pal_background = 'Background',
+            b_apply_palette = 'Apply',
+            b_save_palette = 'Save',
+            b_delete_palette = 'Delete',
+
             --- tonsmth loc
             k_soundpack = 'Sound Pack',
             b_remove = 'Remove',
