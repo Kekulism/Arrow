@@ -124,5 +124,61 @@ ArrowAPI.misc = {
             G.C[k] = v
             G.ARGS.LOC_COLOURS[string.lower(k)] = G.C[k]
         end
-    end
+    end,
+
+    predict_gradient = function(grad, delay)
+        if #grad.colours < 2 then return end
+        local timer = (G.TIMERS.REAL + (delay or 0))%grad.cycle
+        local start_index = math.ceil(timer*#grad.colours/grad.cycle)
+        local end_index = start_index == #grad.colours and 1 or start_index+1
+        local start_colour, end_colour = grad.colours[start_index], grad.colours[end_index]
+        local partial_timer = (timer%(grad.cycle/#grad.colours))*#grad.colours/grad.cycle
+
+        local ret = {0, 0, 0, 1}
+        for i = 1, 4 do
+            if grad.interpolation == 'linear' then
+                ret[i] = start_colour[i] + partial_timer*(end_colour[i]-start_colour[i])
+            elseif grad.interpolation == 'trig' then
+                ret[i] = start_colour[i] + 0.5*(1-math.cos(partial_timer*math.pi))*(end_colour[i]-start_colour[i])
+            end
+        end
+
+        return ret
+    end,
+
+    title_calculate = function(context)
+        SMODS.push_to_context_stack(context, "utils.lua : SMODS.calculate_context")
+        local mods = {}
+        for _, mod in ipairs(SMODS.get_mods_scoring_targets()) do
+            mods[#mods + 1] = { object = mod}
+        end
+
+        local flags = {}
+        context.title_calculate = true
+        for _, mod in ipairs(mods) do
+            if not SMODS.check_looping_context(mod.object) then
+                SMODS.current_evaluated_object = mod.object
+                SMODS.push_to_context_stack(context, "utils.lua : SMODS.eval_individual")
+                local eval = {}
+                local eff = mod.object:calculate(context)
+                if eff == true then eff = { remove = true } end
+                if type(eff) ~= 'table' then eff = nil end
+                SMODS.pop_from_context_stack(context, "utils.lua : SMODS.eval_individual")
+                local f = SMODS.trigger_effects({eval})
+                for k,v in pairs(f) do flags[k] = v end
+                SMODS.update_context_flags(context, flags)
+            end
+        end
+
+        SMODS.current_evaluated_object = nil
+        context.title_calculate = nil
+
+        SMODS.pop_from_context_stack(context, "utils.lua : SMODS.calculate_context")
+
+        local ret = {}
+        for _, f in ipairs(flags) do
+            for k,v in pairs(f) do ret[k] = v end
+        end
+        return ret
+    end,
 }

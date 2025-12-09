@@ -1,6 +1,8 @@
 local voucherInfo = {
     name = 'Plant Appraiser',
     cost = 10,
+    atlas = 'vouchers',
+    pos = {x = 0, y = 1},
     requires = {'v_arrow_foo'},
     config = {
         extra = {

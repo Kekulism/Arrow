@@ -1,5 +1,7 @@
 local tagInfo = {
     name = 'Spirit Tag',
+    atlas = 'tags',
+    pos = {x = 3, y = 0},
     config = {type = 'immediate'},
     origin = 'jojo',
     artist = 'BarrierTrio/Gote',

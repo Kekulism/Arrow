@@ -181,7 +181,23 @@ times = 1
 target = "game.lua"
 pattern = '''add_joker(v.id, nil, k ~= 1)'''
 position = "at"
-payload = '''add_joker(v.id, nil, k ~= 1, v.eternal)'''
+payload = '''ArrowAPI.eternal_compat_bypass = true
+add_joker(v.id, nil, k ~= 1, v.eternal)
+ArrowAPI.eternal_compat_bypass = nil'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''local _joker = add_joker(v.id, v.edition, k ~= 1)
+if v.eternal then _joker:set_eternal(true) end
+if v.pinned then _joker.pinned = true end'''
+position = "at"
+payload = '''ArrowAPI.eternal_compat_bypass = true
+local _joker = add_joker(v.id, v.edition, k ~= 1, v.eternal)
+if v.pinned then _joker.pinned = true end
+ArrowAPI.eternal_compat_bypass = nil'''
 match_indent = true
 times = 1
 

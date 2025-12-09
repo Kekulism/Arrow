@@ -3,6 +3,7 @@ SMODS.Shader({ key = 'stand_mask', path = 'stand_mask.fs' })
 SMODS.Atlas({ key = 'stand_noise', path = 'noise.png',  px = 128, py = 128})
 SMODS.Atlas({ key = 'stand_gradient', path = 'gradient.png', px = 64, py = 64})
 SMODS.Shader({key = 'arrow_ui_poly', path = 'ui_poly.fs'})
+SMODS.Shader({key = 'rgb_slider', path = 'rgb_slider.fs'})
 
 local default_aura_target = 0.3
 
@@ -123,7 +124,9 @@ SMODS.DrawStep:take_ownership('floating_sprite', {
                 self.children.floating_sprite:draw_shader('hologram', nil, self.ARGS.send_to_shader, nil, self.children.center, 2*scale_mod, 2*rotate_mod)
                 self.hover_tilt = self.hover_tilt/1.5
             else
-                self.children.floating_sprite:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+                if not self.config.center.no_soul_shadow then
+                    self.children.floating_sprite:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+                end
                 self.children.floating_sprite:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
             end
 

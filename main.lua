@@ -2,9 +2,59 @@ ArrowAPI = SMODS.current_mod
 ArrowAPI.current_config = copy_table(ArrowAPI.config)
 ArrowAPI.startup_item_check = false
 ArrowAPI.col_stand_hover = nil
+ArrowAPI.palette_ui_config = {
+	rgb = {0, 0, 0},
+	open_palette = {
+		set = '',
+		idx = '',
+	},
+	hex_input = '',
+	name_input = ''
+}
 
+-- TNSMI setup, aliased from ArrowAPI
+TNSMI = SMODS.current_mod
+TNSMI.config.loaded_packs.replace_map = {}
+TNSMI.cardareas = {}
+TNSMI.prompt_text_input = ''
+TNSMI.search_text = ''
+
+G.C.SECONDARY_SET.SoundPack = HEX("56A887")
 G.C.STAND = HEX('B85F8E')
 G.C.VHS = HEX('a2615e')
+
+G.C.BLIND.SHOWDOWN_COL_1 = copy_table(G.C.RED)
+G.C.BLIND.SHOWDOWN_COL_2 = copy_table(G.C.BLUE)
+
+-- copied from arrow
+G.C.TAGS = {
+    tag_uncommon = G.C.GREEN,
+    tag_rare = G.C.RED,
+    tag_negative = G.C.DARK_EDITION,
+    tag_foil = G.C.DARK_EDITION,
+    tag_holo = G.C.DARK_EDITION,
+    tag_polychrome = G.C.DARK_EDITION,
+    tag_investment = G.C.MONEY,
+    tag_voucher = G.C.SECONDARY_SET.Voucher,
+    tag_boss = G.C.IMPORTANT,
+    tag_standard = G.C.IMPORTANT,
+    tag_charm = G.C.SECONDARY_SET.Tarot,
+    tag_meteor = G.C.SECONDARY_SET.Planet,
+    tag_buffoon = G.C.RED,
+    tag_handy = G.C.MONEY,
+    tag_garbage = G.C.MONEY,
+    tag_ethereal = G.C.SECONDARY_SET.Spectral,
+    tag_coupon = G.C.MONEY,
+    tag_double = G.C.IMPORTANT,
+    tag_juggle = G.C.BLUE,
+    tag_d_six = G.C.GREEN,
+    tag_top_up = G.C.BLUE,
+    tag_skip = G.C.MONEY,
+    tag_orbital = G.C.SECONDARY_SET.Planet,
+    tag_economy = G.C.MONEY,
+	tag_spirit = G.C.STAND,
+	tag_plinket = G.C.VHS
+}
 
 if not G.ARGS.LOC_COLOURS then loc_colour() end
 G.ARGS.LOC_COLOURS['stand'] = G.C.STAND
@@ -13,14 +63,21 @@ G.ARGS.LOC_COLOURS['eternal'] = G.C.ETERNAL
 G.ARGS.LOC_COLOURS['perishable'] = G.C.PERISHABLE
 G.ARGS.LOC_COLOURS['rental'] = G.C.RENTAL
 
+-- dunno if I'll use these
+G.ARGS.LOC_COLOURS['showdown1'] = G.C.BLIND.SHOWDOWN_COL_1
+G.ARGS.LOC_COLOURS['showdown2'] = G.C.BLIND.SHOWDOWN_COL_2
+
 local includes = {
 	-- data types
+	'sound',
 	'compat',
 	'math',
+	'config',
 	'logging',
 	'string',
 	'table',
 	'pseudorandom',
+	'colors',
 	'ui',
 	'credits',
 	'shaders',
@@ -52,40 +109,3 @@ for _, include in ipairs(includes) do
 	end
 end
 
--- blank function that is run on starting the main menu,
--- other parts of the mod can hook into this to run code
--- that needs to be run after the game has initialized
-local ref_post_splash = function() end
-if G.FUNCS.initPostSplash then ref_post_splash = G.FUNCS.initPostSplash end
-G.FUNCS.initPostSplash = function()
-	local ret = ref_post_splash()
-	ArrowAPI.loading.disable_empty()
-
-	for _, mod in pairs(SMODS.Mods) do
-		if mod.can_load and mod.ARROW_USE_CREDITS then
-			-- clean any default sections that aren't provided contributors
-			if ArrowAPI.credits[mod.id].use_default_sections then
-				for i = #ArrowAPI.credits[mod.id], 1, -1 do
-					if not next(ArrowAPI.credits[mod.id][i].contributors) then
-						table.remove(ArrowAPI.credits[mod.id], i)
-					end
-				end
-
-				-- set default section dimensions
-				local default_w = ArrowAPI.DEFAULT_CREDIT_MATRIX.col/#ArrowAPI.credits[mod.id]
-				for i, v in ipairs(ArrowAPI.credits[mod.id]) do
-					v.pos_start = {col = default_w * (i-1), row = 0}
-					v.pos_end = {col = default_w * i, row = ArrowAPI.DEFAULT_CREDIT_MATRIX.row}
-				end
-			end
-
-			mod.credits_tab = ArrowAPI.credits.create_credits_tab(mod)
-		end
-	end
-
-	for k, v in ipairs(G.CHALLENGES) do
-		ArrowAPI.misc.run_challenge_functions(v)
-	end
-
-	return ret
-end

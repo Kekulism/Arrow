@@ -1,5 +1,7 @@
 local tagInfo = {
     name = 'Plinkett Tag',
+    atlas = 'tags',
+    pos = {x = 4, y = 0},
     config = {type = 'new_blind_choice'},
     origin = {
         category = 'rlm',

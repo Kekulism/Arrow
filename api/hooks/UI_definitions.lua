@@ -1,7 +1,37 @@
+---------------------------
+--------------------------- Maggie Speech Bubble Support
+---------------------------
+
+function G.UIDEF.jok_speech_bubble(text_key, loc_vars, extra)
+    local text = {}
+    extra = extra or {}
+
+    localize{type = 'quips', key = text_key, vars = loc_vars or {}, nodes = text}
+    local row = {}
+    for k, v in ipairs(text) do
+        --v[1].config.colour = extra.text_colour or v[1].config.colour or G.C.JOKER_GREY
+        row[#row+1] =  {n=G.UIT.R, config={align = extra.text_alignment or "cl"}, nodes=v}
+    end
+    local t = {n=G.UIT.ROOT, config = {align = "cm", minh = 1, r = 0.3, padding = 0.07, minw = 1, colour = extra.root_colour or G.C.JOKER_GREY, shadow = true}, nodes={
+        {n=G.UIT.C, config={align = "cm", minh = 1, r = 0.2, padding = 0.1, minw = 1, colour = extra.bg_colour or G.C.WHITE}, nodes={
+            {n=G.UIT.C, config={align = "cm", minh = 1, r = 0.2, padding = 0.03, minw = 1, colour = extra.bg_colour or G.C.WHITE}, nodes=row}}
+        }
+    }}
+    return t
+end
+
+
+
+
+
+---------------------------
+---------------------------  General custom interaction behavior
+---------------------------
+
 local ref_can_buy = G.FUNCS.can_buy_and_use
 G.FUNCS.can_buy_and_use = function(e)
     local ret = ref_can_buy(e)
-    if e.config.ref_table.ability.set=='VHS' then
+    if e.config.ref_table.ability.set == 'VHS' then
         e.UIBox.states.visible = false
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
@@ -88,13 +118,28 @@ function create_UIBox_blind_popup(...)
     return ret
 end
 
+SMODS.Atlas({ key = 'mystery', atlas_table = "ANIMATION_ATLAS", path = "blinds/mystery.png", px = 34, py = 34, frames = 21 })
+
 local ref_blind_choice = create_UIBox_blind_choice
 function create_UIBox_blind_choice(...)
-    local ret = ref_blind_choice(...)
-
     local args = { ... }
     local type = args[1]
-    if G.P_BLINDS[G.GAME.round_resets.blind_choices[type]].score_invisible then
+    local obj = G.P_BLINDS[G.GAME.round_resets.blind_choices[type]]
+
+
+    SMODS.hide_blind = obj.hide_blind or SMODS.blind_hidden(obj) or nil
+    local ret
+    if SMODS.hide_blind then
+        local atlas = obj.atlas or 'blind_chips'
+        local old_atlas = G.ANIMATION_ATLAS[atlas]
+        G.ANIMATION_ATLAS[atlas] = G.ANIMATION_ATLAS['arrow_mystery']
+        ret = ref_blind_choice(...)
+        G.ANIMATION_ATLAS[atlas] = old_atlas
+    else
+        ret = ref_blind_choice(...)
+    end
+
+    if obj.score_invisible or SMODS.hide_blind then
         local info_node = ret.nodes[1].nodes[3].nodes[1].nodes[2]
         info_node.config.colour = G.C.CLEAR
         info_node.nodes = {}
@@ -264,9 +309,17 @@ end
 --------------------------- Custom Challenge display behavior
 ---------------------------
 
-local ref_challenge_desc = G.UIDEF.challenge_description_tab
+local ref_challenge_desc = G.UIDEF.challenge_description
+function G.UIDEF.challenge_description(_id, daily, is_row)
+    ArrowAPI.eternal_compat_bypass = true
+    local ret = ref_challenge_desc(_id, daily, is_row)
+    ArrowAPI.eternal_compat_bypass = nil
+    return ret
+end
+
+local ref_challenge_tab = G.UIDEF.challenge_description_tab
 function G.UIDEF.challenge_description_tab(args)
-    local ret = ref_challenge_desc(args)
+    local ret = ref_challenge_tab(args)
 
     local ch = G.CHALLENGES[args._id]
     if args._tab == 'Rules' and G.localization.descriptions.Challenge[ch.key] then
@@ -508,15 +561,7 @@ end
 
 function G.UIDEF.deck_credit(back)
     -- set the artists
-    local vars = {}
-    local mod = back.original_mod or back.mod
-    if type(back.artist) == 'table' then
-        for i, v in ipairs(back.artist) do
-            vars[i] = ArrowAPI.credits[ mod.id][v]
-        end
-    else
-        vars[1] = ArrowAPI.credits[ mod.id][back.artist]
-    end
+    local vars = type(back.artist) == 'table' and back.artist or {back.artist}
 
     local name_nodes = localize{type = 'name', key = "artistcredit_"..#vars, set = 'Other', scale = 0.6}
     local desc_nodes = {}
@@ -530,7 +575,6 @@ function G.UIDEF.deck_credit(back)
         }
     }
 
-    -- customized measurements
     credit.nodes[1].config.padding = 0.035
     credit.nodes[2].config.padding = 0.03
     credit.nodes[2].config.minh = 0.15
@@ -651,4 +695,726 @@ function create_UIBox_notify_alert(key, type)
         }}
     }}
     return t
+end
+
+
+
+
+
+---------------------------
+--------------------------- Draws credits for a given area
+---------------------------
+
+function create_UIBox_credit_tooltip(contributor_data)
+    play_sound('cardSlide2')
+    local centers = {}
+    for i = 1, #contributor_data do
+        local data = contributor_data[i]
+        if G.P_CENTERS[data.key] then
+            centers[#centers+1] = data.key
+        end
+    end
+
+    local credit_cards = {}
+    local row_cards = {}
+    local n_rows = math.max(1, math.floor(#centers/10) + 2 - math.floor(math.log(6, #centers)))
+    local max_width = 1
+    for i, v in ipairs(centers) do
+        local _row = math.floor((i-1)*n_rows/(#centers)+1)
+        row_cards[_row] = row_cards[_row] or {}
+        row_cards[_row][#row_cards[_row]+1] = v
+        if #row_cards[_row] > max_width then max_width = #row_cards[_row] end
+    end
+
+    local card_size = math.max(0.3, 0.75 - 0.01*(max_width*n_rows))
+
+    for _, row_card in ipairs(row_cards) do
+        local credit_area = CardArea(
+        0,0,
+        6.7,
+        3.3/n_rows,
+        {card_limit = nil, type = 'title_2', view_deck = true, highlight_limit = 0, card_w = G.CARD_W*card_size})
+        table.insert(credit_cards,
+        {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
+        {n=G.UIT.O, config={object = credit_area}}
+        }}
+        )
+        for k, v in ipairs(row_card) do
+            local card = Card(0,0, G.CARD_W*card_size, G.CARD_H*card_size, nil, G.P_CENTERS[v])
+            credit_area:emplace(card)
+        end
+    end
+
+    local nodes = {n=G.UIT.C, config={align = "cm", r = 0.1}, nodes={
+      {n=G.UIT.R, config={align = "cm", minh = 5, minw = 8, padding = 0.05, r = 0.1, colour = G.C.WHITE}, nodes=
+        credit_cards
+      }
+    }}
+
+    return {n=G.UIT.ROOT, config={align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes={
+      nodes
+    }}
+end
+
+
+
+
+
+---------------------------
+--------------------------- New settings tab with some below features
+---------------------------
+
+local ref_settings_tab = G.UIDEF.settings_tab
+function G.UIDEF.settings_tab(tab)
+    if tab == 'Audio' then
+        return {n=G.UIT.ROOT, config={align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes={
+            create_slider({label = localize('b_set_master_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'volume', min = 0, max = 100}),
+            create_slider({label = localize('b_set_music_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'music_volume', min = 0, max = 100}),
+            create_slider({label = localize('b_set_game_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'game_sounds_volume', min = 0, max = 100}),
+            {n = G.UIT.R, config = {align = "cm", padding = 0.1, minh = 2}, nodes = {
+                {n = G.UIT.C, config = {align = "cm", padding = 0.1, minh = 2.5}, nodes = {
+                    UIBox_button{ label = {localize("tnsmi_manager_pause")}, button = "tnsmi_packs_button", minw = 4, colour = G.C.PALE_GREEN},
+                }},
+                {n = G.UIT.C, config = {align = "cm", padding = 0.1, minh = 2.5}, nodes = {
+                    {n = G.UIT.R, config = {align = "cl", padding = 0.1}, nodes = {
+                        {n = G.UIT.C, config = {align = "cl", minw = 2.5}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.T, config = {align = "cr", text = localize("tnsmi_cfg_rows")..": ", colour = G.C.WHITE, scale = 0.3}}}},
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.O, config = {align = "cr", object = DynaText{string = {{ref_table = TNSMI.config, ref_value = "rows"}}, colours = {G.C.WHITE}, scale = 0.3}}}}},
+                        }},
+                        {n = G.UIT.C, config = {align = "cl", minw = 0.4}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"-"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"rows",-1}}}},
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"+"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"rows",1}}}},
+                        }},
+                    }},
+                    {n = G.UIT.R, config = {align = "cl", padding = 0.1}, nodes = {
+                        {n = G.UIT.C, config = {align = "cl", minw = 2.5}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.T, config = {align = "cr", text = localize("tnsmi_cfg_cols")..": ", colour = G.C.WHITE, scale = 0.3}}}},
+                            {n = G.UIT.C, config = {align = "cl"}, nodes = {{n = G.UIT.O, config = {align = "cr", object = DynaText{string = {{ref_table = TNSMI.config, ref_value = "cols"}}, colours = {G.C.WHITE}, scale = 0.3}}}}},
+                        }},
+                        {n = G.UIT.C, config = {align = "cl", minw = 0.4}, nodes = {
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"-"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"cols",-1}}}},
+                            {n = G.UIT.C, config = {align = "cl", minw = 0.65}, nodes = {UIBox_button{ label = {"+"}, button = "tnsmi_change_pack_display", minw = 0.6, minh = 0.4, ref_table = {"cols",1}}}},
+                        }},
+                    }},
+                }},
+            }},
+        }}
+    end
+
+    if tab == 'Palettes' then
+        G.SETTINGS.paused = true
+        ArrowAPI.palette_ui_config.open_palette = nil
+        if G.OVERLAY_MENU then G.OVERLAY_MENU:remove() end
+        G.FUNCS.overlay_menu{
+            definition = arrow_create_UIBox_palette_menu(),
+            config = {offset = {x = 0, y = 10}}
+        }
+        G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_1')
+        return  {n=G.UIT.ROOT, config = {align = "cm"}, nodes={}}
+	end
+
+    return ref_settings_tab(tab)
+end
+
+
+
+
+
+
+---------------------------
+--------------------------- Tonsmith UI
+---------------------------
+
+-- Creates a fake soundpack card partially based on the approach Malverk takes
+function tnsmi_create_soundpack_card(area, pack, pos)
+    local atlas = G.ANIMATION_ATLAS[pack.atlas] or G.ASSET_ATLAS[pack.atlas]
+
+    -- this card is provided a "fake" SoundPack center
+    -- rather than registering an unused item, it fills in the
+    -- fields SMODS.GameObject normally needs to display
+    -- and localize UI for centers
+    local card = Card(
+        area.T.x,
+        area.T.y,
+        G.CARD_W * 0.8,
+        G.CARD_W * 0.8,
+        nil,
+        {key = pack.key, name = "Sound Pack", atlas = pack.atlas, pos={x=0,y=0}, set = "SoundPack", label = 'Sound Pack', config = {}, generate_ui = SMODS.Center.generate_ui},
+        {tnsmi_soundpack = pack.key}
+    )
+
+    card.states.drag.can = area == TNSMI.cardareas.priority
+    if atlas.frames then
+        --card.T.w = W
+        --card.T.h = H
+        card.children.animatedSprite = AnimatedSprite(card.T.x, card.T.y, card.T.w, card.T.h, atlas, atlas.pos)
+        card.children.animatedSprite.T.w = W
+        card.children.animatedSprite.T.h = H
+        card.children.animatedSprite:set_role({major = card, role_type = 'Glued', draw_major = card})
+        card.children.animatedSprite:rescale()
+        card.children.animatedSprite.collide.can = false
+        card.children.animatedSprite.drag.can = false
+        card.children.center:remove()
+        card.children.back:remove()
+        card.no_shadow = true
+        area:emplace(card, pos)
+        return card
+    end
+
+    area:emplace(card, pos)
+
+    -- This delay is set in G.FUNCS.tnsmi_toggle_soundpack for juice
+    -- when TNSMI.dissolve_flag is set, the next pack created of that key
+    -- will materialize rather than instantly appearing
+    -- so it appears to pop out of one cardarea and pop into the next
+    if TNSMI.dissolve_flag == pack.key then
+        card.states.visible = false
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.15,
+            blocking = false,
+            blockable = false,
+            func = (function()
+                card:start_materialize(nil, nil, 0.25)
+                return true
+            end)
+        }))
+
+        TNSMI.dissolve_flag = nil
+    end
+end
+
+--- Definition for the Soundpack Overlay Menu
+function tnsmi_create_UIBox_soundpacks()
+
+    -- creates cardareas only once upon menu load to prevent any unnecessary calc
+    -- updates occur within the existing cardareas
+    if TNSMI.cardareas.priority then TNSMI.cardareas.priority:remove() end
+    TNSMI.cardareas.priority = CardArea(0, 0, G.CARD_W * TNSMI.config.cols * 0.965, G.CARD_H * 0.725,
+        {card_limit = TNSMI.config.cols, type = 'soundpack', highlight_limit = 99}
+    )
+
+    for _, v in ipairs(TNSMI.config.loaded_packs) do
+        tnsmi_create_soundpack_card(TNSMI.cardareas.priority, TNSMI.SoundPacks[v], 'front')
+    end
+
+    -- these are likely unnecessary because area references get cleaned when UI is removed (I think)
+    for i = #TNSMI.cardareas, 1, -1 do
+        TNSMI.cardareas[i]:remove()
+        TNSMI.cardareas[i] = nil
+    end
+
+    local area_nodes = {}
+    for i=1, TNSMI.config.rows do
+        TNSMI.cardareas[i] = CardArea(0, 0, G.CARD_W * TNSMI.config.cols * 0.965, G.CARD_H * 0.725,
+            {card_limit = TNSMI.config.cols, highlight_limit = 99, type = 'soundpack'}
+        )
+
+        area_nodes[#area_nodes+1] = {n = G.UIT.R, config = {align = "cl", colour = G.C.CLEAR}, nodes = {
+            {n = G.UIT.O, config = {id = 'tnsmi_area_'..i, object = TNSMI.cardareas[i]}}
+        }}
+    end
+
+    -- Cycle config is stored in this global variable in order to change the state of the
+    -- option cycle on the fly when filtering search results. Vanilla balatro expects
+    -- they're only changed upon complete menu reload
+    TNSMI.cycle_config = {
+        options = {},
+        w = 4.5,
+        cycle_shoulders = true,
+        opt_callback = 'tnsmi_soundpacks_page',
+        focus_args = {snap_to = true, nav = 'wide'},
+        current_option = 1,
+        colour = G.C.RED,
+        no_pips = true,
+    }
+
+    G.FUNCS.tnsmi_reload_soundpack_cards()
+
+    local opt_cycle = create_option_cycle(TNSMI.cycle_config)
+    opt_cycle.nodes[2].nodes[1].nodes[1].config.func = 'tnsmi_shoulder_buttons'
+    opt_cycle.nodes[2].nodes[1].nodes[3].config.func = 'tnsmi_shoulder_buttons'
+
+
+    local t = {
+        {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, r = 0.2, minh = 0.8, padding = 0.1}, nodes = {
+            {n = G.UIT.C, config = {align = "cl"}, nodes = {
+                {n = G.UIT.T, config = {align = 'cl', text = localize("tnsmi_manager_loaded"), padding = 0.1, scale = 0.25, colour = lighten(G.C.GREY,0.2), vert = true}},
+            }},
+            {n = G.UIT.C, config = {align = "cr", func = 'tnsmi_change_priority'}, nodes = {
+                {n = G.UIT.O, config = {align = 'cr', minw = 6, object = TNSMI.cardareas.priority}}
+            }},
+        }},
+        {n = G.UIT.R, config = {align = "cr", padding = 0}, nodes = {
+            {n = G.UIT.C, config = {align = "cr", padding = 0.1}, nodes = {
+                 {n = G.UIT.T, config = {ref_table = TNSMI, ref_value = 'search_text', scale = 0.25, colour = lighten(G.C.GREY, 0.2)}},
+            }},
+            {n = G.UIT.C, config = {align = "cr", colour = {G.C.L_BLACK[1], G.C.L_BLACK[2], G.C.L_BLACK[3], 0.5}, r = 0.2, padding = 0.1, minw = 3.5}, nodes = {
+                create_text_input({max_length = 12, w = 3.5, ref_table = TNSMI, ref_value = 'prompt_text_input'}),
+                {n = G.UIT.C, config = {align = "cm", minw = 0.2, minh = 0.2, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, shadow = true, button = "tnsmi_reload_soundpack_cards"}, nodes = {
+                    {n = G.UIT.R, config = {align = "cm", padding = 0.05, minw = 1.5}, nodes = {
+                        {n = G.UIT.T, config = {text = localize("tnsmi_filter_label"), scale = 0.4, colour = G.C.UI.TEXT_LIGHT}}
+                    }}
+                }},
+            }},
+
+        }},
+
+        {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, r = 0.2, minh = 4, padding = 0.1}, nodes = {
+            {n = G.UIT.C, config = {align = "cm", colour = G.C.CLEAR}, nodes = area_nodes}
+        }},
+        opt_cycle
+    }
+
+    -- uses the same function as most Overlay Menu calls
+    return create_UIBox_generic_options({ contents = t, back_func = 'settings', snap_back = nil })
+end
+
+--- Definition for the soundpack button that appears in the Options > Audio menu
+function G.UIDEF.tnsmi_soundpack_button(card)
+    local priority = card.area and card.area == TNSMI.cardareas.priority
+    local text = priority and 'b_remove' or 'b_select'
+    local color = priority and  G.C.RED or G.C.GREEN
+    return {
+        n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+            {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.5*card.T.h, hover = true, shadow = true, colour = color, one_press = true, button = 'tnsmi_toggle_soundpack'}, nodes={
+                {n=G.UIT.T, config={text = localize(text), colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
+            }},
+        }
+    }
+end
+
+-- This function is weird as hell
+-- there's no easy way to set a tab other than in the tab definition function
+-- So this kinda fudges it to set the audio tab as chosen if tabs are being created from the soundpack menu (I.E. back to the settings menu)
+local ref_create_tabs = create_tabs
+function create_tabs(args)
+    if args.tabs then
+        local reset_chosen = false
+        for i = #args.tabs, 1, -1 do
+            if args.tabs[i].tab_definition_function_args == 'Audio' and G.OVERLAY_MENU.config.id == 'tnsmi_soundpack_menu' then
+                args.tabs[i].chosen = true
+                reset_chosen = true
+                break
+            end
+        end
+
+        if reset_chosen then
+           for i = #args.tabs, 1, -1 do
+                if args.tabs[i].tab_definition_function_args ~= 'Audio' then
+                    args.tabs[i].chosen = false
+                end
+            end
+        end
+    end
+
+    return ref_create_tabs(args)
+end
+
+
+
+
+
+---------------------------
+--------------------------- Palette editor
+---------------------------
+
+SMODS.Atlas({key = 'slider_point', path = 'slider_point.png', px = 18, py = 18})
+
+function arrow_create_rgb_slider(args)
+    args.w = args.w or 1
+    args.h = args.h or 0.5
+    args.text_scale = args.text_scale or 0.3
+    args.min = args.min
+    args.max = args.max
+    args.text = string.format("%.0f", args.ref_table[args.ref_value])
+
+    local arrow_sprite = Sprite(0, 0, 0.25, 0.25, G.ASSET_ATLAS['arrow_slider_point'], {x = 0, y = 0})
+    arrow_sprite.role.offset = {x = args.w * (args.ref_table[args.ref_value] / args.max) - 0.125, y = 0}
+    arrow_sprite.states.drag.can = false
+
+    return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
+        {n=G.UIT.C, config={align = "bm", minh = args.h * 1.3}, nodes={
+            {n=G.UIT.R, config = {align = "cl", w = args.w, h = args.h*0.3}, nodes = {
+                {n=G.UIT.O, config={colour = G.C.BLUE, object = arrow_sprite, refresh_movement = true}},
+            }},
+            {n=G.UIT.R, config={id = args.id, align = "cl", minw = args.w, r = 0.1, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_rgb_slider', refresh_movement = true}, nodes={
+                {n=G.UIT.B, config={id = 'arrow_rgb_slider', w = args.w, h = args.h, r = 0.1, colour = G.C.UI.TEXT_LIGHT, ref_table = args, refresh_movement = true}},
+            }}
+        }},
+        {n=G.UIT.C, config={align = "bm", minh = args.h * 1.3}, nodes={
+            {n=G.UIT.R, config = {align = "cm", r = 0.05, minw = 0.6, minh = args.h, colour = G.C.UI.TEXT_LIGHT, emboss = 0.05}, nodes = {
+                {n=G.UIT.T, config={ref_table = args, ref_value = 'text', scale = args.text_scale, colour = G.C.UI.TEXT_DARK, decimal_places = 0}}
+            }}
+        }},
+    }}
+end
+
+function arrow_create_UIBox_palette_menu()
+    local palette_tabs = {}
+    for k, v in pairs(ArrowAPI.colors.palettes) do
+        if (v.items and #v.items > 0) or k == 'Background' then
+            if not ArrowAPI.palette_ui_config.open_palette then
+                ArrowAPI.palette_ui_config.open_palette = {set = k, idx = 1}
+            end
+            local loc = localize('b_arrow_pal_'..tostring(k))
+            palette_tabs[#palette_tabs+1] = {
+                label = loc ~= 'ERROR' and loc or k,
+                chosen = k == ArrowAPI.palette_ui_config.open_palette.set,
+                tab_definition_function = G.UIDEF.arrow_palette_tab,
+                tab_definition_function_args = k
+            }
+        end
+    end
+
+    local tabs = create_tabs(
+        {tabs = palette_tabs,
+        snap_to_nav = true}
+    )
+
+    -- set the tabs to be the set colors
+    local tab_buttons = tabs.nodes[1].nodes[2].nodes
+    for i = 1, #tab_buttons do
+        if palette_tabs[i].tab_definition_function_args ~= 'Background' then
+            tab_buttons[i].nodes[1].config.colour = G.C.SECONDARY_SET[palette_tabs[i].tab_definition_function_args]
+        end
+    end
+
+
+    return create_UIBox_generic_options({back_func = 'settings', contents = {tabs}})
+end
+
+function G.UIDEF.arrow_palette_tab(tab)
+    ArrowAPI.colors.use_custom_palette(tab, ArrowAPI.config.saved_palettes[tab].saved_index)
+    local palette = ArrowAPI.colors.palettes[tab]
+
+    if tab ~= ArrowAPI.palette_ui_config.open_palette.set then
+        ArrowAPI.palette_ui_config.open_palette = {set = tab, idx = 1}
+    end
+    local start_idx = ArrowAPI.palette_ui_config.open_palette.idx
+
+    local current_palette = palette.current_palette
+    local button_color = (start_idx == 0 and copy_table(current_palette.badge_colour)) or not current_palette[start_idx].default and current_palette[start_idx] or palette.default_palette[start_idx]
+
+    -- adjust for badge colour
+    if start_idx == 0 then
+        button_color[1] = button_color[1] * 255
+        button_color[2] = button_color[2] * 255
+        button_color[3] = button_color[3] * 255
+        button_color[4] = 1
+    end
+
+    ArrowAPI.palette_ui_config.rgb = {button_color[1], button_color[2], button_color[3]}
+
+    -- set first hex input
+    local new_hex_string = string.upper(tostring(string.format("%02x", button_color[1])..string.format("%02x", button_color[2])..string.format("%02x", button_color[3])))
+    ArrowAPI.palette_ui_config.last_hex_input = new_hex_string
+    ArrowAPI.palette_ui_config.hex_input = new_hex_string
+
+    local deck_tables = {}
+    local cards_per_page = 0
+    local items = {}
+
+    if tab ~= 'Background' then
+        local w_mod = 1
+        local h_mod = 0.95
+        items = palette.items
+
+        G.arrow_palette_collection = {}
+        local rows = {6, 6}
+        local row_totals = {}
+        for i = 1, #rows do
+            if cards_per_page >= #items then
+                rows[i] = nil
+            else
+                row_totals[i] = cards_per_page
+                cards_per_page = cards_per_page + rows[i]
+                G.arrow_palette_collection[i] = CardArea(
+                    G.ROOM.T.x + 0.2*G.ROOM.T.w/2,
+                    G.ROOM.T.h,
+                    (w_mod*rows[i]+0.25)*G.CARD_W,
+                    h_mod*G.CARD_H,
+                    {card_limit = rows[i], type = 'title', highlight_limit = 0, collection = true}
+                )
+                table.insert(deck_tables,
+                {n=G.UIT.R, config={align = "cm", padding = 0.07, no_fill = true}, nodes={
+                    {n=G.UIT.O, config={object = G.arrow_palette_collection[i]}}
+                }})
+            end
+        end
+
+        local options = {}
+        for i = 1, math.ceil(#items/cards_per_page) do
+            table.insert(options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#items/cards_per_page)))
+        end
+
+        G.FUNCS.arrow_palette_page = function(e)
+            for j = 1, #G.arrow_palette_collection do
+                for i = #G.arrow_palette_collection[j].cards, 1, -1 do
+                local c = G.arrow_palette_collection[j]:remove_card(G.arrow_palette_collection[j].cards[i])
+                c:remove()
+                c = nil
+                end
+            end
+            for j = 1, #rows do
+                for i = 1, rows[j] do
+                    local item = items[i+row_totals[j] + (cards_per_page*(e.cycle_config.current_option - 1))]
+                    if not item then break end
+
+                    local disp_card = Card(
+                        G.arrow_palette_collection[j].T.x + G.arrow_palette_collection[j].T.w/2,
+                        G.arrow_palette_collection[j].T.y,
+                        G.CARD_W,
+                        G.CARD_H,
+                        G.P_CARDS.empty,
+                        (G.P_CENTERS[item.table == 'SEALS' and 'c_base' or item.key])
+                    )
+
+                    if item.table == 'SEALS' then disp_card:set_seal(item.key, true) end
+
+                    --disp_card:start_materialize(nil, i>1 or j>1)
+                    G.arrow_palette_collection[j]:emplace(disp_card)
+                end
+            end
+        end
+
+        G.FUNCS.arrow_palette_page{cycle_config = { current_option = 1 }}
+    end
+
+    local width = 4
+    local color_nodes = {}
+    local row_count = 8
+    local row_idx = 0
+    local count = 0
+
+    local button_size = width * 0.9 / row_count
+    local default_palette = palette.default_palette
+
+    for i=1, #default_palette do
+        sendDebugMessage('setting default color: '..tostring(current_palette[i].default))
+        local color = default_palette[i]
+        local custom_color = not current_palette[i].default and current_palette[i] or color
+
+        if count % row_count == 0 then
+            row_idx = row_idx + 1
+            color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm", padding = 0.025}, nodes={}}
+        end
+
+        color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {n=G.UIT.C, config={align = "cm"}, nodes={
+            {n = G.UIT.R,
+                config = {
+                    palette_idx = i,
+                    button = 'arrow_palette_reset',
+                    align = "cm",
+                    minw = button_size,
+                    minh = button_size*0.6,
+                    hover = true,
+                    button_dist = 0.05,
+                    colour = {color[1]/255, color[2]/255, color[3]/255, 1},
+                },
+                nodes = {}
+            },
+            {n = G.UIT.R,
+                config = {
+                    palette_idx = i,
+                    id = 'arrow_palette_button_'..i,
+                    align = "cm",
+                    minw = button_size,
+                    minh = button_size,
+                    colour = {custom_color[1]/255, custom_color[2]/255, custom_color[3]/255, 1},
+                    button = 'arrow_palette_button',
+                    button_dist = 0.05,
+                    hover = true,
+                },
+                nodes = {}
+            }
+        }}
+        custom_color = nil
+        count = count + 1
+
+        if i == #default_palette and tab ~= 'Background' and type(current_palette.badge_colour) == 'table' then
+            local badge_default = default_palette.badge_colour
+            local badge_colour = current_palette.badge_colour
+            color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {n = G.UIT.C, config={align = "cm"}, nodes={
+                {n = G.UIT.R,
+                    config = {
+                        palette_idx = 0,
+                        button = 'arrow_palette_reset',
+                        align = "cm",
+                        minw = button_size,
+                        minh = button_size*0.6,
+                        hover = true,
+                        button_dist = 0.05,
+                        colour = {badge_default[1], badge_default[2], badge_default[3], 1},
+                    },
+                    nodes = {}
+                },
+                {n = G.UIT.R,
+                    config = {
+                        palette_idx = 0,
+                        id = 'arrow_palette_button_0',
+                        align = "cm",
+                        minw = button_size,
+                        minh = button_size,
+                        colour = {badge_colour[1], badge_colour[2], badge_colour[3], 1},
+                        button = 'arrow_palette_button',
+                        button_dist = 0.05,
+                        hover = true,
+                    },
+                    nodes = {}
+                }
+            }}
+        end
+    end
+
+    ArrowAPI.palette_ui_config.hex_input_config = {
+        id = 'arrow_hex_input',
+        max_length = 6,
+        all_caps = true,
+        w = width * 0.6,
+        colour = G.C.UI.BACKGROUND_DARK,
+        hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
+        ref_table = ArrowAPI.palette_ui_config,
+        ref_value = 'hex_input',
+        callback = function()
+            ArrowAPI.palette_ui_config.hex_input = string.format("%06s", ArrowAPI.palette_ui_config.hex_input)
+            local hex = ArrowAPI.palette_ui_config.hex_input
+            ArrowAPI.palette_ui_config.rgb[1] = math.min(255, math.max(0, tonumber(hex:sub(1, 2), 16) or 0))
+            ArrowAPI.palette_ui_config.rgb[2] = math.min(255, math.max(0, tonumber(hex:sub(3, 4), 16) or 0))
+            ArrowAPI.palette_ui_config.rgb[3] = math.min(255, math.max(0, tonumber(hex:sub(5, 6), 16) or 0))
+            ArrowAPI.palette_changed_flag = true
+            TRANSPOSE_TEXT_INPUT(0)
+            G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
+             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
+            G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('b_slider'), true)
+        end
+    }
+
+    ArrowAPI.palette_ui_config.name_input_config = {
+        id = 'arrow_save_name_input',
+        max_length = 12,
+        h = 1,
+        w = 2.65,
+        colour = G.C.UI.BACKGROUND_DARK,
+        hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
+        prompt_text = 'Enter Name',
+        ref_table = ArrowAPI.palette_ui_config,
+        ref_value = 'name_input'
+    }
+
+    ArrowAPI.palette_ui_config.name_input = ArrowAPI.config.saved_palettes[tab][ArrowAPI.config.saved_palettes[tab].saved_index].name
+
+    local preset_options = {}
+    for _, v in ipairs(ArrowAPI.config.saved_palettes[tab]) do
+        preset_options[#preset_options+1] = v.name
+    end
+
+    local preset_cycle = create_option_cycle({
+        options = preset_options,
+        w = 6.5,
+        cycle_shoulders = true,
+        current_option = ArrowAPI.config.saved_palettes[tab].saved_index,
+        colour = G.C.ORANGE,
+        opt_callback = 'arrow_load_palette_preset',
+        focus_args = {snap_to = true, nav = 'wide'}
+    })
+    preset_cycle.nodes[1].config.minw = nil
+    preset_cycle.nodes[3].config.minw = nil
+
+    return {n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+            {n=G.UIT.C, config={align = "cm"}, nodes={
+                {n=G.UIT.R, config={align = "cm", minw = 7}, nodes={
+                    {n=G.UIT.R, config={align = "cm"}, nodes={
+                        {n=G.UIT.C, config={align = "cm"}, nodes={
+                            preset_cycle
+                        }},
+                        tab ~= 'Background' and {n=G.UIT.C, config={align = "cl"}, nodes={
+                            {n=G.UIT.C, config={align = "cl", minw = 2.8}, nodes={
+                                create_text_input(ArrowAPI.palette_ui_config.name_input_config)
+                            }},
+                        }} or nil,
+                        tab ~= 'Background' and {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
+                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, button = 'arrow_save_palette', func = 'arrow_can_save_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                                {n=G.UIT.T, config={align = 'cm', text = localize('b_save_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                            }},
+                        }} or nil,
+                        tab ~= 'Background' and {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
+                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, button = 'arrow_delete_palette', func = 'arrow_can_delete_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                                {n=G.UIT.T, config={align = 'cm', text = localize('b_delete_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                            }},
+                        }} or nil,
+                    }},
+                    tab == 'Background' and {n=G.UIT.R, config={align = "cm"}, nodes={
+                        {n=G.UIT.C, config={align = "cm"}, nodes={
+                            {n=G.UIT.C, config={align = "cl", minw = 2.8}, nodes={
+                                create_text_input(ArrowAPI.palette_ui_config.name_input_config)
+                            }},
+                        }},
+                        {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
+                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, button = 'arrow_save_palette', func = 'arrow_can_save_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                                {n=G.UIT.T, config={align = 'cm', text = localize('b_save_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                            }},
+                        }},
+                        {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
+                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, button = 'arrow_delete_palette', func = 'arrow_can_delete_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                                {n=G.UIT.T, config={align = 'cm', text = localize('b_delete_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                            }},
+                        }},
+                    }} or nil,
+                    tab ~= 'Background' and {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables} or nil,
+                    tab ~= 'Background' and cards_per_page < #items and {n=G.UIT.R, config={align = "cm"}, nodes={
+                        create_option_cycle({options = options, w = 4.5, cycle_shoulders = true, opt_callback = 'arrow_palette_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+                    }} or nil
+                }}
+            }},
+            {n=G.UIT.C, config={align = "cm", minw = 0.4}, nodes = {}},
+            {n=G.UIT.C, config={align = "cm", padding = 0.05}, nodes = {
+                {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, emboss = 0.05, r = 0.1}, nodes = {
+                    {n = G.UIT.C, config={align = "cm", minw = width * 0.9, minh = 4, padding = 0.025}, nodes = color_nodes},
+                }},
+                {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                    {n = G.UIT.C, config = {align = "cm"}, nodes = {
+                        {n = G.UIT.R, config = {align = "cm", minh = 0.1}, nodes = {}},
+                        {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                            {n = G.UIT.C, config={align = "cl", minw = width * 0.7}, nodes ={
+                                create_text_input(ArrowAPI.palette_ui_config.hex_input_config),
+                            }},
+                            {n = G.UIT.C, config={align = "cl", padding = 0.025, colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.4}, nodes = {
+                                {n = G.UIT.R,
+                                    config = {
+                                        id = 'arrow_selected_colour',
+                                        align = "cm",
+                                        minw = width * 0.15,
+                                        minh = width * 0.15,
+                                        func = 'arrow_update_selected_colour',
+                                        r = 0.4
+                                    },
+                                    nodes = {}
+                                }
+                            }},
+                        }},
+                        {n = G.UIT.R, config = {align = "cm", padding = 0.1}, nodes = {
+                            {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                arrow_create_rgb_slider({id = 'r_slider', w = 2.5, h = 0.3, text_scale = 0.2, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 1, min = 0, max = 255}),
+                            }},
+                            {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                arrow_create_rgb_slider({id = 'g_slider', w = 2.5, h = 0.3, text_scale = 0.2, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 2, min = 0, max = 255}),
+                            }},
+                            {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                arrow_create_rgb_slider({id = 'b_slider', w = 2.5, h = 0.3, text_scale = 0.2, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 3, min = 0, max = 255}),
+                            }},
+                        }},
+                    }},
+                }},
+                {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
+                    {n=G.UIT.R, config={align = "cm"}, nodes={
+                        {n=G.UIT.C, config={align = "cm", minw = 4, padding = 0.1, r = 0.1, hover = true, colour = G.C.ORANGE, button = 'arrow_apply_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                            {n=G.UIT.T, config={align = 'cm', text = localize('b_apply_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                        }},
+                    }},
+                }}
+            }}
+        }}
+    }}
 end

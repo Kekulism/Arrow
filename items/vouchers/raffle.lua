@@ -1,6 +1,8 @@
 local voucherInfo = {
     name = 'Raffle',
     cost = 10,
+    atlas = 'vouchers',
+    pos = {x = 1, y = 1},
     requires = {'v_arrow_scavenger'},
     unlocked = false,
     unlock_condition = {type = 'c_vhss_bought', extra = 25},

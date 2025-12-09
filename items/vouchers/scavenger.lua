@@ -1,6 +1,8 @@
 local voucherInfo = {
     name = 'Scavenger Hunt',
     cost = 10,
+    atlas = 'vouchers',
+    pos = {x = 1, y = 0},
     config = {
         rate = 4,
     },

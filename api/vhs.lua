@@ -62,6 +62,13 @@ ArrowAPI.vhs = {
         end
     end,
 
+    run_tape = function(card)
+        card.ability.uses = card.ability.uses + 1
+        if card.ability.uses >= card.ability.runtime then
+            ArrowAPI.vhs.destroy_tape(card)
+        end
+    end,
+
     --- Destroys a VHS tape and calls all relevant contexts
     --- @param card Card Balatro Card object of VHS tape to destroy
     --- @param delay_time number Event delay in seconds
@@ -69,6 +76,7 @@ ArrowAPI.vhs = {
     --- @param silent boolean | nil Plays tarot sound effect on destruction if true
     --- @param loc_message string | nil Custom loc string for destruction message, defaults to 'k_vhs_destroyed'
     destroy_tape = function(card, delay_time, ach, silent, loc_message)
+        card.ability.destroyed = true
         G.E_MANAGER:add_event(Event({
             trigger = 'after',
             delay = delay_time,

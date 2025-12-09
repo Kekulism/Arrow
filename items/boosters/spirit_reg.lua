@@ -1,5 +1,7 @@
 local packInfo = {
     name = 'Spirit Pack',
+    atlas = 'boosters',
+    pos = {x = 0, y = 1},
     config = {
         extra = 2,
         choose = 1,

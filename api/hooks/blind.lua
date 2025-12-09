@@ -183,6 +183,7 @@ end
 
 local ref_blind_set = Blind.set_blind
 function Blind:set_blind(...)
+	SMODS.hide_blind = nil
 	local args = {...}
 	local blind, reset = args[1], args[2]
 	if self.arrow_extra_blind then
@@ -195,7 +196,6 @@ function Blind:set_blind(...)
 
 	G.GAME.modifiers.hide_blind_score = nil
 	self.newrun_flag = nil
-
 
 	if blind and (blind.score_invisible or G.GAME.modifiers.all_scores_hidden) then
 		G.GAME.modifiers.hide_blind_score = true
@@ -327,13 +327,9 @@ function Blind:disable(...)
 	return ret
 end
 
-local ref_blind_type = Blind.get_type
+-- override behavior to properly manage blind types
 function Blind:get_type()
-    if self.arrow_extra_blind then
-		return 'Extra'
-	end
-
-	return ref_blind_type(self)
+	return self.arrow_extra_blind and 'Extra' or G.GAME.round_resets.effective_blind
 end
 
 
@@ -837,6 +833,7 @@ function Blind:load(blindTable)
 	self.in_blind = blindTable.in_blind
 	self.config.blind = G.P_BLINDS[blindTable.config_blind] or {}
 
+	self.effect = blindTable.effect
     self.name = blindTable.name
     self.debuff = blindTable.debuff
     self.mult = blindTable.mult
