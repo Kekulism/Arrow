@@ -1,39 +1,22 @@
 function ArrowAPI.reset_game_globals(run_start)
-    if run_start then
-        G.GAME.arrow_extra_discounts = {}
-        G.GAME.arrow_extra_blinds = G.GAME.arrow_extra_blinds or {}
-        G.GAME.modifiers.max_stands = G.GAME.modifiers.max_stands or 1
-        G.GAME.modifiers.consumable_selection_mod = G.GAME.modifiers.consumable_selection_mod or 0
-        G.GAME.arrow_last_upgraded_hand = {}
-
-        G.GAME.morshu_cards = 0
-		G.GAME.csau_saved_deathcards = {}
-
-		if G.GAME.modifiers.csau_marathon then
-			-- set all consumable types besides VHS to 0 shop rate
-			for _, v in pairs(SMODS.ConsumableTypes) do
-				if v.key ~= 'VHS' then
-					local key = v.key:lower() .. '_rate'
-					G.GAME[key] = 0
-				end
-			end
-		end
+    for _, v in ipairs(ArrowAPI.game.game_globals_funcs) do
+        v.func(run_start)
     end
-
-    G.GAME.shop_dollars_spent = 0
-    G.GAME.rerolls_this_round = 0
-    G.GAME.current_round.koffing_rerolls = #SMODS.find_card('j_csau_koffing')
-
-    jojobal_reset_paper_rank()
-	csau_reset_joeycastle()
-	csau_reset_choicevoice()
-	csau_reset_duane()
 end
 
 function ArrowAPI.set_ability_reset_keys()
-    return {
-        'evolved'
-    }
+    local keys_map = {}
+    local reset_keys = {}
+    for _, v in pairs(ArrowAPI.game.reset_keys_funcs) do
+        local mod_keys = v.func()
+        for _, vv in pairs(mod_keys) do
+            if not keys_map[vv] then
+                keys_map[vv] = true
+                table.insert(reset_keys, v)
+            end
+        end
+    end
+    return reset_keys
 end
 
 local ref_card_collection_uibox = SMODS.card_collection_UIBox

@@ -1,5 +1,4 @@
 ArrowAPI = SMODS.current_mod
-ArrowAPI.ARROW_USE_CREDITS = true
 ArrowAPI.startup_item_check = false
 ArrowAPI.col_stand_hover = nil
 ArrowAPI.palette_ui_config = {
@@ -109,7 +108,7 @@ for _, include in ipairs(includes) do
 	end
 end
 
-ArrowAPI.config_tools.use_credits(Cardsauce, {
+ArrowAPI.config_tools.use_credits(ArrowAPI, {
     matrix = {col = 18.5, row = 7},
     {
 		key = 'direction',
