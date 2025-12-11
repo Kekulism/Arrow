@@ -456,6 +456,10 @@ ArrowAPI.loading = {
 }
 
 ArrowAPI.loading.batch_load({
+    config = {
+        parent_folder = ArrowAPI.custom_path,
+	    mod_prefix = 'arrow',
+    },
     Consumable = {
         order = 1,
         items = {

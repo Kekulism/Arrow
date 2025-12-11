@@ -100,8 +100,12 @@ local includes = {
 	'misc',
 }
 
+local module_path = ArrowAPI.path.."modules\\Arrow"
+local load_path = NFS.getInfo(module_path) and "modules\\Arrow\\"
+ArrowAPI.custom_path = load_path
+
 for _, include in ipairs(includes) do
-	local init, error = SMODS.load_file("arrowapi/api/" .. include ..".lua")
+	local init, error = SMODS.load_file((ArrowAPI.custom_path or "") .. "api\\" .. include ..".lua")
 	if error then sendErrorMessage("[Arrow] Failed to load "..include.." with error "..error) else
 		local data = init()
 		sendDebugMessage("[Arrow] Loaded hook: " .. include)
