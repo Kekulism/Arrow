@@ -1,5 +1,5 @@
 ArrowAPI = SMODS.current_mod
-ArrowAPI.current_config = copy_table(ArrowAPI.config)
+ArrowAPI.ARROW_USE_CREDITS = true
 ArrowAPI.startup_item_check = false
 ArrowAPI.col_stand_hover = nil
 ArrowAPI.palette_ui_config = {
@@ -14,7 +14,6 @@ ArrowAPI.palette_ui_config = {
 
 -- TNSMI setup, aliased from ArrowAPI
 TNSMI = SMODS.current_mod
-TNSMI.config.loaded_packs.replace_map = {}
 TNSMI.cardareas = {}
 TNSMI.prompt_text_input = ''
 TNSMI.search_text = ''
@@ -69,6 +68,7 @@ G.ARGS.LOC_COLOURS['showdown2'] = G.C.BLIND.SHOWDOWN_COL_2
 
 local includes = {
 	-- data types
+	'loc',
 	'sound',
 	'compat',
 	'math',
@@ -102,10 +102,46 @@ local includes = {
 }
 
 for _, include in ipairs(includes) do
-	local init, error = SMODS.load_file("api/" .. include ..".lua")
+	local init, error = SMODS.load_file("arrowapi/api/" .. include ..".lua")
 	if error then sendErrorMessage("[Arrow] Failed to load "..include.." with error "..error) else
 		local data = init()
 		sendDebugMessage("[Arrow] Loaded hook: " .. include)
 	end
 end
 
+ArrowAPI.config_tools.use_credits(Cardsauce, {
+    matrix = {col = 18.5, row = 7},
+    {
+		key = 'direction',
+		title_colour = G.C.YELLOW,
+		pos_start = {col = 0, row = 0},
+		pos_end = {col = 5, row = 10},
+		contributors = {
+			{name = "BarrierTrio/Gote"},
+			{name = "Kekulism"},
+			{name = "Vivian Giacobbi"},
+		}
+	},
+	{
+		key = 'artist',
+		title_colour = G.C.ETERNAL,
+		pos_start = {col = 5, row = 0},
+		pos_end = {col = 12.5, row = 10},
+	},
+	{
+		key = 'programmer',
+		title_colour = G.C.GOLD,
+		pos_start = {col = 12.5, row = 0},
+		pos_end = {col = 20, row = 5},
+	},
+	{
+		key = 'graphics',
+		title_colour = G.C.DARK_EDITION,
+		pos_start = {col = 12.5, row = 5},
+		pos_end = {col = 20, row = 10},
+		contributors = {
+			{name = "Vivian Giacobbi"},
+			{name = "Sir. Gameboy"}
+		}
+	}
+})

@@ -1,19 +1,22 @@
-SMODS.Atlas({ key = 'undiscovered', path = "undiscovered.png", px = 71, py = 95 })
+SMODS.Atlas({ key = 'arrow_undiscovered', path = "undiscovered.png", px = 71, py = 95, prefix_config = false })
 
 ArrowAPI.loading = {
     --- Load a batch of items from a formatted table
     --- @param args table A table of item sets to load as a batch
     batch_load = function(args)
+        args.config = args.config or {}
         local mod = SMODS.current_mod
         ArrowAPI.BATCH_LOAD = mod.id
         local priority_list = {}
         for k, v in pairs(args) do
-            priority_list[#priority_list+1] = {
-                key = k,
-                alias = v.alias,
-                order = v.order,
-                items = v.items
-            }
+            if k ~= 'config' then
+                priority_list[#priority_list+1] = {
+                    key = k,
+                    alias = v.alias,
+                    order = v.order,
+                    items = v.items
+                }
+            end
         end
         table.sort(priority_list, function(a, b)
             if a.order and not b.order then return true
@@ -25,15 +28,17 @@ ArrowAPI.loading = {
         for order, v in ipairs(priority_list) do
             if next(v.items) and ArrowAPI.loading.filter_type(v.key, order) then
                 for i, item in ipairs(v.items) do
-                    ArrowAPI.loading.load_item(item, v.key, v.alias, nil, i, mod)
+                    ArrowAPI.loading.load_item(item, v.key, v.alias, args.config.parent_folder, i, mod, args.config.mod_prefix)
                 end
 
-                if mod.ARROW_USE_CONFIG then
+                if mod.ARROW_USE_CONFIG and v.key ~= 'SoundPack' then
                     -- add to ordered config list
                     local key = 'enable_'..v.key..'s'
                     if mod.config[key] == nil then
-                        ArrowAPI.config_tools.update_config(mod, key, true, order)
+                        ArrowAPI.config_tools.update_config(mod, key, true, nil)
                         ArrowAPI.loading.write_default_config(mod)
+                    else
+                        ArrowAPI.config_tools.update_config(mod, key, true, nil, false)
                     end
                 end
             end
@@ -45,13 +50,16 @@ ArrowAPI.loading = {
     --- @param file_key string file name to load within the "Items" directory, excluding file extension
     --- @param item_type string SMODS item type (such as Joker, Consumable, Deck, etc)
     --- @param alias string | nil SMODS type alias (I.E. Decks are SMODS['Back'])
-    --- @param folder_key string | nil folder key if needed, otherwise item_type is used
+    --- @param parent_folder string | nil folder key if needed for embedded modules
+    --- @param order_in_type number | nil Manually specify sort order for an item type
+    --- @param mod SMODS.Mod | nil Specify the mod to load, otherwise SMODS.current_mod is used
+    --- @param mod_prefix string | nil Apply a custom mod prefix, takes care of all prefix config. Useful for embedded modules
     --- @return boolean # True if the item successfuly loaded
-    load_item = function(file_key, item_type, alias, folder_key, order_in_type, mod)
+    load_item = function(file_key, item_type, alias, parent_folder, order_in_type, mod, mod_prefix)
         mod = mod or SMODS.current_mod
-        folder_key = folder_key or string.lower(item_type)..(item_type == 'VHS' and '' or 's')
-        local parent_folder = 'items/'
-        local info = assert(SMODS.load_file(parent_folder .. folder_key .. "/" .. file_key .. ".lua"))()
+        local path = 'items/'..string.lower(item_type)..(item_type == 'VHS' and '' or 's')..'/'
+        if parent_folder then path = parent_folder..'/'..path end
+        local info = assert(SMODS.load_file(path .. file_key .. ".lua"))()
 
         if not ArrowAPI.loading.filter_item(info) or (not ArrowAPI.BATCH_LOAD and not ArrowAPI.loading.filter_type(item_type, order_in_type)) then
             return false
@@ -64,6 +72,7 @@ ArrowAPI.loading = {
         end
 
         info.key = file_key
+
         local skip_atlas = not not info.atlas
         if item_type == 'Challenge' then
             info.button_colour = info.button_colour or SMODS.current_mod.badge_colour
@@ -88,6 +97,22 @@ ArrowAPI.loading = {
                 info.pos = { x = 1, y = 0 }
                 info.soul_pos = { x = 2, y = 0 }
             end
+        end
+
+        if mod_prefix then
+            if info.atlas and (not info.prefix_config or info.prefix_config.atlas == nil) then
+                info.atlas = mod_prefix..'_'..info.atlas
+            end
+
+            if info.prefix_config ~= false then
+                info.prefix_config = info.prefix_config or {}
+
+                info.prefix_config.key = info.prefix_config.key or {}
+                info.prefix_config.key.mod = false
+
+                info.prefix_config.atlas = false
+            end
+            info.key = mod_prefix..'_'..info.key
         end
 
         -- this is handled by an SMODS.add_mod_badges hook
@@ -174,7 +199,7 @@ ArrowAPI.loading = {
 
         if info.pools and next(info.pools) then
             for k, _ in pairs(info.pools) do
-                if k ~= new_item.set then
+                if G.P_CENTER_POOLS[k] and k ~= new_item.set then
                     SMODS.insert_pool(G.P_CENTER_POOLS[k], new_item)
                 end
             end
@@ -210,11 +235,13 @@ ArrowAPI.loading = {
             end
         end
 
-        if not ArrowAPI.BATCH_LOAD and mod.ARROW_USE_CONFIG then
+        if not ArrowAPI.BATCH_LOAD and mod.ARROW_USE_CONFIG and item_type ~= 'SoundPack' then
             local key = 'enable_'..item_type..'s'
             if mod.config[key] == nil then
-                ArrowAPI.config_tools.update_config(mod, key, true, order_in_type)
+                ArrowAPI.config_tools.update_config(mod, key, true, nil)
                 ArrowAPI.loading.write_default_config(mod)
+            else
+                ArrowAPI.config_tools.update_config(mod, key, true, nil, false)
             end
         end
 
@@ -222,9 +249,17 @@ ArrowAPI.loading = {
             return true
         end
 
+        local atlas_key = mod_prefix and mod_prefix..'_'..file_key or file_key
+        local prefix_config = nil
+        if mod_prefix then
+            prefix_config = false
+        end
+
+        local old_smods_path = SMODS.path
+        SMODS.path = mod.path..(parent_folder or '')
         if item_type == 'Blind' then
             -- separation for animated sprites
-            SMODS.Atlas({ key = file_key, atlas_table = "ANIMATION_ATLAS", path = "blinds/" .. file_key .. ".png", px = 34, py = 34, frames = 21 })
+            SMODS.Atlas({ key = atlas_key, atlas_table = "ANIMATION_ATLAS", path = "blinds/" .. file_key .. ".png", px = 34, py = 34, frames = 21, prefix_config = prefix_config })
         else
             local width = 71
             local height = 95
@@ -233,16 +268,17 @@ ArrowAPI.loading = {
             elseif item_type == 'Stake' then
                 width = 29
                 height = 29
-                SMODS.Atlas({ key = file_key..'_sticker', path = "stickers/" .. file_key .. "_sticker.png", px = 71, py = 95 })
+                SMODS.Atlas({ key = atlas_key..'_sticker', path = "stickers/" ..file_key .. "_sticker.png", px = 71, py = 95, prefix_config = prefix_config })
             elseif item_type == 'SoundPack' then
                 if info.atlas == 'arrow_sp_default' then return true end
                 height = 71
             end
             local atlas_args = {
-                key = file_key,
-                path = folder_key .. "/" .. file_key .. ".png",
+                key = atlas_key,
+                path = path .. "/" .. file_key .. ".png",
                 px = new_item.width or width,
-                py = new_item.height or height
+                py = new_item.height or height,
+                prefix_config = prefix_config
             }
 
             if info.animation then
@@ -253,6 +289,7 @@ ArrowAPI.loading = {
 
             SMODS.Atlas(atlas_args)
         end
+        SMODS.path = old_smods_path
         return true
     end,
 
@@ -326,6 +363,7 @@ ArrowAPI.loading = {
 
     filter_type = function(item_type, order)
          if (item_type == 'Sleeve' and not CardSleeves) or (item_type == 'Partner' and not Partner_API) then
+            ArrowAPI.config_tools.update_config(SMODS.current_mod, 'enable_'..item_type..'s', nil, nil, true)
             return false
         else
             local enabled = SMODS.current_mod.config['enable_'..item_type..'s']
@@ -418,6 +456,11 @@ ArrowAPI.loading = {
 }
 
 ArrowAPI.loading.batch_load({
+    config = {
+        parent_folder = 'arrowapi/items/',
+	    mod_prefix = 'arrow',
+    },
+
     Consumable = {
         order = 1,
         items = {

@@ -1,10 +1,4 @@
 -- Mod Icon in Mods tab
-SMODS.Atlas({
-    key = "modicon",
-    path = "arrow_icon.png",
-    px = 32,
-    py = 32
-})
 
 function G.UIDEF.preview_cardarea(preview_num, scale)
     local preview_cards = {}
@@ -527,8 +521,7 @@ ArrowAPI.ui = {
                     local column = counts.right < counts.left and 'right' or 'left'
                     local nodes = column == 'right' and right_settings.nodes or left_settings.nodes
 
-                    local label = G.localization.misc.dictionary[v.text] and localize(v.text) or v.text
-                    or G.localization.misc.dictionary[mod.prefix..'_options_'..v.key] and localize(mod.prefix..'_options_'..v.key)
+                    local label = G.localization.misc.dictionary[mod.prefix..'_options_'..v.key] and localize(mod.prefix..'_options_'..v.key)
                     or localize('arrow_options_'..v.key)
                     local main_node = create_toggle({
                         label = label,
@@ -574,6 +567,13 @@ ArrowAPI.ui = {
                 }
             }
         end
+    end,
+
+    replace_title = function(mod, args)
+        ArrowAPI.TITLE_REPLACE = args
+        ArrowAPI.TITLE_REPLACE.mod = mod
+        ArrowAPI.TITLE_REPLACE.key = 'balatro'
+        ArrowAPI.TITLE_REPLACE.prefix_config = false
     end
 }
 

@@ -77,6 +77,13 @@ function Card:say_quip(iter, not_first, def_speed, voice)
 end
 
 
+
+
+
+---------------------------
+--------------------------- General ability stuff
+---------------------------
+
 local ref_set_ability = Card.set_ability
 function Card:set_ability(center, initial, delay_sprites)
     local ret = ref_set_ability(self, center, initial, delay_sprites)
@@ -96,6 +103,10 @@ function Card:set_ability(center, initial, delay_sprites)
     return ret
 end
 
+
+
+
+
 ---------------------------
 --------------------------- Stand visual loading
 ---------------------------
@@ -110,6 +121,10 @@ function Card:load(cardTable, other_card)
 
     return ret
 end
+
+
+
+
 
 ---------------------------
 --------------------------- For stand auras in the collection
@@ -160,6 +175,9 @@ function love.focus(f)
 end
 
 
+
+
+
 ---------------------------
 --------------------------- Card destruction calc context
 ---------------------------
@@ -171,7 +189,7 @@ function Card:start_dissolve(...)
     if self.area then
         local was_getting_sliced = self.getting_sliced
         self.getting_sliced = nil
-        SMODS.calculate_context({removed_card = self})
+        SMODS.calculate_context({removed_card = self, getting_sliced = was_getting_sliced})
         self.getting_sliced = was_getting_sliced
     end
 

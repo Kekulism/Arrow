@@ -4,6 +4,7 @@
 
 SMODS.Consumable:take_ownership('c_strength', {
     atlas = 'arrow_tarots',
+    prefix_config = {atlas = false},
     config = { extra = 1, min_highlighted = 1, max_highlighted = 2 },
     loc_vars = function(self, info_queue, card)
         local multi = card.ability.max_highlighted ~= 1
@@ -75,6 +76,7 @@ SMODS.Consumable:take_ownership('c_strength', {
 
 SMODS.Consumable:take_ownership('hanged_man', {
     atlas = 'arrow_tarots',
+    prefix_config = {atlas = false},
     loc_vars = function(self, info_queue, card)
         local multi = card.ability.max_highlighted ~= 1
         return {
@@ -92,6 +94,7 @@ SMODS.Consumable:take_ownership('hanged_man', {
 
 SMODS.Consumable:take_ownership('death', {
     atlas = 'arrow_tarots',
+    prefix_config = {atlas = false},
     loc_vars = function(self, info_queue, card)
         local multi = (card.ability.max_highlighted - 1) ~= 1
         return {
@@ -183,6 +186,7 @@ for _, v in ipairs(enhance_convert_keys) do
     local old_center = G.P_CENTERS[v]
     local mod_table = {
         atlas = 'arrow_tarots',
+        prefix_config = {atlas = false},
         config = {
             mod_conv = old_center.config.mod_conv,
             min_highlighted = old_center.config.min_highlighted or 1,
@@ -272,6 +276,7 @@ for _, v in ipairs(suit_convert_keys) do
     local old_center = G.P_CENTERS[v]
     local mod_table = {
         atlas = 'arrow_tarots',
+        prefix_config = {atlas = false},
         config = {
             suit_conv = old_center.config.suit_conv,
             min_highlighted = old_center.config.min_highlighted or 1,
@@ -364,6 +369,7 @@ for k, pos in pairs(seal_keys) do
     local old_center = G.P_CENTERS[k]
     local mod_table = {
         atlas = 'arrow_spectrals',
+        prefix_config = {atlas = false},
         pos = pos,
         config = {
             extra = old_center.config.extra,
@@ -426,6 +432,7 @@ end
 local old_cryptid = G.P_CENTERS['c_cryptid']
 SMODS.Consumable:take_ownership('c_cryptid', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 5, y = 2},
     config = {
         extra = old_cryptid.config.extra,
@@ -491,6 +498,7 @@ SMODS.Consumable:take_ownership('c_cryptid', {
 
 SMODS.Consumable:take_ownership('aura', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 4, y = 1},
     config = {min_highlighted = 1, max_highlighted = 1},
     loc_vars = function(self, info_queue, card)
@@ -555,6 +563,7 @@ SMODS.Consumable:take_ownership('aura', {
 SMODS.Consumable:take_ownership('c_black_hole', {
     pos = {x = 9, y = 0},
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     use = function(self, card, area, copier)
         ArrowAPI.game.batch_level_up(card, G.handlist)
     end,
@@ -828,8 +837,31 @@ SMODS.Joker:take_ownership('j_perkeo', {
 --------------------------- Spectral Downsides
 ---------------------------
 
+local function juice_flip(used_tarot)
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 0.4,
+        func = function()
+            play_sound('tarot1')
+            used_tarot:juice_up(0.3, 0.5)
+            return true
+        end
+    }))
+    for i = 1, #G.hand.cards do
+        local percent = 1.15 - (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.15,
+            func = function()
+                G.hand.cards[i]:flip(); play_sound('card1', percent); G.hand.cards[i]:juice_up(0.3, 0.3); return true
+            end
+        }))
+    end
+end
+
 SMODS.Consumable:take_ownership('sigil', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 6, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
@@ -857,8 +889,10 @@ SMODS.Consumable:take_ownership('sigil', {
         delay(0.5)
     end,
 }, true)
+
 SMODS.Consumable:take_ownership('ouija', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 7, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
@@ -928,6 +962,7 @@ end
 
 SMODS.Consumable:take_ownership('grim', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 1, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
@@ -970,6 +1005,7 @@ SMODS.Consumable:take_ownership('grim', {
 
 SMODS.Consumable:take_ownership('familiar', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 0, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
@@ -1016,6 +1052,7 @@ SMODS.Consumable:take_ownership('familiar', {
 
 SMODS.Consumable:take_ownership('incantation', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 2, y = 1},
     use = function(self, card, area, copier)
         local used_tarot = copier or card
@@ -1063,6 +1100,7 @@ SMODS.Consumable:take_ownership('incantation', {
 
 SMODS.Consumable:take_ownership('ankh', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 0, y = 2},
     use = function(self, card, area, copier)
         --Need to check for edgecases - if there are max Jokers and all are eternal OR there is a max of 1 joker this isn't possible already
@@ -1111,6 +1149,7 @@ SMODS.Consumable:take_ownership('ankh', {
 
 SMODS.Consumable:take_ownership('hex', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 2, y = 2},
     use = function(self, card, area, copier)
         G.E_MANAGER:add_event(Event({
@@ -1142,6 +1181,7 @@ SMODS.Consumable:take_ownership('hex', {
 
 SMODS.Consumable:take_ownership('ectoplasm', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 8, y = 1},
     use = function(self, card, area, copier)
         G.E_MANAGER:add_event(Event({
@@ -1168,6 +1208,7 @@ SMODS.Consumable:take_ownership('ectoplasm', {
 
 SMODS.Consumable:take_ownership('wraith', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 5, y = 1},
     use = function(self, card, area, copier)
         G.E_MANAGER:add_event(Event({
@@ -1191,6 +1232,7 @@ SMODS.Consumable:take_ownership('wraith', {
 
 SMODS.Consumable:take_ownership('immolate', {
     atlas = 'arrow_spectrals',
+    prefix_config = {atlas = false},
     pos = {x = 9, y = 1},
     use = function(self, card, area, copier)
         local destroyed_cards = {}
@@ -1255,85 +1297,85 @@ SMODS.Consumable:take_ownership('immolate', {
 --------------------------- Remaining overrides for palette correction
 ---------------------------
 
-SMODS.Atlas({key = 'tarots', path = 'tarots.png', px = 71, py = 95})
-SMODS.Atlas({key = 'planets', path = 'planets.png', px = 71, py = 95})
-SMODS.Atlas({key = 'spectrals', path = 'spectrals.png', px = 71, py = 95})
-SMODS.Atlas({key = 'tags', path = 'tags/tags.png', px = 34, py = 34})
+SMODS.Atlas({key = 'arrow_tarots', path = 'tarots.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_planets', path = 'planets.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_spectrals', path = 'spectrals.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_tags', path = 'tags/tags.png', px = 34, py = 34, prefix_config = {key = {mod = false}}})
 
-SMODS.Joker:take_ownership('8_ball', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 3, y = 2}}, true)
-SMODS.Joker:take_ownership('fortune_teller', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 4, y = 2}}, true)
-SMODS.Joker:take_ownership('cartomancer', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 5, y = 2}}, true)
-SMODS.Joker:take_ownership('supernova', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 4, y = 0}}, true)
-SMODS.Joker:take_ownership('constellation', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 5, y = 0}, soul_pos = {x = 6, y = 0}, no_soul_shadow = true}, true)
-SMODS.Joker:take_ownership('astronomer', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 7, y = 0}}, true)
-SMODS.Joker:take_ownership('satellite', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 8, y = 0}}, true)
-SMODS.Joker:take_ownership('seance', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 7, y = 2}}, true)
-SMODS.Joker:take_ownership('sixth_sense', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 8, y = 2}}, true)
+SMODS.Joker:take_ownership('8_ball', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 3, y = 2}}, true)
+SMODS.Joker:take_ownership('fortune_teller', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 4, y = 2}}, true)
+SMODS.Joker:take_ownership('cartomancer', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 5, y = 2}}, true)
+SMODS.Joker:take_ownership('supernova', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 4, y = 0}}, true)
+SMODS.Joker:take_ownership('constellation', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 5, y = 0}, soul_pos = {x = 6, y = 0}, no_soul_shadow = true}, true)
+SMODS.Joker:take_ownership('astronomer', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 7, y = 0}}, true)
+SMODS.Joker:take_ownership('satellite', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 8, y = 0}}, true)
+SMODS.Joker:take_ownership('seance', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, palette_set = 'Spectral', pos = {x = 7, y = 2}}, true)
+SMODS.Joker:take_ownership('sixth_sense', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, palette_set = 'Spectral', pos = {x = 8, y = 2}}, true)
 
-SMODS.Consumable:take_ownership('fool', {atlas = 'arrow_tarots'}, true)
-SMODS.Consumable:take_ownership('high_priestess', {atlas = 'arrow_tarots'}, true)
-SMODS.Consumable:take_ownership('emperor', {atlas = 'arrow_tarots'}, true)
-SMODS.Consumable:take_ownership('wheel_of_fortune', {atlas = 'arrow_tarots'}, true)
-SMODS.Consumable:take_ownership('hermit', {atlas = 'arrow_tarots'}, true)
-SMODS.Consumable:take_ownership('temperance', {atlas = 'arrow_tarots'}, true)
-SMODS.Consumable:take_ownership('judgement', {atlas = 'arrow_tarots'}, true)
+SMODS.Consumable:take_ownership('fool', {atlas = 'arrow_tarots', prefix_config = {atlas = false}}, true)
+SMODS.Consumable:take_ownership('high_priestess', {atlas = 'arrow_tarots', prefix_config = {atlas = false}}, true)
+SMODS.Consumable:take_ownership('emperor', {atlas = 'arrow_tarots', prefix_config = {atlas = false}}, true)
+SMODS.Consumable:take_ownership('wheel_of_fortune', {atlas = 'arrow_tarots', prefix_config = {atlas = false}}, true)
+SMODS.Consumable:take_ownership('hermit', {atlas = 'arrow_tarots', prefix_config = {atlas = false}}, true)
+SMODS.Consumable:take_ownership('temperance', {atlas = 'arrow_tarots', prefix_config = {atlas = false}}, true)
+SMODS.Consumable:take_ownership('judgement', {atlas = 'arrow_tarots', prefix_config = {atlas = false}}, true)
 
-SMODS.Consumable:take_ownership('mercury', {atlas = 'arrow_planets', pos = {x = 4, y = 1}}, true)
-SMODS.Consumable:take_ownership('venus', {atlas = 'arrow_planets', pos = {x = 5, y = 1}}, true)
-SMODS.Consumable:take_ownership('earth', {atlas = 'arrow_planets', pos = {x = 6, y = 1}}, true)
-SMODS.Consumable:take_ownership('mars', {atlas = 'arrow_planets', pos = {x = 7, y = 1}}, true)
-SMODS.Consumable:take_ownership('jupiter', {atlas = 'arrow_planets', pos = {x = 8, y = 1}}, true)
-SMODS.Consumable:take_ownership('saturn', {atlas = 'arrow_planets', pos = {x = 2, y = 2}}, true)
-SMODS.Consumable:take_ownership('uranus', {atlas = 'arrow_planets', pos = {x = 3, y = 2}}, true)
-SMODS.Consumable:take_ownership('neptune', {atlas = 'arrow_planets', pos = {x = 4, y = 2}}, true)
-SMODS.Consumable:take_ownership('pluto', {atlas = 'arrow_planets', pos = {x = 5, y = 2}}, true)
-SMODS.Consumable:take_ownership('eris', {atlas = 'arrow_planets', pos = {x = 6, y = 2}}, true)
-SMODS.Consumable:take_ownership('ceres', {atlas = 'arrow_planets', pos = {x = 7, y = 2}}, true)
-SMODS.Consumable:take_ownership('planet_x', {atlas = 'arrow_planets', pos = {x = 8, y = 2}}, true)
+SMODS.Consumable:take_ownership('mercury', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 4, y = 1}}, true)
+SMODS.Consumable:take_ownership('venus', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 5, y = 1}}, true)
+SMODS.Consumable:take_ownership('earth', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 6, y = 1}}, true)
+SMODS.Consumable:take_ownership('mars', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 7, y = 1}}, true)
+SMODS.Consumable:take_ownership('jupiter', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 8, y = 1}}, true)
+SMODS.Consumable:take_ownership('saturn', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 2, y = 2}}, true)
+SMODS.Consumable:take_ownership('uranus', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 3, y = 2}}, true)
+SMODS.Consumable:take_ownership('neptune', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 4, y = 2}}, true)
+SMODS.Consumable:take_ownership('pluto', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 5, y = 2}}, true)
+SMODS.Consumable:take_ownership('eris', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 6, y = 2}}, true)
+SMODS.Consumable:take_ownership('ceres', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 7, y = 2}}, true)
+SMODS.Consumable:take_ownership('planet_x', {atlas = 'arrow_planets', prefix_config = {atlas = false}, pos = {x = 8, y = 2}}, true)
 
-SMODS.Consumable:take_ownership('soul', {atlas = 'arrow_spectrals', pos = {x = 2, y = 0}}, true)
+SMODS.Consumable:take_ownership('soul', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, pos = {x = 2, y = 0}}, true)
 
-SMODS.Voucher:take_ownership('tarot_merchant', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 10, y = 0}}, true)
-SMODS.Voucher:take_ownership('tarot_tycoon', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 10, y = 1}}, true)
-SMODS.Voucher:take_ownership('planet_merchant', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 9, y = 2}}, true)
-SMODS.Voucher:take_ownership('planet_tycoon', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 10, y = 0}}, true)
-SMODS.Voucher:take_ownership('telescope', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 10, y = 1}}, true)
-SMODS.Voucher:take_ownership('observatory', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 10, y = 2}}, true)
+SMODS.Voucher:take_ownership('tarot_merchant', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 10, y = 0}}, true)
+SMODS.Voucher:take_ownership('tarot_tycoon', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 10, y = 1}}, true)
+SMODS.Voucher:take_ownership('planet_merchant', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 9, y = 2}}, true)
+SMODS.Voucher:take_ownership('planet_tycoon', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 10, y = 0}}, true)
+SMODS.Voucher:take_ownership('telescope', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 10, y = 1}}, true)
+SMODS.Voucher:take_ownership('observatory', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 10, y = 2}}, true)
 
-SMODS.Back:take_ownership('magic', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 7, y = 2}}, true)
-SMODS.Back:take_ownership('nebula', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 0, y = 2}}, true)
-SMODS.Back:take_ownership('zodiac', {atlas = 'arrow_planets', palette_set = {'Planet', 'Tarot'}, pos = {x = 1, y = 2}}, true)
-SMODS.Back:take_ownership('ghost', {atlas = 'arrow_spectrals', palette_set = 'Spectral',  pos = {x = 4, y = 0}}, true)
+SMODS.Back:take_ownership('magic', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 7, y = 2}}, true)
+SMODS.Back:take_ownership('nebula', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 0, y = 2}}, true)
+SMODS.Back:take_ownership('zodiac', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = {'Planet', 'Tarot'}, pos = {x = 1, y = 2}}, true)
+SMODS.Back:take_ownership('ghost', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, palette_set = 'Spectral',  pos = {x = 4, y = 0}}, true)
 
-SMODS.Booster:take_ownership('arcana_normal_1', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 9, y = 2}}, true)
-SMODS.Booster:take_ownership('arcana_normal_2', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 10, y = 2}}, true)
-SMODS.Booster:take_ownership('arcana_normal_3', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 11, y = 0}}, true)
-SMODS.Booster:take_ownership('arcana_normal_4', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 12, y = 0}}, true)
-SMODS.Booster:take_ownership('arcana_jumbo_1', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 11, y = 1}}, true)
-SMODS.Booster:take_ownership('arcana_jumbo_2', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 12, y = 1}}, true)
-SMODS.Booster:take_ownership('arcana_mega_1', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 11, y = 2}}, true)
-SMODS.Booster:take_ownership('arcana_mega_2', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 12, y = 2}}, true)
+SMODS.Booster:take_ownership('arcana_normal_1', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 9, y = 2}}, true)
+SMODS.Booster:take_ownership('arcana_normal_2', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 10, y = 2}}, true)
+SMODS.Booster:take_ownership('arcana_normal_3', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 11, y = 0}}, true)
+SMODS.Booster:take_ownership('arcana_normal_4', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 12, y = 0}}, true)
+SMODS.Booster:take_ownership('arcana_jumbo_1', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 11, y = 1}}, true)
+SMODS.Booster:take_ownership('arcana_jumbo_2', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 12, y = 1}}, true)
+SMODS.Booster:take_ownership('arcana_mega_1', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 11, y = 2}}, true)
+SMODS.Booster:take_ownership('arcana_mega_2', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 12, y = 2}}, true)
 
-SMODS.Booster:take_ownership('celestial_normal_1', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 0, y = 0}}, true)
-SMODS.Booster:take_ownership('celestial_normal_2', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 1, y = 0}}, true)
-SMODS.Booster:take_ownership('celestial_normal_3', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 2, y = 0}}, true)
-SMODS.Booster:take_ownership('celestial_normal_4', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 3, y = 0}}, true)
-SMODS.Booster:take_ownership('celestial_jumbo_1', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 0, y = 1}}, true)
-SMODS.Booster:take_ownership('celestial_jumbo_2', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 1, y = 1}}, true)
-SMODS.Booster:take_ownership('celestial_mega_1', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 2, y = 1}}, true)
-SMODS.Booster:take_ownership('celestial_mega_2', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 3, y = 1}}, true)
+SMODS.Booster:take_ownership('celestial_normal_1', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 0, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_normal_2', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 1, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_normal_3', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 2, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_normal_4', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 3, y = 0}}, true)
+SMODS.Booster:take_ownership('celestial_jumbo_1', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 0, y = 1}}, true)
+SMODS.Booster:take_ownership('celestial_jumbo_2', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 1, y = 1}}, true)
+SMODS.Booster:take_ownership('celestial_mega_1', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 2, y = 1}}, true)
+SMODS.Booster:take_ownership('celestial_mega_2', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 3, y = 1}}, true)
 
-SMODS.Booster:take_ownership('spectral_normal_1', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 5, y = 0}}, true)
-SMODS.Booster:take_ownership('spectral_normal_2', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 6, y = 0}}, true)
-SMODS.Booster:take_ownership('spectral_jumbo_1', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 7, y = 0}}, true)
-SMODS.Booster:take_ownership('spectral_mega_1', {atlas = 'arrow_spectrals', palette_set = 'Spectral', pos = {x = 8, y = 0}}, true)
+SMODS.Booster:take_ownership('spectral_normal_1', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, palette_set = 'Spectral', pos = {x = 5, y = 0}}, true)
+SMODS.Booster:take_ownership('spectral_normal_2', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, palette_set = 'Spectral', pos = {x = 6, y = 0}}, true)
+SMODS.Booster:take_ownership('spectral_jumbo_1', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, palette_set = 'Spectral', pos = {x = 7, y = 0}}, true)
+SMODS.Booster:take_ownership('spectral_mega_1', {atlas = 'arrow_spectrals', prefix_config = {atlas = false}, palette_set = 'Spectral', pos = {x = 8, y = 0}}, true)
 
-SMODS.Tag:take_ownership('charm', {atlas = 'arrow_tags', palette_set = 'Tarot', pos = {x = 0, y = 0}}, true)
-SMODS.Tag:take_ownership('meteor', {atlas = 'arrow_tags', palette_set = 'Planet', pos = {x = 1, y = 0}}, true)
-SMODS.Tag:take_ownership('ethereal', {atlas = 'arrow_tags', palette_set = 'Spectral', pos = {x = 2, y = 0}}, true)
+SMODS.Tag:take_ownership('charm', {atlas = 'arrow_tags', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 0, y = 0}}, true)
+SMODS.Tag:take_ownership('meteor', {atlas = 'arrow_tags', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 1, y = 0}}, true)
+SMODS.Tag:take_ownership('ethereal', {atlas = 'arrow_tags', prefix_config = {atlas = false}, palette_set = 'Spectral', pos = {x = 2, y = 0}}, true)
 
-SMODS.Seal:take_ownership('Purple', {atlas = 'arrow_tarots', palette_set = 'Tarot', pos = {x = 8, y = 2}}, true)
-SMODS.Seal:take_ownership('Blue', {atlas = 'arrow_planets', palette_set = 'Planet', pos = {x = 9, y = 1}}, true)
+SMODS.Seal:take_ownership('Purple', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 8, y = 2}}, true)
+SMODS.Seal:take_ownership('Blue', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 9, y = 1}}, true)
 
 
 
@@ -1606,4 +1648,168 @@ SMODS.Joker:take_ownership('rough_gem', {
             }
         },
     }
+}, true)
+
+
+
+
+
+---------------------------
+--------------------------- Food joker consistency
+---------------------------
+
+SMODS.Joker:take_ownership('ramen', {
+    calculate = function(self, card, context)
+        if context.discard and not context.blueprint and SMODS.food_expires(card) then
+            if card.ability.x_mult - card.ability.extra <= 1 then
+                ArrowAPI.game.card_expire(card)
+            else
+                SMODS.scale_card(self, {
+                    ref_table = card.ability,
+                    ref_value = "x_mult",
+                    scalar_value = "extra",
+                    operation = "-",
+                    message_key = 'a_xmult_minus',
+                    colour = G.C.RED,
+                    message_delay = 0.2,
+                })
+            end
+            return nil, true
+        end
+    end
+}, true)
+
+SMODS.Joker:take_ownership('popcorn', {
+    calculate = function(self, card, context)
+        if context.end_of_round and context.main_eval and not context.blueprint and SMODS.food_expires(card) then
+            if card.ability.mult - card.ability.extra <= 0 then
+                ArrowAPI.game.card_expire(card, 'k_eaten_ex', G.C.RED)
+            else
+                SMODS.scale_card(self, {
+                    ref_table = card.ability,
+                    ref_value = "mult",
+                    scalar_value = "extra",
+                    message_key = 'a_mult_minus',
+                    colour = G.C.MULT,
+                    operation = '-'
+                })
+            end
+            return nil, true
+        end
+    end
+}, true)
+
+SMODS.Joker:take_ownership('ice_cream', {
+    calculate = function(self, card, context)
+        if context.after and not context.blueprint and SMODS.food_expires(card) then
+            if card.ability.extra.chips - card.ability.extra.chip_mod <= 0 then
+                ArrowAPI.game.card_expire(card, 'k_melted_ex', G.C.CHIPS)
+            else
+                SMODS.scale_card(self, {
+                    ref_table = card.ability.extra,
+                    ref_value = "chips",
+                    scalar_value = "chip_mod",
+                    operation = "-",
+                    message_key = 'a_chips_minus'
+                })
+            end
+            return nil, true
+        end
+
+        if context.joker_main then
+            return {
+                chips = card.ability.extra.chips,
+            }
+        end
+    end
+}, true)
+
+SMODS.Joker:take_ownership('selzer', {
+    calculate = function(self, card, context)
+        if context.repetition and context.cardarea == G.play then
+            return {
+                message = localize('k_again_ex'),
+                repetitions = 1,
+                card = card
+            }
+        end
+
+        if context.after and not context.blueprint and SMODS.food_expires(card) then
+            if card.ability.extra - 1 <= 0 then
+                ArrowAPI.game.card_expire(card, 'k_drank_ex')
+            else
+                local scale_table = {extra_mod = 1}
+                SMODS.scale_card(self, {
+                    ref_table = card.ability,
+                    ref_value = "extra",
+                    scalar_table = scale_table,
+                    scalar_value = "extra_mod",
+                    operation = "-",
+                    scale_message = {
+                        message = card.ability.extra..'',
+                        colour = G.C.FILTER
+                    }
+                })
+            end
+            return nil, true
+        end
+    end
+}, true)
+
+SMODS.Joker:take_ownership('turtle_bean', {
+    calculate = function(self, card, context)
+        if context.end_of_round and context.main_eval and not context.blueprint and SMODS.food_expires(card) then
+            if card.ability.extra.h_size - card.ability.extra.h_mod <= 0 then
+                ArrowAPI.game.card_expire(card)
+            else
+                SMODS.scale_card(self,{
+                    ref_table = card.ability.extra,
+                    ref_value = "h_size",
+                    scalar_value = "h_mod",
+                    message_key = 'a_handsize_minus',
+                    operation = function(ref_table, ref_value, initial, change)
+                        ref_table[ref_value] = initial - change
+                        G.hand:change_size(- change)
+                    end
+                })
+            end
+            return nil, true
+        end
+    end
+}, true)
+
+SMODS.Joker:take_ownership('gros_michel', {
+    calculate = function(self, card, context)
+        if context.end_of_round and context.main_eval then
+            if SMODS.food_expires(card) then
+                if SMODS.pseudorandom_probability(card, 'gros_michel', 1, card.ability.extra.odds) then
+                    G.GAME.pool_flags.gros_michel_extinct = true
+                    check_for_unlock({ type = 'gros_extinct' })
+                    ArrowAPI.game.card_expire(card, 'k_extinct_ex')
+                    return nil, true
+                else
+                    return {
+                        message = localize('k_safe_ex')
+                    }
+                end
+            else
+                check_for_unlock({ type = "preserve_gros" })
+            end
+        end
+    end
+}, true)
+
+SMODS.Joker:take_ownership('cavendish', {
+    calculate = function(self, card, context)
+        if context.end_of_round and context.main_eval and SMODS.food_expires(card) then
+            if SMODS.pseudorandom_probability(card, 'cavendish', 1, card.ability.extra.odds) then
+                ArrowAPI.game.card_expire(card, 'k_extinct_ex')
+                return nil, true
+            else
+                return {
+                    message = localize('k_safe_ex')
+                }
+            end
+        end
+    end
 }, true)
