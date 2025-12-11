@@ -125,6 +125,7 @@ ArrowAPI.config_tools = {
         end
 
         ArrowAPI.config_tools.sort_config(mod)
+        mod.current_config = copy_table(mod.config)
     end,
 
     sort_config = function(mod)
