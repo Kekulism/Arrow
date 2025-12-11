@@ -1,3 +1,8 @@
+if ArrowAPI then
+	sendDebugMessage('[ArrowAPI] already provided. Skipping...')
+	return
+end
+
 ArrowAPI = SMODS.current_mod
 ArrowAPI.startup_item_check = false
 ArrowAPI.col_stand_hover = nil
@@ -101,13 +106,14 @@ local includes = {
 }
 
 local module_path = ArrowAPI.path.."modules\\Arrow"
+sendDebugMessage('module path '..module_path)
 local load_path = NFS.getInfo(module_path) and "modules\\Arrow\\"
 ArrowAPI.custom_path = load_path
 
 for _, include in ipairs(includes) do
 	local init, error = SMODS.load_file((ArrowAPI.custom_path or "") .. "api\\" .. include ..".lua")
 	if error then sendErrorMessage("[Arrow] Failed to load "..include.." with error "..error) else
-		local data = init()
+		init()
 		sendDebugMessage("[Arrow] Loaded hook: " .. include)
 	end
 end
