@@ -460,7 +460,6 @@ ArrowAPI.loading.batch_load({
         parent_folder = ArrowAPI.custom_path,
 	    mod_prefix = 'arrow',
     },
-
     Consumable = {
         order = 1,
         items = {
