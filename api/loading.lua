@@ -457,7 +457,7 @@ ArrowAPI.loading = {
 
 ArrowAPI.loading.batch_load({
     config = {
-        parent_folder = 'arrowapi/items/',
+        parent_folder = 'Arrow',
 	    mod_prefix = 'arrow',
     },
 
