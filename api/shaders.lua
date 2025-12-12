@@ -1,9 +1,9 @@
-SMODS.Shader({ key = 'arrow_stand_aura', path = 'stand_aura.fs', prefix_config = false })
-SMODS.Shader({ key = 'arrow_stand_mask', path = 'stand_mask.fs', prefix_config = false })
-SMODS.Atlas({ key = 'arrow_stand_noise', path = 'noise.png',  px = 128, py = 128, prefix_config = false})
-SMODS.Atlas({ key = 'arrow_stand_gradient', path = 'gradient.png', px = 64, py = 64, prefix_config = false})
-SMODS.Shader({key = 'arrow_ui_poly', path = 'ui_poly.fs', prefix_config = false})
-SMODS.Shader({key = 'arrow_rgb_slider', path = 'rgb_slider.fs', prefix_config = false})
+SMODS.Shader({ key = 'arrow_stand_aura', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'stand_aura.fs', prefix_config = false })
+SMODS.Shader({ key = 'arrow_stand_mask', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'stand_mask.fs', prefix_config = false })
+SMODS.Shader({key = 'arrow_ui_poly', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'ui_poly.fs', prefix_config = false})
+SMODS.Shader({key = 'arrow_rgb_slider', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'rgb_slider.fs', prefix_config = false})
+SMODS.Atlas({ key = 'arrow_stand_noise', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'noise.png',  px = 128, py = 128, prefix_config = false})
+SMODS.Atlas({ key = 'arrow_stand_gradient', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'gradient.png', px = 64, py = 64, prefix_config = false})
 
 local default_aura_target = 0.3
 

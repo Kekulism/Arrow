@@ -1,5 +1,5 @@
-SMODS.Atlas({key = 'arrow_sp_default', path = 'soundpacks/sp_default.png', px = 71, py = 71, prefix_config = false})
-SMODS.Atlas({key = 'arrow_sp_balatro', path = 'soundpacks/sp_balatro.png', px = 71, py = 71, prefix_config = false})
+SMODS.Atlas({key = 'arrow_sp_default', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'soundpacks/sp_default.png', px = 71, py = 71, prefix_config = false})
+SMODS.Atlas({key = 'arrow_sp_balatro', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'soundpacks/sp_balatro.png', px = 71, py = 71, prefix_config = false})
 
 TNSMI.SoundPacks = {}
 TNSMI.SoundPack = SMODS.GameObject:extend ({

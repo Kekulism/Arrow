@@ -1,6 +1,6 @@
-SMODS.Atlas({key = 'arrow_stand_blank', path = 'blank.png', px = 93, py = 179, prefix_config = false})
-SMODS.Atlas({key = 'arrow_stand_blank_evolved', path = 'blank_evolved.png', px = 93, py = 179, prefix_config = false})
-SMODS.Atlas({key = 'arrow_stand_stickers', path = "stand_stickers.png", px = 71, py = 95, prefix_config = false})
+SMODS.Atlas({key = 'arrow_stand_blank', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'blank.png', px = 93, py = 179, prefix_config = false})
+SMODS.Atlas({key = 'arrow_stand_blank_evolved', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'blank_evolved.png', px = 93, py = 179, prefix_config = false})
+SMODS.Atlas({key = 'arrow_stand_stickers', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = "stand_stickers.png", px = 71, py = 95, prefix_config = false})
 
 SMODS.Sticker{key = "arrow_Stand_white", atlas = 'arrow_stand_stickers', pos = { x = 0, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true, prefix_config = false}
 SMODS.Sticker{key = "arrow_Stand_red", atlas = 'arrow_stand_stickers', pos = { x = 1, y = 0 }, rate = 0, should_apply = false, no_collection = true, no_doe = true, prefix_config = false}

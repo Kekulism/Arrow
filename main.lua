@@ -72,6 +72,7 @@ G.ARGS.LOC_COLOURS['showdown2'] = G.C.BLIND.SHOWDOWN_COL_2
 
 local includes = {
 	-- data types
+	'loading',
 	'loc',
 	'sound',
 	'compat',
@@ -85,7 +86,6 @@ local includes = {
 	'ui',
 	'credits',
 	'shaders',
-	'loading',
 
 	'hooks/node',
 	'hooks/blind',
@@ -105,13 +105,13 @@ local includes = {
 	'misc',
 }
 
-local module_path = ArrowAPI.path.."modules\\Arrow"
+local module_path = ArrowAPI.path.."modules/Arrow"
 sendDebugMessage('module path '..module_path)
-local load_path = NFS.getInfo(module_path) and "modules\\Arrow\\"
+local load_path = NFS.getInfo(module_path) and "modules/Arrow/"
 ArrowAPI.custom_path = load_path
 
 for _, include in ipairs(includes) do
-	local init, error = SMODS.load_file((ArrowAPI.custom_path or "") .. "api\\" .. include ..".lua")
+	local init, error = SMODS.load_file((ArrowAPI.custom_path or "") .. "api/" .. include ..".lua")
 	if error then sendErrorMessage("[Arrow] Failed to load "..include.." with error "..error) else
 		init()
 		sendDebugMessage("[Arrow] Loaded hook: " .. include)

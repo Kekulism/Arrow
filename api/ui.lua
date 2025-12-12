@@ -1,4 +1,13 @@
 -- Mod Icon in Mods tab
+SMODS.Atlas({
+	key = "arrow_modicon",
+    custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''),
+	path = "arrow_icon.png",
+	px = 32,
+	py = 32,
+    prefix_config = false
+})
+
 
 function G.UIDEF.preview_cardarea(preview_num, scale)
     local preview_cards = {}

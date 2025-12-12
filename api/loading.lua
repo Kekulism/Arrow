@@ -1,4 +1,32 @@
-SMODS.Atlas({ key = 'arrow_undiscovered', path = "undiscovered.png", px = 71, py = 95, prefix_config = false })
+local ref_atlas_inject = SMODS.Atlas.inject
+SMODS.Atlas.inject = function(self)
+    if not self.custom_path then
+         ref_atlas_inject(self)
+        return
+    end
+
+    local path_table = self.mod and self.mod or SMODS
+    local old_path = path_table.path
+    path_table.path = self.custom_path
+    ref_atlas_inject(self)
+    path_table.path = old_path
+end
+
+local ref_shader_inject = SMODS.Shader.inject
+SMODS.Shader.inject = function(self)
+    if not self.custom_path then
+        ref_shader_inject(self)
+        return
+    end
+
+    local path_table = self.mod and self.mod or SMODS
+    local old_path = path_table.path
+    path_table.path = self.custom_path
+    ref_shader_inject(self)
+    path_table.path = old_path
+end
+
+SMODS.Atlas({ key = 'arrow_undiscovered', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = "undiscovered.png", px = 71, py = 95, prefix_config = false })
 
 ArrowAPI.loading = {
     --- Load a batch of items from a formatted table
@@ -57,9 +85,10 @@ ArrowAPI.loading = {
     --- @return boolean # True if the item successfuly loaded
     load_item = function(file_key, item_type, alias, parent_folder, order_in_type, mod, mod_prefix)
         mod = mod or SMODS.current_mod
-        local path = 'items/'..string.lower(item_type)..(item_type == 'VHS' and '' or 's')..'/'
-        if parent_folder then path = parent_folder..'/'..path end
-        local info = assert(SMODS.load_file(path .. file_key .. ".lua"))()
+        local folder_path = string.lower(item_type)..(item_type == 'VHS' and '' or 's')..'/'
+        local item_path = 'items/'..folder_path
+        if parent_folder then item_path = parent_folder..'/'..item_path end
+        local info = assert(SMODS.load_file(item_path .. file_key .. ".lua"))()
 
         if not ArrowAPI.loading.filter_item(info) or (not ArrowAPI.BATCH_LOAD and not ArrowAPI.loading.filter_type(item_type, order_in_type)) then
             return false
@@ -255,11 +284,9 @@ ArrowAPI.loading = {
             prefix_config = false
         end
 
-        local old_smods_path = SMODS.path
-        SMODS.path = mod.path..(parent_folder or '')
         if item_type == 'Blind' then
             -- separation for animated sprites
-            SMODS.Atlas({ key = atlas_key, atlas_table = "ANIMATION_ATLAS", path = "blinds/" .. file_key .. ".png", px = 34, py = 34, frames = 21, prefix_config = prefix_config })
+            SMODS.Atlas({ key = atlas_key, atlas_table = "ANIMATION_ATLAS", custom_path = mod.path..(parent_folder or ''), path = "blinds/" .. file_key .. ".png", px = 34, py = 34, frames = 21, prefix_config = prefix_config })
         else
             local width = 71
             local height = 95
@@ -268,14 +295,15 @@ ArrowAPI.loading = {
             elseif item_type == 'Stake' then
                 width = 29
                 height = 29
-                SMODS.Atlas({ key = atlas_key..'_sticker', path = "stickers/" ..file_key .. "_sticker.png", px = 71, py = 95, prefix_config = prefix_config })
+                SMODS.Atlas({ key = atlas_key..'_sticker', custom_path = mod.path..(parent_folder or ''), path = "stickers/" ..file_key .. "_sticker.png", px = 71, py = 95, prefix_config = prefix_config })
             elseif item_type == 'SoundPack' then
                 if info.atlas == 'arrow_sp_default' then return true end
                 height = 71
             end
             local atlas_args = {
                 key = atlas_key,
-                path = path .. "/" .. file_key .. ".png",
+                path = folder_path .. file_key .. ".png",
+                custom_path = mod.path..(parent_folder or ''),
                 px = new_item.width or width,
                 py = new_item.height or height,
                 prefix_config = prefix_config
@@ -289,7 +317,6 @@ ArrowAPI.loading = {
 
             SMODS.Atlas(atlas_args)
         end
-        SMODS.path = old_smods_path
         return true
     end,
 
