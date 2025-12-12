@@ -58,6 +58,7 @@ ArrowAPI.process_loc_text = function()
 
     --- config loc
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_options_enable_DetailedDescs', {['en-us'] = 'Detailed Descriptions'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_options_enable_ItemCredits', {['en-us'] = 'Item Credits'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_options_enable_Jokers', {['en-us'] = 'Jokers'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_options_enable_Consumables', {['en-us'] = 'Consumeables'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_options_enable_Decks', {['en-us'] = 'Decks'})

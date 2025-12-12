@@ -27,6 +27,8 @@ SMODS.Shader.inject = function(self)
 end
 
 SMODS.Atlas({ key = 'arrow_undiscovered', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = "undiscovered.png", px = 71, py = 95, prefix_config = false })
+SMODS.Atlas({key = 'arrow_boosters', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'boosters/boosters.png', px = 71, py = 95, prefix_config = false})
+SMODS.Atlas({key = 'arrow_vouchers', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'vouchers/vouchers.png', px = 71, py = 95, prefix_config = false})
 
 ArrowAPI.loading = {
     --- Load a batch of items from a formatted table

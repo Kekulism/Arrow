@@ -98,12 +98,14 @@ ArrowAPI.config_tools = {
 
         if extra_args then
             for i, v in ipairs(extra_args) do
+                sendDebugMessage('checking config for '..v.key)
                 if not mod.ARROW_USE_CONFIG.config_map[v.key] then
                     if mod.config[v.key] == nil then
                         mod.config[v.key] = (v.default_value == nil and false) or v.default_value
                     end
 
-                    mod.ARROW_USE_CONFIG[i] = {
+                    sendDebugMessage('adding config for '..v.key)
+                    mod.ARROW_USE_CONFIG[#mod.ARROW_USE_CONFIG] = {
                         key = v.key,
                         value = mod.config[v.key],
                         exclude_from_ui = v.exclude_from_ui,
@@ -112,7 +114,7 @@ ArrowAPI.config_tools = {
                         order = v.order
                     }
 
-                    mod.ARROW_USE_CONFIG.config_map[v.key] = i
+                    mod.ARROW_USE_CONFIG.config_map[v.key] = #mod.ARROW_USE_CONFIG
                 end
             end
         end

@@ -106,7 +106,6 @@ local includes = {
 }
 
 local module_path = ArrowAPI.path.."modules/Arrow"
-sendDebugMessage('module path '..module_path)
 local load_path = NFS.getInfo(module_path) and "modules/Arrow/"
 ArrowAPI.custom_path = load_path
 

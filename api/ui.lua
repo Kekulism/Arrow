@@ -531,7 +531,8 @@ ArrowAPI.ui = {
                     local nodes = column == 'right' and right_settings.nodes or left_settings.nodes
 
                     local label = G.localization.misc.dictionary[mod.prefix..'_options_'..v.key] and localize(mod.prefix..'_options_'..v.key)
-                    or localize('arrow_options_'..v.key)
+                    or G.localization.misc.dictionary['arrow_options_'..v.key] and localize('arrow_options_'..v.key)
+                    or ('options_'..v.key)
                     local main_node = create_toggle({
                         label = label,
                         w = 1,
@@ -604,7 +605,7 @@ end
 -- if a mod does not depend on ArrowAPI, it will use the SMODS default
 local ref_ach_tab = buildAchievementsTab
 function buildAchievementsTab(mod, current_page)
-    local is_arrow_mod = false
+    local is_arrow_mod = SMODS.provided_mods['ArrowAPI'] or false
     for _, x in ipairs(mod.dependencies or {}) do
         for _, y in ipairs(x) do
             if y.id == 'ArrowAPI' then
