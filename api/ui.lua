@@ -783,11 +783,11 @@ function buildAchievementsTab(mod, current_page)
 						{n=G.UIT.R, config={align = "cm", r = 0.1, emboss = 0.025, minh = 1.05, maxh = 1.05, filler = true, main_box_flag = true}, nodes={
 							{n=G.UIT.R, config={align = "cm", maxw = 2, padding = 0.025 }, nodes=desc}
 						}},
-                        {n=G.UIT.R, config={align = "cm", padding = 0.05 }, nodes={
+                        ach.origin and {n=G.UIT.R, config={align = "cm", padding = 0.05 }, nodes={
                             {n = G.UIT.R, config = { align = "cm", colour = badge_colour, minh = 0.35, maxh = 0.35, maxw = 2.5, minw =  2.5, r = 0.1, emboss = 0.05, padding = 0.05}, nodes = {
                                 {n=G.UIT.T, config={text = text, shadow = true, colour = text_colour, align = "cm", scale = badge_scale, maxw = 2, padding = 0.025}, nodes=desc}
                             }}
-                        }}
+                        }} or nil,
 					}},
                 }},
             },
