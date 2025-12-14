@@ -1,6 +1,7 @@
 local ref_level_up = level_up_hand
 function level_up_hand(card, hand, instant, amount)
     amount = amount or 1
+    --[[
     local eff = {}
     SMODS.calculate_context({modify_level_increment = true, card = card, hand = hand, amount = amount}, eff)
     SMODS.trigger_effects(eff)
@@ -11,6 +12,7 @@ function level_up_hand(card, hand, instant, amount)
             end
         end
     end
+    --]]
 
     local ret = ref_level_up(card, hand, instant, amount)
     if not ArrowAPI.bypass_level_up_context then
@@ -23,6 +25,7 @@ end
 
 function level_up_hand_bypass(card, hand, instant, amount, bypass_context)
     ArrowAPI.bypass_level_up_context = bypass_context
+    sendDebugMessage('instant hand level: '..tostring(not not instant))
     local ret = level_up_hand(card, hand, instant, amount)
 
     if ArrowAPI.bypass_level_up_context then
@@ -294,82 +297,6 @@ ArrowAPI.game = {
         end
     end,
 
-    batch_level_up = function(card, hands, amount)
-        amount = amount or 1
-        G.GAME.arrow_last_upgraded_hand = {}
-        local neg = amount <= 0
-
-
-        update_hand_text({sound = 'button', volume = 0.7, pitch = neg and 1.4 or 0.8, delay = 0.3}, {
-            handname = localize('k_all_hands'),
-            chips = '...',
-            mult = '...',
-            level = ''
-        })
-
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            delay = 0.2,
-            func = function()
-                play_sound('tarot1', neg and 1.5 or nil)
-                card:juice_up(0.8, 0.5)
-                G.TAROT_INTERRUPT_PULSE = true
-                return true
-            end
-        }))
-
-        update_hand_text({delay = 0}, {
-            mult = neg and '-' or '+',
-            StatusText = true
-        })
-
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            delay = 0.9,
-            func = function()
-                play_sound('tarot1', neg and 1.5 or nil)
-                card:juice_up(0.8, 0.5)
-                return true
-            end
-        }))
-
-        update_hand_text({delay = 0}, {
-            chips = neg and '-' or '+',
-            StatusText = true
-        })
-
-        G.E_MANAGER:add_event(Event({
-            trigger = 'after',
-            delay = 0.9,
-            func = function()
-                play_sound('tarot1')
-                card:juice_up(0.8, 0.5)
-                G.TAROT_INTERRUPT_PULSE = nil
-                return true
-            end
-        }))
-
-        update_hand_text({sound = 'button', volume = 0.7, pitch = neg and 1.5 or 0.9, delay = 0}, {
-            level='+1'
-        })
-
-        delay(1.3)
-
-        for k, _ in pairs(hands) do
-            level_up_hand_bypass(card, k, true, amount == 0 and (-G.GAME.hands[k].level + 1) or amount, true)
-            G.GAME.arrow_last_upgraded_hand[k] = true
-        end
-
-        update_hand_text({sound = 'button', volume = 0.7, pitch = neg and 2.0 or 1.1, delay = 0}, {
-            mult = 0,
-            chips = 0,
-            handname = '',
-            level = ''
-        })
-
-        SMODS.calculate_context({hand_upgraded = true, upgraded = hands, amount = amount})
-    end,
-
     consumable_selection_mod = function(mod)
         G.GAME.modifiers.consumable_selection_mod = G.GAME.modifiers.consumable_selection_mod or 0
         for _, v in pairs(G.I.CARD) do
@@ -464,14 +391,97 @@ ArrowAPI.game = {
 	    return key, G.C.TAGS[key] or G.C.IMPORTANT
     end,
 
-    get_lowest_hand_level = function()
-        local lowest = 0
-        for i=1, #G.handlist do
-            if i == 1 then lowest = G.GAME.hands[G.handlist[i]].level end
-            if G.GAME.hands[G.handlist[i]].level < lowest then lowest = G.GAME.hands[G.handlist[i]].level end
+    get_hand_level_metric = function(mode)
+        mode = mode or 'lowest'
+        local bar = (mode == 'lowest' and math.huge or 0)
+        local pool = {}
+        for _, v in ipairs(G.handlist) do
+            local hand = G.GAME.hands[v]
+            if (mode == 'lowest' and hand.level < bar) or hand.level > bar then
+                bar = hand.level
+                sendDebugMessage('setting bar: '..hand.level)
+                pool = {v}
+            elseif hand.level == bar then
+                pool[#pool+1] = v
+            end
         end
 
-        return lowest
+        return bar, pool
+    end,
+
+    batch_level_up = function(card, hands, amount)
+        amount = amount or 1
+        G.GAME.arrow_last_upgraded_hand = {}
+        local neg = amount <= 0
+
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {
+            handname = localize('k_all_hands'),
+            chips = '...',
+            mult = '...',
+            level = ''
+        })
+
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.2,
+            func = function()
+                play_sound('tarot1')
+                card:juice_up(0.8, 0.5)
+                G.TAROT_INTERRUPT_PULSE = true
+                return true
+            end
+        }))
+
+        update_hand_text({delay = 0}, {
+            mult = neg and '-' or '+',
+            StatusText = true
+        })
+
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.9,
+            func = function()
+                play_sound('tarot1')
+                card:juice_up(0.8, 0.5)
+                return true
+            end
+        }))
+
+        update_hand_text({delay = 0}, {
+            chips = neg and '-' or '+',
+            StatusText = true
+        })
+
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            delay = 0.9,
+            func = function()
+                play_sound('tarot1')
+                card:juice_up(0.8, 0.5)
+                G.TAROT_INTERRUPT_PULSE = nil
+                return true
+            end
+        }))
+
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.9, delay = 0}, {
+            level='+1'
+        })
+
+        delay(1.3)
+
+        for i, v in ipairs(hands) do
+            level_up_hand_bypass(card, v, true, amount == 0 and (-G.GAME.hands[v].level + 1) or amount, true)
+            G.GAME.arrow_last_upgraded_hand[v] = true
+        end
+
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {
+            mult = 0,
+            chips = 0,
+            handname = '',
+            level = ''
+        })
+
+        SMODS.calculate_context({hand_upgraded = true, upgraded = hands, amount = amount})
     end,
 
     card_expire = function(card, loc_string, colour)

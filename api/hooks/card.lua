@@ -58,8 +58,9 @@ function Card:say_quip(iter, not_first, def_speed, voice)
     end
     self.last_said = new_said
 
-    if voice and SMODS.Sound[voice] then
-        SMODS.Sound[voice]:play(1, (G.SETTINGS.SOUND.volume/100.0) * (G.SETTINGS.SOUND.game_sounds_volume/50.0), true);
+    if voice and SMODS.Sounds[voice] then
+        sendDebugMessage('playing unique voice')
+        play_sound(voice)
     else
         play_sound('voice'..new_said, speed * (math.random() * 0.2 + 1), 0.5)
     end

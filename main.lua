@@ -292,7 +292,7 @@ ArrowAPI.config_tools.use_config(ArrowAPI, {
 				{255,255,0,["key"]="SHOWDOWN_COL_2"},
 				["name"]="Jabroni"
 			},{
-				{64,64,640,["key"]="Small"},
+				{64,64,64,["key"]="Small"},
 				{191,199,213,["key"]="SHOWDOWN_COL_1"},
 				{55,66,68,["key"]="SHOWDOWN_COL_2"},
 				["name"]="Uzumaki"

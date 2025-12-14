@@ -55,6 +55,7 @@ ArrowAPI.process_loc_text = function()
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_credits_programmer', {['en-us'] = 'Programming'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_credits_graphics', {['en-us'] = 'Graphics'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_credits_special', {['en-us'] = 'Special Thanks'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_credits_va', {['en-us'] = 'Voice Acting'})
 
     --- config loc
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_options_enable_DetailedDescs', {['en-us'] = 'Detailed Descriptions'})
@@ -293,6 +294,12 @@ ArrowAPI.process_loc_text = function()
             "{E:1}#1#{}",
             "{E:1}#2#{}",
             "{E:1}#2#{}"
+        },
+    }})
+    SMODS.process_loc_text(G.localization.descriptions.Other, 'vacredit_1', {['en-us'] = {
+        name = "Voice Acting",
+        text = {
+            "{E:1}#1#{}",
         },
     }})
 

@@ -182,8 +182,16 @@ ArrowAPI.loading = {
             local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
             function info.loc_vars(self, info_queue, card)
                 if info_queue and ArrowAPI.current_config['enable_ItemCredits'] then
-                    local vars = (type(info.artist) == 'function' and info:artist()) or (type(info.artist) == 'table' and info.artist) or {info.artist}
-                    info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
+                    if info.artist then
+                        local vars = (type(info.artist) == 'function' and info:artist()) or (type(info.artist) == 'table' and info.artist) or {info.artist}
+                        info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
+                    end
+
+                    if info.va then
+                        local vars = (type(info.va) == 'function' and info:va()) or (type(info.va) == 'table' and info.va) or {info.va}
+                        info_queue[#info_queue+1] = {key = "vacredit_"..#vars, set = "Other", vars = vars }
+                    end
+
 
                     -- add this automatically
                     if item_type == 'VHS' then
@@ -304,7 +312,7 @@ ArrowAPI.loading = {
             end
             local atlas_args = {
                 key = atlas_key,
-                path = folder_path .. file_key .. ".png",
+                path = (info.animation and 'animated/' or folder_path) .. file_key .. ".png",
                 custom_path = mod.path..(parent_folder or ''),
                 px = new_item.width or width,
                 py = new_item.height or height,

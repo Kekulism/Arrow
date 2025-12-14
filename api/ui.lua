@@ -90,6 +90,7 @@ ArrowAPI.ui = {
                 end
 
                 local color_key = center.origin.custom_color or center.origin.category
+                sendDebugMessage('color key: '..color_key)
                 badge_colour = ArrowAPI.ui.badge_colors[mod.id]['co_'..color_key] or badge_colour
                 text_colour = ArrowAPI.ui.badge_colors[mod.id]['te_'..color_key] or text_colour
             else
@@ -182,7 +183,10 @@ ArrowAPI.ui = {
     --- @param mod SMODS.Mod|table SMODS.Mod object to add colors for
     --- @param args table map of colors. Backgrounds are prefixed with `co_`, text is prefixed with `te_`
     add_badge_colors = function(mod, args)
-        ArrowAPI['ui']['badge_colors'][mod.id] = copy_table(args)
+        ArrowAPI.ui.badge_colors[mod.id] = ArrowAPI.ui.badge_colors[mod.id] or {}
+        for k, v in pairs(args) do
+            ArrowAPI.ui.badge_colors[mod.id][k] = v
+        end
     end,
 
     --- Reloads the main UI
