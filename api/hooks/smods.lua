@@ -103,14 +103,12 @@ function SMODS.update_context_flags(context, flags)
     if flags.prevent_expire ~= nil then context.prevent_expire = flags.prevent_expire end
     if flags.blind_hidden  ~= nil then context.blind_hidden = flags.blind_hidden end
 
-    if flags.title_card then
-        context.title_center = flags.title_center
-        context.title_front = flags.title_front
-    end
+    if flags.title_center then context.title_center = context.title_center end
+    if flags.title_front then context.title_front = flags.title_front end
 
-    if flags.splash_card then
-        context.splash_center = flags.splash_center
-        context.splash_front = flags.splash_front
+    if flags.splash_front or flags.splash_center then
+        context.splash_center = flags.splash_center or context.splash_center
+        context.splash_front = flags.splash_front or context.splash_front
     end
 
     return ret
@@ -211,7 +209,7 @@ SMODS.calculate_individual_effect = function(effect, scored_card, key, amount, f
         return key
     end
 
-    if key == 'title_center' or key == 'title_front' and key == 'splash_center' or key == 'splash_front' then
+    if key == 'title_center' or key == 'title_front' or key == 'splash_center' or key == 'splash_front' then
         return { [key] = amount }
     end
 end

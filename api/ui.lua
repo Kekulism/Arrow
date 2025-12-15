@@ -90,7 +90,6 @@ ArrowAPI.ui = {
                 end
 
                 local color_key = center.origin.custom_color or center.origin.category
-                sendDebugMessage('color key: '..color_key)
                 badge_colour = ArrowAPI.ui.badge_colors[mod.id]['co_'..color_key] or badge_colour
                 text_colour = ArrowAPI.ui.badge_colors[mod.id]['te_'..color_key] or text_colour
             else

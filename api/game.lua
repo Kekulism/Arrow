@@ -1,7 +1,6 @@
 local ref_level_up = level_up_hand
 function level_up_hand(card, hand, instant, amount)
     amount = amount or 1
-    --[[
     local eff = {}
     SMODS.calculate_context({modify_level_increment = true, card = card, hand = hand, amount = amount}, eff)
     SMODS.trigger_effects(eff)
@@ -12,7 +11,6 @@ function level_up_hand(card, hand, instant, amount)
             end
         end
     end
-    --]]
 
     local ret = ref_level_up(card, hand, instant, amount)
     if not ArrowAPI.bypass_level_up_context then
@@ -25,7 +23,6 @@ end
 
 function level_up_hand_bypass(card, hand, instant, amount, bypass_context)
     ArrowAPI.bypass_level_up_context = bypass_context
-    sendDebugMessage('instant hand level: '..tostring(not not instant))
     local ret = level_up_hand(card, hand, instant, amount)
 
     if ArrowAPI.bypass_level_up_context then
@@ -399,7 +396,6 @@ ArrowAPI.game = {
             local hand = G.GAME.hands[v]
             if (mode == 'lowest' and hand.level < bar) or hand.level > bar then
                 bar = hand.level
-                sendDebugMessage('setting bar: '..hand.level)
                 pool = {v}
             elseif hand.level == bar then
                 pool[#pool+1] = v

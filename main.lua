@@ -251,52 +251,8 @@ ArrowAPI.config_tools.use_config(ArrowAPI, {
 				{254,95,85,["key"]="SHOWDOWN_COL_1",["default"]=true},
 				{0,157,255,["key"]="SHOWDOWN_COL_2",["default"]=true},
 				["name"]="Default"
-			},{
-				{75,194,146,["key"]="SHOWDOWN_COL_1"},
-				{136,103,165,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Cardsauce"
-			},{
-				{58,102,88,["key"]="Small"},
-				{44,153,127,["key"]="SHOWDOWN_COL_1"},
-				{9,39,29,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Darkshroom"
-			},{
-				{58,102,76,["key"]="Small"},
-				{96,178,131,["key"]="SHOWDOWN_COL_1"},
-				{163,200,111,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Vineshroom"
-			},{
-				{58,75,102,["key"]="Small"},
-				{84,123,184,["key"]="SHOWDOWN_COL_1"},
-				{103,184,116,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Fullsauce"
-			},{
-				{112,75,75,["key"]="Small"},
-				{226,101,101,["key"]="SHOWDOWN_COL_1"},
-				{165,59,56,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Extrasauce"
-			},{
-				{201,84,120,["key"]="Small"},
-				{153,103,167,["key"]="SHOWDOWN_COL_1"},
-				{72,48,98,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Twitch"
-			},{
-				{68,97,56,["key"]="Small"},
-				{181,230,29,["key"]="SHOWDOWN_COL_1"},
-				{4,161,229,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Fren"
-			},{
-				{101,84,120,["key"]="Small"},
-				{136,103,165,["key"]="SHOWDOWN_COL_1"},
-				{255,255,0,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Jabroni"
-			},{
-				{64,64,64,["key"]="Small"},
-				{191,199,213,["key"]="SHOWDOWN_COL_1"},
-				{55,66,68,["key"]="SHOWDOWN_COL_2"},
-				["name"]="Uzumaki"
 			},
-			["saved_index"] = 2,
+			["saved_index"] = 1,
 		},
 		["Planet"] = {
 			{

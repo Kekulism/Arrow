@@ -75,28 +75,22 @@ ArrowAPI.config_tools = {
 
 
     use_config = function(mod, extra_args)
-        mod.ARROW_USE_CONFIG = mod.ARROW_USE_CONFIG or {config_map = {}}
+        mod.ARROW_USE_CONFIG = {config_map = {}}
 
         if extra_args then
             for i, v in ipairs(extra_args) do
-                sendDebugMessage('checking config for '..v.key)
-                if not mod.ARROW_USE_CONFIG.config_map[v.key] then
-                    if mod.config[v.key] == nil then
-                        mod.config[v.key] = (v.default_value == nil and false) or v.default_value
-                    end
+                mod.config[v.key] = (v.default_value == nil and false) or v.default_value
 
-                    sendDebugMessage('adding config for '..v.key)
-                    mod.ARROW_USE_CONFIG[#mod.ARROW_USE_CONFIG] = {
-                        key = v.key,
-                        value = mod.config[v.key],
-                        exclude_from_ui = v.exclude_from_ui,
-                        before_auto = v.before_auto,
-                        after_auto = not v.before_auto,
-                        order = v.order
-                    }
+                mod.ARROW_USE_CONFIG[#mod.ARROW_USE_CONFIG] = {
+                    key = v.key,
+                    value = mod.config[v.key],
+                    exclude_from_ui = v.exclude_from_ui,
+                    before_auto = v.before_auto,
+                    after_auto = not v.before_auto,
+                    order = v.order
+                }
 
-                    mod.ARROW_USE_CONFIG.config_map[v.key] = #mod.ARROW_USE_CONFIG
-                end
+                mod.ARROW_USE_CONFIG.config_map[v.key] = #mod.ARROW_USE_CONFIG
             end
         end
 
@@ -137,6 +131,7 @@ ArrowAPI.config_tools = {
                 table.insert(mod.ARROW_USE_CONFIG, {
                     key = key, value = mod.config[key], exclude_from_ui = exclude_from_ui, order = order
                 })
+                mod.ARROW_USE_CONFIG.config_map[key] = #mod.ARROW_USE_CONFIG
 
                 ArrowAPI.config_tools.sort_config(mod)
                 return

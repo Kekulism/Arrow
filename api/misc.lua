@@ -159,14 +159,15 @@ ArrowAPI.misc = {
             if not SMODS.check_looping_context(mod.object) then
                 SMODS.current_evaluated_object = mod.object
                 SMODS.push_to_context_stack(context, "utils.lua : SMODS.eval_individual")
-                local eval = {}
                 local eff = mod.object:calculate(context)
-                if eff == true then eff = { remove = true } end
                 if type(eff) ~= 'table' then eff = nil end
                 SMODS.pop_from_context_stack(context, "utils.lua : SMODS.eval_individual")
-                local f = SMODS.trigger_effects({eval})
-                for k,v in pairs(f) do flags[k] = v end
-                SMODS.update_context_flags(context, flags)
+                if eff then
+                    local f = {}
+                    SMODS.calculate_effect_table_key({individual = eff}, 'individual', mod.object, f)
+                    for k, v in pairs(f) do flags[k] = v end
+                    SMODS.update_context_flags(context, flags)
+                end
             end
         end
 
@@ -176,9 +177,7 @@ ArrowAPI.misc = {
         SMODS.pop_from_context_stack(context, "utils.lua : SMODS.calculate_context")
 
         local ret = {}
-        for _, f in ipairs(flags) do
-            for k,v in pairs(f) do ret[k] = v end
-        end
+        for k,v in pairs(flags) do ret[k] = v end
         return ret
     end,
 }
