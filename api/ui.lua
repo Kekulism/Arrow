@@ -157,7 +157,7 @@ ArrowAPI.ui = {
         if (specific_vars and not specific_vars.not_hidden) and not (card.config.center.discovered or card.bypass_discovery_center) then
             localize{type = 'unlocks', key = 'joker_locked_legendary', set = 'Other', nodes = desc_nodes, vars = {}}
         else
-            localize{type = 'descriptions', key = key, set = self.set, nodes = desc_nodes, vars = (self.loc_vars(self, info_queue, card) and self.loc_vars(self, info_queue, card).vars) or {}}
+            localize{type = 'descriptions', key = key, set = self.set, nodes = desc_nodes, vars = (self.loc_vars and self.loc_vars(self, info_queue, card) or {}).vars}
         end
     end,
 
