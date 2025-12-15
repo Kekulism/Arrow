@@ -471,7 +471,7 @@ ArrowAPI.ui = {
                         local col_nodes = contributor_nodes[1].nodes
 
                         for _, data in ipairs(ref.contributors) do
-                            local get_name = type(data.name) == 'function' and data.name() or data.name
+                            local get_name = type(data.name_func) == 'function' and data.name_func() or data.name
                             local scale_fac = math.min(0.8, ArrowAPI.ui.calc_scale_fac(get_name))
                             col_nodes[#col_nodes+1] = {
                                 n=G.UIT.R,

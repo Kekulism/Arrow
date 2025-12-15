@@ -2,45 +2,26 @@ ArrowAPI.config_tools = {
     use_credits = function(mod, extra_args)
         mod.ARROW_USE_CREDITS = true
         extra_args = extra_args or {}
-        local credit_table = ArrowAPI['credits'][mod.id] or {
+        local credit_table = {
             matrix = ArrowAPI.DEFAULT_CREDIT_MATRIX,
         }
 
         local use_default_sections = true
-        if credit_table.use_default_sections ~= nil then
-            use_default_sections = not not credit_table.use_default_sections
-        end
+
         for _, arg in ipairs(extra_args) do
             if arg.key then
-                local existing_table = nil
-                for _, v in ipairs(credit_table) do
-                    if v.key == arg.key then
-                        existing_table = v
-                    end
-                end
 
-                local contrib_table = (existing_table or {}).contributors or {}
+                local contrib_table = {}
                 for _, v in ipairs(arg.contributors or {}) do
-                    local skip = false
-                    for _, vv in ipairs(contrib_table) do
-                        if vv.name == v.name then
-                            skip = true
-                            break
-                        end
-                    end
-
-                    if not skip then
-                        local contrib = {
-                            name = v.name,
-                            name_colour = v.name_colour or G.C.UI.TEXT_LIGHT,
-                            name_scale = v.name_scale or 1,
-                            no_tooltip = v.no_tooltip
-                        }
-                        contrib_table[#contrib_table+1] = contrib
-                    end
+                    local contrib = {
+                        name = v.name,
+                        name_colour = v.name_colour or G.C.UI.TEXT_LIGHT,
+                        name_scale = v.name_scale or 1,
+                        no_tooltip = v.no_tooltip
+                    }
+                    contrib_table[#contrib_table+1] = contrib
                 end
 
-                if not existing_table then
                     credit_table[#credit_table+1] = {
                         key = arg.key,
                         title_colour = arg.title_colour or SMODS.current_mod.badge_colour,
@@ -63,12 +44,12 @@ ArrowAPI.config_tools = {
                             use_default_sections = false
                         end
                     end
-                end
             end
         end
 
         -- create default sections
-        if not credit_table.use_default_sections and use_default_sections then
+        if use_default_sections then
+            sendDefaultMessage('setting default credit sections')
             -- check for already used sections with provided info
             local used_sections = {}
             for i, v in ipairs(credit_table) do

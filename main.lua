@@ -118,12 +118,11 @@ for _, include in ipairs(includes) do
 end
 
 ArrowAPI.config_tools.use_credits(ArrowAPI, {
-    matrix = {col = 18.5, row = 7},
     {
 		key = 'direction',
 		title_colour = G.C.YELLOW,
 		pos_start = {col = 0, row = 0},
-		pos_end = {col = 5, row = 10},
+		pos_end = {col = 4, row = 7},
 		contributors = {
 			{name = "BarrierTrio/Gote"},
 			{name = "Kekulism"},
@@ -133,20 +132,20 @@ ArrowAPI.config_tools.use_credits(ArrowAPI, {
 	{
 		key = 'artist',
 		title_colour = G.C.ETERNAL,
-		pos_start = {col = 5, row = 0},
-		pos_end = {col = 12.5, row = 10},
+		pos_start = {col = 4, row = 0},
+		pos_end = {col = 11.5, row = 7},
 	},
 	{
 		key = 'programmer',
 		title_colour = G.C.GOLD,
-		pos_start = {col = 12.5, row = 0},
-		pos_end = {col = 20, row = 5},
+		pos_start = {col = 11.5, row = 0},
+		pos_end = {col = 18.5, row = 3.5},
 	},
 	{
 		key = 'graphics',
 		title_colour = G.C.DARK_EDITION,
-		pos_start = {col = 12.5, row = 5},
-		pos_end = {col = 20, row = 10},
+		pos_start = {col = 11.5, row = 3.5},
+		pos_end = {col = 18.5, row = 7},
 		contributors = {
 			{name = "Vivian Giacobbi"},
 			{name = "Sir. Gameboy"}
