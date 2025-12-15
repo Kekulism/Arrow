@@ -1,3 +1,9 @@
+function ArrowAPI.process_loc_text()
+    for _, v in ipairs(ArrowAPI.loc.loc_text_funcs) do
+        v.func()
+    end
+end
+
 function ArrowAPI.reset_game_globals(run_start)
     for _, v in ipairs(ArrowAPI.game.game_globals_funcs) do
         v.func(run_start)

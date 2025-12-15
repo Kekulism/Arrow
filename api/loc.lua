@@ -1,3 +1,10 @@
+ArrowAPI.loc = {
+    loc_text_funcs = {},
+    add_loc_text_func = function(mod, func)
+        ArrowAPI.loc.loc_text_funcs[#ArrowAPI.loc.loc_text_funcs+1] = {key = mod.id, func = func}
+    end
+}
+
 local suit_text = {
 	singular = {
 		"Converts {C:attention}#1#{}",
@@ -36,7 +43,7 @@ local seal_text = {
 	}
 }
 
-ArrowAPI.process_loc_text = function()
+ArrowAPI.loc.add_loc_text_func(ArrowAPI, function()
     ---------------------------
     --------------------------- Labels
     ---------------------------
@@ -437,7 +444,7 @@ ArrowAPI.process_loc_text = function()
     --------------------------- Spectral Descriptions
     ---------------------------
     --- general multi selection
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_cryptid', {['en-us'] = {
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_cryptid', {['en-us'] = {
         name = 'Cryptid',
         text = {
             "Create {C:attention}#1#{} copies of",
@@ -445,7 +452,7 @@ ArrowAPI.process_loc_text = function()
             "in your hand"
         },
     }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_cryptid_multi', {['en-us'] = {
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_cryptid_multi', {['en-us'] = {
         name = 'Cryptid',
         text = {
             "Create {C:attention}#1#{} copies of",
@@ -453,7 +460,7 @@ ArrowAPI.process_loc_text = function()
             "in your hand"
         },
     }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_aura', {['en-us'] = {
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_aura', {['en-us'] = {
         name = 'Aura',
         text = {
             "Add {C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
@@ -461,7 +468,7 @@ ArrowAPI.process_loc_text = function()
             "{C:attention}#1#{} selected card in hand"
         },
     }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_aura_multi', {['en-us'] = {
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_aura_multi', {['en-us'] = {
         name = 'Aura',
         text = {
             "Add {C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
@@ -471,17 +478,17 @@ ArrowAPI.process_loc_text = function()
     }})
 
     --- seal multi selection
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_talisman', {['en-us'] = { name = "Talisman", text = seal_text.singular }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_talisman_multi', {['en-us'] = { name = "Talisman", text = seal_text.multi }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_deja_vu', {['en-us'] = { name = "Deja Vu", text = seal_text.singular }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_deja_vu_multi', {['en-us'] = { name = "Deja Vu", text = seal_text.multi }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_medium', {['en-us'] = { name = "Medium", text = seal_text.singular }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_medium_multi', {['en-us'] = { name = "Medium", text = seal_text.multi }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_trance', {['en-us'] = { name = "Trance", text = seal_text.singular }})
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_trance_multi', {['en-us'] = { name = "Trance", text = seal_text.multi }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_talisman', {['en-us'] = { name = "Talisman", text = seal_text.singular }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_talisman_multi', {['en-us'] = { name = "Talisman", text = seal_text.multi }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_deja_vu', {['en-us'] = { name = "Deja Vu", text = seal_text.singular }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_deja_vu_multi', {['en-us'] = { name = "Deja Vu", text = seal_text.multi }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_medium', {['en-us'] = { name = "Medium", text = seal_text.singular }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_medium_multi', {['en-us'] = { name = "Medium", text = seal_text.multi }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_trance', {['en-us'] = { name = "Trance", text = seal_text.singular }})
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_trance_multi', {['en-us'] = { name = "Trance", text = seal_text.multi }})
 
     --- custom
-    SMODS.process_loc_text(G.localization.descriptions.Tarot, 'c_arrow_spec_diary', {['en-us'] = {
+    SMODS.process_loc_text(G.localization.descriptions.Spectral, 'c_arrow_spec_diary', {['en-us'] = {
         name = "The Diary",
         text = {
             "Create a random",
@@ -555,4 +562,4 @@ ArrowAPI.process_loc_text = function()
             "{C:inactive}(#2#)",
         },
     }})
-end
+end)

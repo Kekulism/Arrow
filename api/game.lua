@@ -535,7 +535,7 @@ ArrowAPI.game = {
     reset_keys_funcs = {},
     add_reset_keys_func = function(mod, func)
         ArrowAPI.game.reset_keys_funcs[#ArrowAPI.game.reset_keys_funcs+1] = {key = mod.id, func = func}
-    end
+    end,
 }
 
 ArrowAPI.game.add_game_globals_func(ArrowAPI, function(run_start)
