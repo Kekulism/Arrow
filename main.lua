@@ -11,9 +11,14 @@ ArrowAPI.palette_ui_config = {
 	open_palette = {
 		set = '',
 		idx = '',
+		grad_idx = ''
 	},
 	hex_input = '',
 	name_input = ''
+}
+
+ArrowAPI.optional_featues = {
+	arrow_palettes = true
 }
 
 -- TNSMI setup, aliased from ArrowAPI

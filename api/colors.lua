@@ -116,7 +116,7 @@ ArrowAPI.colors = {
 
             local atlases = {}
             for k, v in pairs(G.P_CENTERS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) then
+                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or v.original_mod.optional_features.arrow_palettes) then
                     if not atlases[v.atlas] then
                         atlases[v.atlas] = {}
                     end
@@ -127,7 +127,7 @@ ArrowAPI.colors = {
             end
 
             for k, v in pairs(G.P_TAGS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) then
+                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or v.original_mod.optional_features.arrow_palettes) then
                     if not atlases[v.atlas] then
                         atlases[v.atlas] = {}
                     end
@@ -137,7 +137,7 @@ ArrowAPI.colors = {
             end
 
             for k, v in pairs(G.P_SEALS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) then
+                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or v.original_mod.optional_features.arrow_palettes) then
                     if not atlases[v.atlas] then
                         atlases[v.atlas] = {}
                     end
@@ -152,11 +152,17 @@ ArrowAPI.colors = {
             end)
 
             palette.items = items
-            ArrowAPI.config.saved_palettes[set][1].badge_colour = copy_table(G.C.SECONDARY_SET[set])
-            palette.default_palette = copy_table(ArrowAPI.config.saved_palettes[set][1])
 
+            local save_badge = copy_table(G.C.SECONDARY_SET[set])
+            save_badge.grad_pos = {0}
+            ArrowAPI.config.saved_palettes[set][1].badge_colour = save_badge
+
+            palette.default_palette = copy_table(ArrowAPI.config.saved_palettes[set][1])
             local current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
-            if not current_palette.badge_colour then current_palette.badge_colour = copy_table(G.C.SECONDARY_SET[set]) end
+            if not current_palette.badge_colour then
+                current_palette.badge_colour = copy_table(G.C.SECONDARY_SET[set])
+                current_palette.badge_colour.grad_pos = {0}
+            end
 
             local data_table, pixel_map = collect_image_data(set, atlases)
             palette.image_data = {data = data_table, pixel_map = pixel_map}
@@ -206,7 +212,11 @@ ArrowAPI.colors = {
                 local new_palette = {name = saved.name}
                 for i = 1, #palette.default_palette do
                     local default = palette.default_palette[i]
-                    new_palette[i] = {key = default.key, default = true, default[1], default[2], default[3]}
+                    local palette_table = {key = default.key, default = true, grad_pos = copy_table(default.grad_pos)}
+                    for k = 1, #default do
+                        palette_table[k] = default[k]
+                    end
+                    new_palette[i] = palette_table
                 end
 
                 for i = 1, #saved do
@@ -214,8 +224,14 @@ ArrowAPI.colors = {
                     for j = 1, #new_palette do
                         local default_color = new_palette[j]
                         if cust_color.key == default_color.key then
-                            local is_default = (cust_color[1] == default_color[1] and cust_color[2] == default_color[2] and cust_color[3] == default_color[3]) or nil
-                            new_palette[j] = {key = default_color.key, default = is_default, cust_color[1], cust_color[2], cust_color[3]}
+                            local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos)}
+                            for k = 1, #cust_color do
+                                if cust_color[k] ~= default_color[k] then
+                                    palette_table.default = false
+                                end
+                                palette_table[k] = cust_color[k]
+                            end
+                            new_palette[j] = palette_table
                         end
                     end
                 end
@@ -228,6 +244,8 @@ ArrowAPI.colors = {
             for i = 1, #palette.current_palette do
                 local color = palette.current_palette[i]
                 for j = 1, #G.C.BLIND[color.key] do
+                    local apply_color = color[j] and color[j]/255 or 1
+                    sendDebugMessage('for color.key: {'..apply_color..'}')
                     G.C.BLIND[color.key][j] = color[j] and color[j]/255 or 1
                 end
             end
@@ -264,11 +282,25 @@ ArrowAPI.colors = {
                 local current = palette.current_palette[i]
                 local default = palette.default_palette[i]
 
-                if (current[1] ~= last[1] or current[2] ~= last[2] or current[3] ~= last[3]) then
-                    local is_default = (current[1] == default[1] and current[2] == default[2] and current[3] == default[3])
-                    palette.current_palette[i].default = is_default
-                    custom_palette[#custom_palette+1] = {key = default.key, default = is_default, current[1], current[2], current[3]}
-                    palette.last_palette[i] = {key = default.key, default = is_default, current[1], current[2], current[3]}
+                local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
+                local grad_pos = {}
+                for k = 1, #grad_points do
+                    grad_pos[k] = grad_points[k].pos
+                end
+
+                local palette_table = {key = default.key, default = true}
+                local changed = false
+                for j=1, #current do
+                    if current[j] ~= default[j] then palette_table.default = false end
+                    if current[j] ~= last[j] then changed = true end
+                    palette_table[j] = current[j]
+                end
+
+                if changed then
+                    palette_table.grad_pos = grad_pos
+                    palette.current_palette[i].default = palette_table.default
+                    custom_palette[#custom_palette+1] = palette_table
+                    palette.last_palette[i] = copy_table(palette_table)
                 end
             end
         else
@@ -278,9 +310,14 @@ ArrowAPI.colors = {
 
             custom_palette = ArrowAPI.config.saved_palettes[set][saved_index]
             local new_palette = {name = custom_palette.name, badge_colour = copy_table(custom_palette.badge_colour)}
+
             for i = 1, #palette.default_palette do
                 local default = palette.default_palette[i]
-                new_palette[i] = {key = default.key, default = true, default[1], default[2], default[3]}
+                local palette_table = {key = default.key, default = true, grad_pos = copy_table(default.grad_pos)}
+                for j = 1, #default do
+                    palette_table[j] = default[j]
+                end
+                new_palette[i] = palette_table
             end
 
             for i = 1, #custom_palette do
@@ -288,12 +325,22 @@ ArrowAPI.colors = {
                 for j = 1, #new_palette do
                     local default_color = new_palette[j]
                     if cust_color.key == default_color.key then
-                        local is_default = (cust_color[1] == default_color[1] and cust_color[2] == default_color[2] and cust_color[3] == default_color[3]) or nil
-                        new_palette[j] = {key = default_color.key, default = is_default, cust_color[1], cust_color[2], cust_color[3]}
+
+                        local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos)}
+                        sendDebugMessage(#palette_table.grad_pos)
+                        for k = 1, #cust_color do
+                            if cust_color[k] ~= default_color[k] then
+                                palette_table.default = false
+                            end
+                            palette_table[k] = cust_color[k]
+                        end
+
+                        new_palette[j] = palette_table
                     end
                 end
             end
 
+            -- TODO // fix with grad pos
             if SMODS.Gradients[new_palette.badge_colour] then
                 G.C.SECONDARY_SET[set] = SMODS.Gradients[new_palette.badge_colour]
             else

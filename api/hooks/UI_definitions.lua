@@ -711,6 +711,7 @@ function create_UIBox_credit_tooltip(contributor_data)
     local centers = {}
     for i = 1, #contributor_data do
         local data = contributor_data[i]
+        sendDebugMessage('adding '..data.key)
         if G.P_CENTERS[data.key] then
             centers[#centers+1] = data.key
         end
@@ -732,8 +733,8 @@ function create_UIBox_credit_tooltip(contributor_data)
     for _, row_card in ipairs(row_cards) do
         local credit_area = CardArea(
         0,0,
-        6.7,
-        3.3/n_rows,
+        7.7,
+        6/n_rows,
         {card_limit = nil, type = 'title_2', view_deck = true, highlight_limit = 0, card_w = G.CARD_W*card_size})
         table.insert(credit_cards,
         {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
@@ -747,7 +748,7 @@ function create_UIBox_credit_tooltip(contributor_data)
     end
 
     local nodes = {n=G.UIT.C, config={align = "cm", r = 0.1}, nodes={
-      {n=G.UIT.R, config={align = "cm", minh = 5, minw = 8, padding = 0.05, r = 0.1, colour = G.C.WHITE}, nodes=
+      {n=G.UIT.R, config={align = "cm", minh = 6.5, minw = 10, padding = 0.05, r = 0.1, colour = G.C.WHITE}, nodes=
         credit_cards
       }
     }}
@@ -767,6 +768,7 @@ end
 
 local ref_settings_tab = G.UIDEF.settings_tab
 function G.UIDEF.settings_tab(tab)
+    sendDebugMessage('calling settings tab')
     if tab == 'Audio' then
         return {n=G.UIT.ROOT, config={align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes={
             create_slider({label = localize('b_set_master_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'volume', min = 0, max = 100}),
@@ -811,7 +813,7 @@ function G.UIDEF.settings_tab(tab)
             config = {offset = {x = 0, y = 10}}
         }
         G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_1')
-        return  {n=G.UIT.ROOT, config = {align = "cm"}, nodes={}}
+        return
 	end
 
     return ref_settings_tab(tab)
@@ -1028,16 +1030,12 @@ function arrow_create_rgb_slider(args)
     args.max = args.max
     args.text = string.format("%.0f", args.ref_table[args.ref_value])
 
-    local arrow_sprite = Sprite(0, 0, 0.25, 0.25, G.ASSET_ATLAS['arrow_slider_point'], {x = 0, y = 0})
-    arrow_sprite.role.offset = {x = args.w * (args.ref_table[args.ref_value] / args.max) - 0.125, y = 0}
-    arrow_sprite.states.drag.can = false
-
     return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
         {n=G.UIT.C, config={align = "bm", minh = args.h * 1.3}, nodes={
-            {n=G.UIT.R, config = {align = "cl", w = args.w, h = args.h*0.3}, nodes = {
-                {n=G.UIT.O, config={colour = G.C.BLUE, object = arrow_sprite, refresh_movement = true}},
+            {n=G.UIT.R, config = {align = "bl", w = args.w, minh = args.h*0.8}, nodes = {
+                {n=G.UIT.B, config={align = 'bl', slider_point = true, inner_point = true, colour = G.C.UI.TEXT_DARK, w = 0, h = 0, refresh_movement = true}}, ----------
             }},
-            {n=G.UIT.R, config={id = args.id, align = "cl", minw = args.w, r = 0.1, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_rgb_slider', refresh_movement = true}, nodes={
+            {n=G.UIT.R, config={id = args.id, align = "cl", minw = args.w, r = 0.1, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_rgb_slider', insta_func = 'arrow_rgb_slider_insta', refresh_movement = true}, nodes={
                 {n=G.UIT.B, config={id = 'arrow_rgb_slider', w = args.w, h = args.h, r = 0.1, colour = G.C.UI.TEXT_LIGHT, ref_table = args, refresh_movement = true}},
             }}
         }},
@@ -1049,12 +1047,26 @@ function arrow_create_rgb_slider(args)
     }}
 end
 
+function arrow_create_grad_widget(args)
+    args.w = args.w or 1
+    args.h = args.h or 0.5
+    args.grad_points = args.grad_points or {selected = nil, min_points = 1, max_points = 8, {pos = 0, color = {255, 255, 255}}}
+
+    return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
+        {n=G.UIT.R, config = {id = 'arrow_grad_widget', minw = args.w, minh = args.h, grad_points = args.grad_points, collideable = true, hover = true, colour = G.C.CLEAR, func = 'arrow_grad_pointers', refresh_movement = true}, nodes={
+        }},
+        {n=G.UIT.R, config={id = args.id, align = "cl", minw = args.w, r = 0.1, ref_table = args, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_grad_box', refresh_movement = true}, nodes={
+        }}
+    }}
+end
+
 function arrow_create_UIBox_palette_menu()
+    -- clear additional garbage
     local palette_tabs = {}
     for k, v in pairs(ArrowAPI.colors.palettes) do
         if (v.items and #v.items > 0) or k == 'Background' then
             if not ArrowAPI.palette_ui_config.open_palette then
-                ArrowAPI.palette_ui_config.open_palette = {set = k, idx = 1}
+                ArrowAPI.palette_ui_config.open_palette = {set = k, idx = 1, grad_idx = 1}
             end
             local loc = localize('b_arrow_pal_'..tostring(k))
             palette_tabs[#palette_tabs+1] = {
@@ -1066,10 +1078,8 @@ function arrow_create_UIBox_palette_menu()
         end
     end
 
-    local tabs = create_tabs(
-        {tabs = palette_tabs,
-        snap_to_nav = true}
-    )
+    ArrowAPI.palette_ui_config.tabs_config = {tabs = palette_tabs, snap_to_nav = true}
+    local tabs = create_tabs(ArrowAPI.palette_ui_config.tabs_config)
 
     -- set the tabs to be the set colors
     local tab_buttons = tabs.nodes[1].nodes[2].nodes
@@ -1079,37 +1089,39 @@ function arrow_create_UIBox_palette_menu()
         end
     end
 
-
     return create_UIBox_generic_options({back_func = 'settings', contents = {tabs}})
 end
 
 function G.UIDEF.arrow_palette_tab(tab)
+    local tab_config = ArrowAPI.palette_ui_config.tabs_config
+    for k, v in ipairs(tab_config.tabs) do
+        if v.tab_definition_function_args == tab then tab_config.current = {k = k, v = v} end
+    end
+
     ArrowAPI.colors.use_custom_palette(tab, ArrowAPI.config.saved_palettes[tab].saved_index)
     local palette = ArrowAPI.colors.palettes[tab]
 
+
+    ----------------- initial palette setup
     if tab ~= ArrowAPI.palette_ui_config.open_palette.set then
-        ArrowAPI.palette_ui_config.open_palette = {set = tab, idx = 1}
+        ArrowAPI.palette_ui_config.open_palette = {set = tab, idx = 1, grad_idx = 1}
     end
-    local start_idx = ArrowAPI.palette_ui_config.open_palette.idx
+    local idx = ArrowAPI.palette_ui_config.open_palette.idx
 
     local current_palette = palette.current_palette
-    local button_color = (start_idx == 0 and copy_table(current_palette.badge_colour)) or not current_palette[start_idx].default and current_palette[start_idx] or palette.default_palette[start_idx]
+    local button_color = (idx == 0 and copy_table(current_palette.badge_colour)) or not current_palette[idx].default and current_palette[idx] or palette.default_palette[idx]
 
+    local start_idx = (ArrowAPI.palette_ui_config.open_palette.grad_idx - 1) * 3
     -- adjust for badge colour
-    if start_idx == 0 then
-        button_color[1] = button_color[1] * 255
-        button_color[2] = button_color[2] * 255
-        button_color[3] = button_color[3] * 255
-        button_color[4] = 1
+    if idx == 0 then
+        button_color[start_idx + 1] = button_color[start_idx + 1] * 255
+        button_color[start_idx + 2] = button_color[start_idx + 2] * 255
+        button_color[start_idx + 3] = button_color[start_idx + 3] * 255
     end
 
-    ArrowAPI.palette_ui_config.rgb = {button_color[1], button_color[2], button_color[3]}
+    ArrowAPI.palette_ui_config.rgb = {button_color[start_idx + 1], button_color[start_idx + 2], button_color[start_idx + 3]}
 
-    -- set first hex input
-    local new_hex_string = string.upper(tostring(string.format("%02x", button_color[1])..string.format("%02x", button_color[2])..string.format("%02x", button_color[3])))
-    ArrowAPI.palette_ui_config.last_hex_input = new_hex_string
-    ArrowAPI.palette_ui_config.hex_input = new_hex_string
-
+    ----------------- palette_items
     local deck_tables = {}
     local cards_per_page = 0
     local items = {}
@@ -1180,6 +1192,8 @@ function G.UIDEF.arrow_palette_tab(tab)
         G.FUNCS.arrow_palette_page{cycle_config = { current_option = 1 }}
     end
 
+
+    ----------------- palette buttons
     local width = 4
     local color_nodes = {}
     local row_count = 8
@@ -1190,36 +1204,39 @@ function G.UIDEF.arrow_palette_tab(tab)
     local default_palette = palette.default_palette
 
     for i=1, #default_palette do
-        local color = default_palette[i]
-        local custom_color = not current_palette[i].default and current_palette[i] or color
+        local default_color = default_palette[i]
+        local custom_color = current_palette[i]
 
         if count % row_count == 0 then
             row_idx = row_idx + 1
             color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm", padding = 0.025}, nodes={}}
         end
 
+        local default_id = 'arrow_palette_default_'..i
+        local button_id = 'arrow_palette_button_'..i
         color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {n=G.UIT.C, config={align = "cm"}, nodes={
             {n = G.UIT.R,
                 config = {
                     palette_idx = i,
+                    id = default_id,
                     button = 'arrow_palette_reset',
                     align = "cm",
                     minw = button_size,
                     minh = button_size*0.6,
                     hover = true,
                     button_dist = 0.05,
-                    colour = {color[1]/255, color[2]/255, color[3]/255, 1},
+                    colour = default_color,
                 },
                 nodes = {}
             },
             {n = G.UIT.R,
                 config = {
                     palette_idx = i,
-                    id = 'arrow_palette_button_'..i,
+                    id = button_id,
                     align = "cm",
                     minw = button_size,
                     minh = button_size,
-                    colour = {custom_color[1]/255, custom_color[2]/255, custom_color[3]/255, 1},
+                    colour = custom_color,
                     button = 'arrow_palette_button',
                     button_dist = 0.05,
                     hover = true,
@@ -1237,13 +1254,14 @@ function G.UIDEF.arrow_palette_tab(tab)
                 {n = G.UIT.R,
                     config = {
                         palette_idx = 0,
+                        id = 'arrow_palette_reset_0',
                         button = 'arrow_palette_reset',
                         align = "cm",
                         minw = button_size,
                         minh = button_size*0.6,
                         hover = true,
                         button_dist = 0.05,
-                        colour = {badge_default[1], badge_default[2], badge_default[3], 1},
+                        colour = badge_default,
                     },
                     nodes = {}
                 },
@@ -1254,7 +1272,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                         align = "cm",
                         minw = button_size,
                         minh = button_size,
-                        colour = {badge_colour[1], badge_colour[2], badge_colour[3], 1},
+                        colour = badge_colour,
                         button = 'arrow_palette_button',
                         button_dist = 0.05,
                         hover = true,
@@ -1264,6 +1282,12 @@ function G.UIDEF.arrow_palette_tab(tab)
             }}
         end
     end
+
+
+    ----------------- hex input
+    local new_hex_string = string.upper(tostring(string.format("%02x", button_color[1])..string.format("%02x", button_color[2])..string.format("%02x", button_color[3])))
+    ArrowAPI.palette_ui_config.last_hex_input = new_hex_string
+    ArrowAPI.palette_ui_config.hex_input = new_hex_string
 
     ArrowAPI.palette_ui_config.hex_input_config = {
         id = 'arrow_hex_input',
@@ -1283,11 +1307,13 @@ function G.UIDEF.arrow_palette_tab(tab)
             ArrowAPI.palette_changed_flag = true
             TRANSPOSE_TEXT_INPUT(0)
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
-             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
+            G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('b_slider'), true)
         end
     }
 
+
+    ----------------- name input
     ArrowAPI.palette_ui_config.name_input_config = {
         id = 'arrow_save_name_input',
         max_length = 12,
@@ -1302,12 +1328,14 @@ function G.UIDEF.arrow_palette_tab(tab)
 
     ArrowAPI.palette_ui_config.name_input = ArrowAPI.config.saved_palettes[tab][ArrowAPI.config.saved_palettes[tab].saved_index].name
 
+
+    ----------------- palette preset cycle
     local preset_options = {}
     for _, v in ipairs(ArrowAPI.config.saved_palettes[tab]) do
         preset_options[#preset_options+1] = v.name
     end
 
-    local preset_cycle = create_option_cycle({
+    ArrowAPI.palette_ui_config.preset_cycle_config = {
         options = preset_options,
         w = 6.5,
         cycle_shoulders = true,
@@ -1315,10 +1343,27 @@ function G.UIDEF.arrow_palette_tab(tab)
         colour = G.C.ORANGE,
         opt_callback = 'arrow_load_palette_preset',
         focus_args = {snap_to = true, nav = 'wide'}
-    })
+    }
+    local preset_cycle = create_option_cycle(ArrowAPI.palette_ui_config.preset_cycle_config)
     preset_cycle.nodes[1].config.minw = nil
     preset_cycle.nodes[3].config.minw = nil
 
+
+    ----------------- grad widget
+    local size = math.floor(#button_color / 3)
+    local grad_points = {selected = nil, min_points = 1, max_points = 8}
+    for i=1, size do
+        local start_idx = (i-1) * 3
+        grad_points[i] = {pos = (i == 1 and 0) or (i == size and 1) or (i-1)/(size-1), color = {button_color[start_idx+1], button_color[start_idx+2], button_color[start_idx+3]}}
+    end
+
+    ArrowAPI.palette_ui_config.grad_widget_config = {
+        w = width*0.8,
+        h = 0.5,
+        grad_points = grad_points
+    }
+
+    ----------------- put it all together
     return {n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes={
         {n=G.UIT.R, config={align = "cm"}, nodes={
             {n=G.UIT.C, config={align = "cm"}, nodes={
@@ -1375,21 +1420,27 @@ function G.UIDEF.arrow_palette_tab(tab)
                     {n = G.UIT.C, config = {align = "cm"}, nodes = {
                         {n = G.UIT.R, config = {align = "cm", minh = 0.1}, nodes = {}},
                         {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                            {n = G.UIT.C, config={align = "cl", minw = width * 0.7}, nodes ={
+                            --[[{n = G.UIT.C, config={align = "cl", minw = width * 0.7}, nodes ={
                                 create_text_input(ArrowAPI.palette_ui_config.hex_input_config),
+                            }},--]]
+                            {n = G.UIT.C, config = {align = "cm"}, nodes = {
+                                arrow_create_grad_widget(ArrowAPI.palette_ui_config.grad_widget_config),
                             }},
-                            {n = G.UIT.C, config={align = "cl", padding = 0.025, colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.4}, nodes = {
-                                {n = G.UIT.R,
-                                    config = {
-                                        id = 'arrow_selected_colour',
-                                        align = "cm",
-                                        minw = width * 0.15,
-                                        minh = width * 0.15,
-                                        func = 'arrow_update_selected_colour',
-                                        r = 0.4
-                                    },
-                                    nodes = {}
-                                }
+                            {n = G.UIT.B, config = {w = 0.1, h = 0.1}},
+                            {n = G.UIT.C, config={align = "bl"}, nodes = {
+                                {n = G.UIT.C, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.4, padding = 0.025}, nodes = {
+                                    {n = G.UIT.R,
+                                        config = {
+                                            id = 'arrow_selected_colour',
+                                            align = "cm",
+                                            minw = width * 0.15,
+                                            minh = width * 0.15,
+                                            func = 'arrow_update_selected_colour',
+                                            r = 0.4
+                                        },
+                                        nodes = {}
+                                    }
+                                }},
                             }},
                         }},
                         {n = G.UIT.R, config = {align = "cm", padding = 0.1}, nodes = {
@@ -1415,4 +1466,113 @@ function G.UIDEF.arrow_palette_tab(tab)
             }}
         }}
     }}
+end
+
+function UIElement:set_values(_T, recalculate)
+    if not recalculate or not self.T then
+        Moveable.init(self,{T = _T})
+        self.states.click.can = false
+        self.states.drag.can = false
+        self.static_rotation = true
+    else
+        self.T.x = _T.x
+        self.T.y = _T.y
+        self.T.w = _T.w
+        self.T.h = _T.h
+    end
+
+    if self.config.button_UIE then self.states.collide.can = true; self.states.hover.can = false; self.states.click.can = true end
+    if self.config.button then self.states.collide.can = true; self.states.click.can = true end
+
+    if self.config.on_demand_tooltip or self.config.tooltip or self.config.detailed_tooltip then
+        self.states.collide.can = true
+    end
+
+    self:set_role{role_type = 'Minor', major = self.UIBox, offset = {x = _T.x, y = _T.y}, wh_bond = 'Weak', scale_bond = 'Weak'}
+
+    if self.config.draw_layer then
+        self.UIBox.draw_layers[self.config.draw_layer] = self
+    end
+
+    if self.config.collideable then self.states.collide.can = true end
+
+    if self.config.can_collide ~= nil then
+        self.states.collide.can = self.config.can_collide
+        if self.config.object then self.config.object.states.collide.can = self.states.collide.can end
+    end
+
+    if self.UIT == G.UIT.O and not self.config.no_role then
+        self.config.object:set_role(self.config.role or {role_type = 'Minor', major = self, xy_bond = 'Strong', wh_bond = 'Weak', scale_bond = 'Weak'})
+    end
+
+    if self.config and self.config.ref_value and self.config.ref_table then
+        self.config.prev_value = self.config.ref_table[self.config.ref_value]
+    end
+
+    if self.UIT == G.UIT.T then self.static_rotation = true end
+
+    if self.config.juice then
+        if self.UIT == G.UIT.ROOT then self:juice_up() end
+        if self.UIT == G.UIT.T then self:juice_up() end
+        if self.UIT == G.UIT.O then self.config.object:juice_up(0.5) end
+        if self.UIT == G.UIT.B then self:juice_up() end
+        if self.UIT == G.UIT.C then self:juice_up() end
+        if self.UIT == G.UIT.R then self:juice_up() end
+        self.config.juice = false
+    end
+
+    if not self.config.colour then
+        if self.config.id == 'arrow_palette_button_1' then
+            sendDebugMessage('config colour is nil for some fuckign reason')
+        end
+        if self.UIT == G.UIT.ROOT then self.config.colour = G.C.UI.BACKGROUND_DARK end
+        if self.UIT == G.UIT.T then self.config.colour = G.C.UI.TEXT_LIGHT end
+        if self.UIT == G.UIT.O then self.config.colour = G.C.WHITE end
+        if self.UIT == G.UIT.B then self.config.colour = G.C.CLEAR end
+        if self.UIT == G.UIT.C then self.config.colour = G.C.CLEAR end
+        if self.UIT == G.UIT.R then self.config.colour = G.C.CLEAR end
+    end
+    if not self.config.outline_colour then
+        if self.UIT == G.UIT.ROOT then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
+        if self.UIT == G.UIT.T then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
+        if self.UIT == G.UIT.O then self.config.colour = G.C.UI.OUTLINE_LIGHT end
+        if self.UIT == G.UIT.B then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
+        if self.UIT == G.UIT.C then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
+        if self.UIT == G.UIT.R then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
+    end
+
+    if self.config.focus_args and not self.config.focus_args.registered then
+        if self.config.focus_args.button then
+            G.CONTROLLER:add_to_registry(self.config.button_UIE or self, self.config.focus_args.button)
+        end
+
+        if self.config.focus_args.snap_to then
+            G.CONTROLLER:snap_to{node = self}
+        end
+
+        if self.config.focus_args.funnel_to then
+            local _par = self.parent
+            while _par and _par:is(UIElement) do
+                if _par.config.focus_args and _par.config.focus_args.funnel_from then
+                    _par.config.focus_args.funnel_from = self
+                    self.config.focus_args.funnel_to = _par
+                    break
+                end
+                _par = _par.parent
+            end
+        end
+        self.config.focus_args.registered = true
+    end
+
+    if self.config.force_focus then self.states.collide.can = true end
+
+    if self.config.button_delay and not self.config.button_delay_start then
+        self.config.button_delay_start = G.TIMERS.REAL
+        self.config.button_delay_end = G.TIMERS.REAL + self.config.button_delay
+        self.config.button_delay_progress = 0
+    end
+
+    self.layered_parallax = self.layered_parallax or {x=0, y=0}
+
+    if self.config and self.config.func and (((self.config.button_UIE or self.config.button) and self.config.func ~= 'set_button_pip') or self.config.insta_func) then G.FUNCS[self.config.func](self) end
 end
