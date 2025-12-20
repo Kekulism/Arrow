@@ -28,7 +28,7 @@ end
 --- weird bullshit
 local ref_uie_draw = UIElement.draw_self
 function UIElement:draw_self()
-    if self.config.id and (self.config.id:sub(1,20) == 'arrow_palette_button' or self.config.id:sub(1,20) == 'arrow_palette_defaul') then
+    if type(self.config.id) == 'string' and (self.config.id:sub(1,20) == 'arrow_palette_button' or self.config.id:sub(1,20) == 'arrow_palette_defaul') then
         self.ARGS.button_colours = {G.C.WHITE}
     end
 
