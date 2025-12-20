@@ -587,6 +587,33 @@ ArrowAPI.ui = {
         ArrowAPI.TITLE_REPLACE.mod = mod
         ArrowAPI.TITLE_REPLACE.key = 'balatro'
         ArrowAPI.TITLE_REPLACE.prefix_config = false
+    end,
+
+    apply_container_transform = function(node, x, y, r)
+        local container = node.container
+        if not container or container == node then return x, y, r end
+
+        local ct = container.T
+        local scale_px = G.TILESCALE * G.TILESIZE
+        local w2 = (ct.w or 0) * scale_px * 0.5
+        local h2 = (ct.h or 0) * scale_px * 0.5
+        local cx = (ct.x or 0) * scale_px
+        local cy = (ct.y or 0) * scale_px
+        local cr = ct.r or 0
+
+        local px = x - w2 + cx
+        local py = y - h2 + cy
+
+        if cr ~= 0 then
+            local cos_r = math.cos(cr)
+            local sin_r = math.sin(cr)
+            local rx = px * cos_r - py * sin_r
+            local ry = px * sin_r - py * cos_r
+            px, py = rx, ry
+        end
+
+        x, y, r = px + w2, py + h2, r + r
+        return ArrowAPI.ui.apply_container_transform(container, x, y, r)
     end
 }
 

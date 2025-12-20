@@ -253,9 +253,6 @@ ArrowAPI.loading = {
                         local found_contrib = false
                         for i = #v.contributors, 1, -1 do
                             if v.contributors[i].name == name then
-                                if file_key == 'joeycastle' then
-                                    sendDebugMessage('adding to contributor: '..v.contributors[i].name)
-                                end
                                 found_contrib = true
                                 v.contributors[i][#v.contributors[i]+1] = {
                                     key = new_item.key,

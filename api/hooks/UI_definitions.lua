@@ -711,7 +711,6 @@ function create_UIBox_credit_tooltip(contributor_data)
     local centers = {}
     for i = 1, #contributor_data do
         local data = contributor_data[i]
-        sendDebugMessage('adding '..data.key)
         if G.P_CENTERS[data.key] then
             centers[#centers+1] = data.key
         end
@@ -768,7 +767,6 @@ end
 
 local ref_settings_tab = G.UIDEF.settings_tab
 function G.UIDEF.settings_tab(tab)
-    sendDebugMessage('calling settings tab')
     if tab == 'Audio' then
         return {n=G.UIT.ROOT, config={align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes={
             create_slider({label = localize('b_set_master_vol'), w = 5, h = 0.4, ref_table = G.SETTINGS.SOUND, ref_value = 'volume', min = 0, max = 100}),
@@ -812,7 +810,6 @@ function G.UIDEF.settings_tab(tab)
             definition = arrow_create_UIBox_palette_menu(),
             config = {offset = {x = 0, y = 10}}
         }
-        G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_1')
         return
 	end
 
@@ -1053,10 +1050,12 @@ function arrow_create_grad_widget(args)
     args.grad_points = args.grad_points or {selected = nil, min_points = 1, max_points = 8, {pos = 0, color = {255, 255, 255}}}
 
     return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
-        {n=G.UIT.R, config = {id = 'arrow_grad_widget', minw = args.w, minh = args.h, grad_points = args.grad_points, collideable = true, hover = true, colour = G.C.CLEAR, func = 'arrow_grad_pointers', refresh_movement = true}, nodes={
+        {n=G.UIT.R, config = {id = args.id and args.id..'_pointers', minw = args.w, minh = args.h, grad_points = args.grad_points, collideable = true, hover = true, colour = G.C.CLEAR, func = 'arrow_grad_pointers', refresh_movement = true}, nodes={
         }},
-        {n=G.UIT.R, config={id = args.id, align = "cl", minw = args.w, r = 0.1, ref_table = args, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_grad_box', refresh_movement = true}, nodes={
-        }}
+        {n=G.UIT.R, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.1, padding = 0.025}, nodes={
+            {n=G.UIT.R, config={id = args.id and args.id..'_box', align = "cl", minw = args.w, r = 0.1, ref_table = args, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_grad_box', refresh_movement = true}, nodes={
+            }}
+        }},
     }}
 end
 
@@ -1209,77 +1208,113 @@ function G.UIDEF.arrow_palette_tab(tab)
 
         if count % row_count == 0 then
             row_idx = row_idx + 1
-            color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm", padding = 0.025}, nodes={}}
+            color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm"}, nodes={}}
         end
 
         local default_id = 'arrow_palette_default_'..i
         local button_id = 'arrow_palette_button_'..i
-        color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {n=G.UIT.C, config={align = "cm"}, nodes={
-            {n = G.UIT.R,
-                config = {
-                    palette_idx = i,
-                    id = default_id,
-                    button = 'arrow_palette_reset',
-                    align = "cm",
-                    minw = button_size,
-                    minh = button_size*0.6,
-                    hover = true,
-                    button_dist = 0.05,
-                    colour = default_color,
-                },
-                nodes = {}
+        color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {
+            n=G.UIT.C, config={
+                id = 'arrow_palette_wrapper',
+                align = "cm",
+                res = 0.3,
+                colour = G.C.UI.TEXT_LIGHT,
+                padding = 0.025,
+                r = 0.02,
+                emboss = 0.05
             },
-            {n = G.UIT.R,
-                config = {
-                    palette_idx = i,
-                    id = button_id,
-                    align = "cm",
-                    minw = button_size,
-                    minh = button_size,
-                    colour = custom_color,
-                    button = 'arrow_palette_button',
-                    button_dist = 0.05,
-                    hover = true,
+            nodes={
+                {n = G.UIT.R,
+                    config = {
+                        palette_idx = i,
+                        id = default_id,
+                        button = 'arrow_palette_reset',
+                        align = "cm",
+                        minw = button_size,
+                        minh = button_size*0.5,
+                        hover = true,
+                        r = 0.05,
+                        button_dist = 0.05,
+                        res = 0.3,
+                        colour = default_color,
+                        emboss = 0.05
+                    },
+                    nodes = {}
                 },
-                nodes = {}
+                {n = G.UIT.R,
+                    config = {
+                        palette_idx = i,
+                        id = button_id,
+                        button = 'arrow_palette_button',
+                        align = "cm",
+                        minw = button_size,
+                        minh = button_size * 0.75,
+                        hover = true,
+                        r = 0.01,
+                        button_dist = 0.05,
+                        res = 0.3,
+                        colour = custom_color,
+                        emboss = 0.05
+
+                    },
+                    nodes = {}
+                }
             }
-        }}
+        }
         custom_color = nil
         count = count + 1
 
         if i == #default_palette and tab ~= 'Background' and type(current_palette.badge_colour) == 'table' then
             local badge_default = default_palette.badge_colour
             local badge_colour = current_palette.badge_colour
-            color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {n = G.UIT.C, config={align = "cm"}, nodes={
-                {n = G.UIT.R,
-                    config = {
-                        palette_idx = 0,
-                        id = 'arrow_palette_reset_0',
-                        button = 'arrow_palette_reset',
-                        align = "cm",
-                        minw = button_size,
-                        minh = button_size*0.6,
-                        hover = true,
-                        button_dist = 0.05,
-                        colour = badge_default,
-                    },
-                    nodes = {}
+            color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {
+                n = G.UIT.C,
+                config={
+                    id = 'arrow_palette_wrapper',
+                    align = "cm",
+                    res = 0.3,
+                    colour = G.C.UI.TEXT_LIGHT,
+                    padding = 0.025,
+                    r = 0.02,
+                    emboss = 0.05
                 },
-                {n = G.UIT.R,
-                    config = {
-                        palette_idx = 0,
-                        id = 'arrow_palette_button_0',
-                        align = "cm",
-                        minw = button_size,
-                        minh = button_size,
-                        colour = badge_colour,
-                        button = 'arrow_palette_button',
-                        button_dist = 0.05,
-                        hover = true,
+                nodes={
+                    {n = G.UIT.R,
+                        config = {
+                            palette_idx = 0,
+                            id = 'arrow_palette_reset_0',
+                            button = 'arrow_palette_reset',
+                            align = "cm",
+                            minw = button_size,
+                            minh = button_size*0.5,
+                            r = 0.01,
+                            button_dist = 0.05,
+                            res = 0.3,
+                            hover = true,
+                            emboss = 0.05,
+                            colour = badge_default,
+                        },
+                        nodes = {}
                     },
-                    nodes = {}
+                    {n = G.UIT.R,
+                        config = {
+                            palette_idx = 0,
+                            id = 'arrow_palette_button_0',
+                            align = "cm",
+                            minw = button_size,
+                            minh = button_size*0.75,
+                            colour = badge_colour,
+                            button = 'arrow_palette_button',
+                            r = 0.01,
+                            button_dist = 0.05,
+                            res = 0.3,
+                            hover = true,
+                            emboss = 0.05
+                        },
+                        nodes = {}
+                    }
                 }
-            }}
+            }
         end
     end
 
@@ -1350,14 +1385,15 @@ function G.UIDEF.arrow_palette_tab(tab)
 
 
     ----------------- grad widget
-    local size = math.floor(#button_color / 3)
+    local size = #button_color.grad_pos
     local grad_points = {selected = nil, min_points = 1, max_points = 8}
     for i=1, size do
         local start_idx = (i-1) * 3
-        grad_points[i] = {pos = (i == 1 and 0) or (i == size and 1) or (i-1)/(size-1), color = {button_color[start_idx+1], button_color[start_idx+2], button_color[start_idx+3]}}
+        grad_points[i] = {pos = button_color.grad_pos[i], color = {button_color[start_idx+1], button_color[start_idx+2], button_color[start_idx+3]}}
     end
 
     ArrowAPI.palette_ui_config.grad_widget_config = {
+        id = 'arrow_grad_widget',
         w = width*0.8,
         h = 0.5,
         grad_points = grad_points
@@ -1414,7 +1450,7 @@ function G.UIDEF.arrow_palette_tab(tab)
             {n=G.UIT.C, config={align = "cm", minw = 0.4}, nodes = {}},
             {n=G.UIT.C, config={align = "cm", padding = 0.05}, nodes = {
                 {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, emboss = 0.05, r = 0.1}, nodes = {
-                    {n = G.UIT.C, config={align = "cm", minw = width * 0.9, minh = 4, padding = 0.025}, nodes = color_nodes},
+                    {n = G.UIT.C, config={align = "cm", minw = width * 0.9, minh = 4}, nodes = color_nodes},
                 }},
                 {n = G.UIT.R, config = {align = "cm"}, nodes = {
                     {n = G.UIT.C, config = {align = "cm"}, nodes = {
@@ -1428,7 +1464,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                             }},
                             {n = G.UIT.B, config = {w = 0.1, h = 0.1}},
                             {n = G.UIT.C, config={align = "bl"}, nodes = {
-                                {n = G.UIT.C, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.4, padding = 0.025}, nodes = {
+                                {n = G.UIT.C, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.4, res = 0.3, padding = 0.025}, nodes = {
                                     {n = G.UIT.R,
                                         config = {
                                             id = 'arrow_selected_colour',
@@ -1436,7 +1472,8 @@ function G.UIDEF.arrow_palette_tab(tab)
                                             minw = width * 0.15,
                                             minh = width * 0.15,
                                             func = 'arrow_update_selected_colour',
-                                            r = 0.4
+                                            r = 0.4,
+                                            res = 0.3,
                                         },
                                         nodes = {}
                                     }
@@ -1466,113 +1503,4 @@ function G.UIDEF.arrow_palette_tab(tab)
             }}
         }}
     }}
-end
-
-function UIElement:set_values(_T, recalculate)
-    if not recalculate or not self.T then
-        Moveable.init(self,{T = _T})
-        self.states.click.can = false
-        self.states.drag.can = false
-        self.static_rotation = true
-    else
-        self.T.x = _T.x
-        self.T.y = _T.y
-        self.T.w = _T.w
-        self.T.h = _T.h
-    end
-
-    if self.config.button_UIE then self.states.collide.can = true; self.states.hover.can = false; self.states.click.can = true end
-    if self.config.button then self.states.collide.can = true; self.states.click.can = true end
-
-    if self.config.on_demand_tooltip or self.config.tooltip or self.config.detailed_tooltip then
-        self.states.collide.can = true
-    end
-
-    self:set_role{role_type = 'Minor', major = self.UIBox, offset = {x = _T.x, y = _T.y}, wh_bond = 'Weak', scale_bond = 'Weak'}
-
-    if self.config.draw_layer then
-        self.UIBox.draw_layers[self.config.draw_layer] = self
-    end
-
-    if self.config.collideable then self.states.collide.can = true end
-
-    if self.config.can_collide ~= nil then
-        self.states.collide.can = self.config.can_collide
-        if self.config.object then self.config.object.states.collide.can = self.states.collide.can end
-    end
-
-    if self.UIT == G.UIT.O and not self.config.no_role then
-        self.config.object:set_role(self.config.role or {role_type = 'Minor', major = self, xy_bond = 'Strong', wh_bond = 'Weak', scale_bond = 'Weak'})
-    end
-
-    if self.config and self.config.ref_value and self.config.ref_table then
-        self.config.prev_value = self.config.ref_table[self.config.ref_value]
-    end
-
-    if self.UIT == G.UIT.T then self.static_rotation = true end
-
-    if self.config.juice then
-        if self.UIT == G.UIT.ROOT then self:juice_up() end
-        if self.UIT == G.UIT.T then self:juice_up() end
-        if self.UIT == G.UIT.O then self.config.object:juice_up(0.5) end
-        if self.UIT == G.UIT.B then self:juice_up() end
-        if self.UIT == G.UIT.C then self:juice_up() end
-        if self.UIT == G.UIT.R then self:juice_up() end
-        self.config.juice = false
-    end
-
-    if not self.config.colour then
-        if self.config.id == 'arrow_palette_button_1' then
-            sendDebugMessage('config colour is nil for some fuckign reason')
-        end
-        if self.UIT == G.UIT.ROOT then self.config.colour = G.C.UI.BACKGROUND_DARK end
-        if self.UIT == G.UIT.T then self.config.colour = G.C.UI.TEXT_LIGHT end
-        if self.UIT == G.UIT.O then self.config.colour = G.C.WHITE end
-        if self.UIT == G.UIT.B then self.config.colour = G.C.CLEAR end
-        if self.UIT == G.UIT.C then self.config.colour = G.C.CLEAR end
-        if self.UIT == G.UIT.R then self.config.colour = G.C.CLEAR end
-    end
-    if not self.config.outline_colour then
-        if self.UIT == G.UIT.ROOT then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
-        if self.UIT == G.UIT.T then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
-        if self.UIT == G.UIT.O then self.config.colour = G.C.UI.OUTLINE_LIGHT end
-        if self.UIT == G.UIT.B then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
-        if self.UIT == G.UIT.C then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
-        if self.UIT == G.UIT.R then self.config.outline_colour = G.C.UI.OUTLINE_LIGHT end
-    end
-
-    if self.config.focus_args and not self.config.focus_args.registered then
-        if self.config.focus_args.button then
-            G.CONTROLLER:add_to_registry(self.config.button_UIE or self, self.config.focus_args.button)
-        end
-
-        if self.config.focus_args.snap_to then
-            G.CONTROLLER:snap_to{node = self}
-        end
-
-        if self.config.focus_args.funnel_to then
-            local _par = self.parent
-            while _par and _par:is(UIElement) do
-                if _par.config.focus_args and _par.config.focus_args.funnel_from then
-                    _par.config.focus_args.funnel_from = self
-                    self.config.focus_args.funnel_to = _par
-                    break
-                end
-                _par = _par.parent
-            end
-        end
-        self.config.focus_args.registered = true
-    end
-
-    if self.config.force_focus then self.states.collide.can = true end
-
-    if self.config.button_delay and not self.config.button_delay_start then
-        self.config.button_delay_start = G.TIMERS.REAL
-        self.config.button_delay_end = G.TIMERS.REAL + self.config.button_delay
-        self.config.button_delay_progress = 0
-    end
-
-    self.layered_parallax = self.layered_parallax or {x=0, y=0}
-
-    if self.config and self.config.func and (((self.config.button_UIE or self.config.button) and self.config.func ~= 'set_button_pip') or self.config.insta_func) then G.FUNCS[self.config.func](self) end
 end

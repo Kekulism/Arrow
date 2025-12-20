@@ -28,9 +28,13 @@ end
 --- weird bullshit
 local ref_uie_draw = UIElement.draw_self
 function UIElement:draw_self()
+    if self.config.id and (self.config.id:sub(1,20) == 'arrow_palette_button' or self.config.id:sub(1,20) == 'arrow_palette_defaul') then
+        self.ARGS.button_colours = {G.C.WHITE}
+    end
+
     local ret = ref_uie_draw(self)
 
-    if self.config.id == 'arrow_grad_widget' then
+    if self.config.id == 'arrow_grad_widget_pointers' then
         local grad_points = self.config.grad_points
         for i=1, #grad_points do
             local point = grad_points[i]

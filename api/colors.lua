@@ -116,7 +116,7 @@ ArrowAPI.colors = {
 
             local atlases = {}
             for k, v in pairs(G.P_CENTERS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or v.original_mod.optional_features.arrow_palettes) then
+                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
                     if not atlases[v.atlas] then
                         atlases[v.atlas] = {}
                     end
@@ -127,7 +127,7 @@ ArrowAPI.colors = {
             end
 
             for k, v in pairs(G.P_TAGS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or v.original_mod.optional_features.arrow_palettes) then
+                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
                     if not atlases[v.atlas] then
                         atlases[v.atlas] = {}
                     end
@@ -137,7 +137,7 @@ ArrowAPI.colors = {
             end
 
             for k, v in pairs(G.P_SEALS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or v.original_mod.optional_features.arrow_palettes) then
+                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
                     if not atlases[v.atlas] then
                         atlases[v.atlas] = {}
                     end
@@ -244,8 +244,6 @@ ArrowAPI.colors = {
             for i = 1, #palette.current_palette do
                 local color = palette.current_palette[i]
                 for j = 1, #G.C.BLIND[color.key] do
-                    local apply_color = color[j] and color[j]/255 or 1
-                    sendDebugMessage('for color.key: {'..apply_color..'}')
                     G.C.BLIND[color.key][j] = color[j] and color[j]/255 or 1
                 end
             end
@@ -327,7 +325,6 @@ ArrowAPI.colors = {
                     if cust_color.key == default_color.key then
 
                         local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos)}
-                        sendDebugMessage(#palette_table.grad_pos)
                         for k = 1, #cust_color do
                             if cust_color[k] ~= default_color[k] then
                                 palette_table.default = false

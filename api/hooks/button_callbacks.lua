@@ -509,7 +509,7 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
     local color = (color_idx == 0 and current_palette.badge_colour) or current_palette[color_idx]
 
     -- set this color's new grad points
-    local size = math.floor(#color / 3)
+    local size = #color.grad_pos
     local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
     grad_points.selected = nil
     for i=1, grad_points.max_points do
@@ -555,7 +555,6 @@ function G.FUNCS.arrow_rgb_slider(e, update_only)
     arrow.states.drag.can = true -- child/fill
 
     if update_only or (G.CONTROLLER and G.CONTROLLER.dragging.target and G.CONTROLLER.dragging.target == e) then
-        sendDebugMessage('rgb slider')
         local rt = fill.config.ref_table
         if not update_only then
             rt.ref_table[rt.ref_value] = math.floor(math.min(rt.max,math.max(rt.min, rt.min + (rt.max - rt.min)*(G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w)))
@@ -572,8 +571,8 @@ function G.FUNCS.arrow_grad_box(e)
     e.states.drag.can = true
     if (G.CONTROLLER and G.CONTROLLER.dragging.target and G.CONTROLLER.dragging.target == e) then
         local grad_points = e.config.ref_table.grad_points
-        local cursor_x = (G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w
-        local cursor_y = (G.CURSOR.T.y - e.parent.T.y - G.ROOM.T.y)/e.T.h
+        local cursor_x = (G.CURSOR.T.x - e.parent.parent.T.x - G.ROOM.T.x)/e.T.w
+        local cursor_y = (G.CURSOR.T.y - e.parent.parent.T.y - G.ROOM.T.y)/e.T.h
 
         if cursor_y < 1.25 and cursor_x > 0 and cursor_x < 1 then
             e:stop_drag()
@@ -597,7 +596,6 @@ function G.FUNCS.arrow_grad_box(e)
 
             table.insert(grad_points, insert, {pos = pos, color = {255, 255, 255}})
 
-            sendDebugMessage('inserting new grad point: '..insert)
             -- create new grad color and set the rgb to it?
             local start_idx = (insert-1) * 3
             local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
@@ -619,7 +617,7 @@ function G.FUNCS.arrow_grad_box(e)
 
             set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, idx, insert)
 
-            G.CONTROLLER.dragging.target = e.parent.children[1]
+            G.CONTROLLER.dragging.target = e.parent.parent.children[1]
             G.CONTROLLER.dragging.target:drag()
             return
         end
@@ -651,6 +649,7 @@ function G.FUNCS.arrow_grad_pointers(e)
                 if math.abs(cursor_x - grad_points[i].pos) <= hitbox_width then
                     grad_points.selected = i
                     grad_points[i].selected = G.TIMERS.REAL
+                    ArrowAPI.palette_ui_config.open_palette.grad_idx = i
                     play_sound('cardSlide1', 1 + math.random() * 0.1)
                     break
                 end
@@ -667,6 +666,7 @@ function G.FUNCS.arrow_grad_pointers(e)
         if cursor_y > 1.25 then
             if #grad_points > grad_points.min_points then
                 local grad_idx = ArrowAPI.palette_ui_config.open_palette.grad_idx
+
 
                 -- create new grad color and set the rgb to it?
                 local start_idx = (grad_idx - 1) * 3
@@ -719,14 +719,13 @@ function G.FUNCS.arrow_grad_pointers(e)
 
         palette_color.grad_pos[grad_points.selected] = cursor_x
 
-        table.sort(grad_points, function(a, b)
-            return a.pos < b.pos
-        end)
+        table.sort(grad_points, function(a, b) return a.pos < b.pos end)
+        table.sort(palette_color.grad_pos, function(a, b) return a < b end)
 
-        -- reapply correct index after sort
         for i=1, #grad_points do
             if grad_points[i].selected then
                 grad_points.selected = i
+                ArrowAPI.palette_ui_config.open_palette.grad_idx = i
                 break
             end
         end
@@ -744,18 +743,14 @@ function G.FUNCS.arrow_grad_pointers(e)
 end
 
 function G.FUNCS.arrow_palette_button(e)
-    sendDebugMessage('arrow palette button')
     -- grad idx is assumed to be 1 for non-gradient colors
     set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, e.config.palette_idx, 1)
-
-    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = e
 end
 
 function G.FUNCS.arrow_palette_reset(e)
     if ArrowAPI.palette_ui_config.open_palette.idx ~= e.config.palette_idx then
         return
     end
-    sendDebugMessage('arrow reset palette')
     local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
     local idx = e.config.palette_idx
 
@@ -767,9 +762,6 @@ function G.FUNCS.arrow_palette_reset(e)
     palette_color[3] = default_color[3]
 
     set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, idx, 1)
-
-    local current_button = G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref
-    current_button.config.colour = {ArrowAPI.palette_ui_config.rgb[1]/255, ArrowAPI.palette_ui_config.rgb[2]/255, ArrowAPI.palette_ui_config.rgb[3]/255, 1}
 end
 
 function G.FUNCS.arrow_update_selected_colour(e)
@@ -777,7 +769,6 @@ function G.FUNCS.arrow_update_selected_colour(e)
     e.config.colour = {rgb[1]/255, rgb[2]/255, rgb[3]/255, 1}
 
     if not ArrowAPI.palette_changed_flag then return end
-    e.config.button_ref.config.colour = {rgb[1]/255, rgb[2]/255, rgb[3]/255, 1}
 
     -- update the grad point color for visual drawing
     local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
@@ -789,8 +780,6 @@ function G.FUNCS.arrow_update_selected_colour(e)
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
     local current_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
 
-    sendDebugMessage('setting grad pos: '..tostring(current_color.grad_pos))
-
     local start_idx = (grad_idx - 1) * 3
     current_color[start_idx + 1] = rgb[1]
     current_color[start_idx + 2] = rgb[2]
@@ -798,23 +787,18 @@ function G.FUNCS.arrow_update_selected_colour(e)
 
     update_hex_input(current_color)
 
-    --[[
     if idx == 0 then
         current_color[start_idx + 1] = current_color[start_idx + 1]/255
         current_color[start_idx + 2] = current_color[start_idx + 2]/255
         current_color[start_idx + 3] = current_color[start_idx + 3]/255
         current_color[4] = 1
     end
-    --]]
 
     ArrowAPI.palette_changed_flag = nil
     G.OVERLAY_MENU:recalculate()
-
-    sendDebugMessage('setting grad pos: '..tostring(current_color.grad_pos))
 end
 
 function G.FUNCS.arrow_apply_palette(e)
-    sendDebugMessage('arrow apply palette')
     local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
     local grad_pos = {}
     for k = 1, #grad_points do
@@ -854,7 +838,6 @@ function G.FUNCS.arrow_save_palette(e)
 
     local palette = ArrowAPI.colors.palettes[set]
     if ArrowAPI.palette_ui_config.name_input == palette.current_palette.name then
-        sendDebugMesage('saving current palette')
         -- just save
         for i, v in ipairs(ArrowAPI.config.saved_palettes[set]) do
             if v.name == palette.current_palette.name then
@@ -913,7 +896,6 @@ function G.FUNCS.arrow_save_palette(e)
     tab_contents.UIBox:recalculate()
 
     local open_idx = ArrowAPI.palette_ui_config.open_palette.idx
-    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..open_idx)
     G.OVERLAY_MENU:recalculate()
 end
 
@@ -936,7 +918,6 @@ function G.FUNCS.arrow_delete_palette(e)
     }
     tab_contents.UIBox:recalculate()
 
-    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..ArrowAPI.palette_ui_config.open_palette.idx)
     G.OVERLAY_MENU:recalculate()
 end
 
@@ -965,9 +946,6 @@ function G.FUNCS.arrow_load_palette_preset(args)
         config = {offset = {x=0,y=0}, parent = tab_contents, type = 'cm'}
     }
     tab_contents.UIBox:recalculate()
-
-    local open_idx = ArrowAPI.palette_ui_config.open_palette.idx
-    G.OVERLAY_MENU:get_UIE_by_ID('arrow_selected_colour').config.button_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..open_idx)
 end
 
 -- evil overwrite
