@@ -24,8 +24,8 @@ local function collect_image_data(set, atlases)
         local ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
         ffi.gc(ref_pointer, ffi.free)
         local color_width = image_data:getWidth() * 4
-        local width_per_unit = atlas.px * 4
-        local colors_per_unit = width_per_unit * atlas.py
+        local width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
+        local colors_per_unit = width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
 
         for _, item in ipairs(v) do
             local item_table = {}
@@ -37,7 +37,7 @@ local function collect_image_data(set, atlases)
 
             local pos = G['P_'..item.table][item.key].pos
 
-            local prior_pixel_rows = atlas.py * pos.y
+            local prior_pixel_rows = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling * pos.y
             local start_idx = prior_pixel_rows * color_width + pos.x * width_per_unit
 
             for i = 0, (colors_per_unit - 1), 4 do
@@ -282,8 +282,8 @@ ArrowAPI.colors = {
 
                 local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
                 local grad_pos = {}
-                for k = 1, #grad_points do
-                    grad_pos[k] = grad_points[k].pos
+                for j = 1, #grad_points do
+                    grad_pos[j] = grad_points[j].pos
                 end
 
                 local palette_table = {key = default.key, default = true}
@@ -367,7 +367,6 @@ ArrowAPI.colors = {
                             edit_pointer[idx + 1] = replace_color[2]
                             edit_pointer[idx + 2] = replace_color[3]
                         end
-
                     end
                 end
             end
