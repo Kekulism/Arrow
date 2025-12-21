@@ -14,6 +14,7 @@ extern MY_HIGHP_OR_MEDIUMP vec4 grad_points[MAX_GRAD_POINTS];
 vec4 effect(vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords)
 {
 	float uv = (screen_coords.x - start_x) / (end_x - start_x);
+
 	vec4 base_colour = vec4(grad_points[0].r, grad_points[0].g, grad_points[0].b, 1);
 	if (grad_size > 1) {
 		for (int i = 0; i < grad_size-1; i++) {

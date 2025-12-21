@@ -506,7 +506,7 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
     ArrowAPI.palette_ui_config.open_palette.grad_idx = grad_idx
 
     local current_palette = ArrowAPI.colors.palettes[set].current_palette
-    local color = (color_idx == 0 and current_palette.badge_colour) or current_palette[color_idx]
+    local color = current_palette[color_idx]
 
     -- set this color's new grad points
     local size = #color.grad_pos
@@ -526,13 +526,6 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
     ArrowAPI.palette_ui_config.rgb[2] = color[start_idx + 2]
     ArrowAPI.palette_ui_config.rgb[3] = color[start_idx + 3]
 
-    -- idx 0 refers to the badge color which is processed differently
-    if color_idx == 0 then
-        ArrowAPI.palette_ui_config.rgb[1] = math.floor(ArrowAPI.palette_ui_config.rgb[1] * 255)
-        ArrowAPI.palette_ui_config.rgb[2] = math.floor(ArrowAPI.palette_ui_config.rgb[2] * 255)
-        ArrowAPI.palette_ui_config.rgb[3] = math.floor(ArrowAPI.palette_ui_config.rgb[3] * 255)
-    end
-
     update_hex_input(ArrowAPI.palette_ui_config.rgb)
 
     -- calls updates to the sliders rather than interpreting their new values
@@ -548,21 +541,19 @@ end
 
 function G.FUNCS.arrow_rgb_slider(e, update_only)
     -- this is to set the value of these sliders immediately after creation as an insta_func
-    local arrow = e.parent.children[1].children[1]
-    local fill = e.children[1]
+    local fill = e.children[1].children[1]
+    local base = e.children[1]
     e.states.drag.can = true -- parent
-    fill.states.drag.can = true -- child/fill
-    arrow.states.drag.can = true -- child/fill
 
     if update_only or (G.CONTROLLER and G.CONTROLLER.dragging.target and G.CONTROLLER.dragging.target == e) then
-        local rt = fill.config.ref_table
+        local rt = base.config.ref_table
         if not update_only then
             rt.ref_table[rt.ref_value] = math.floor(math.min(rt.max,math.max(rt.min, rt.min + (rt.max - rt.min)*(G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w)))
             ArrowAPI.palette_changed_flag = true
         end
         rt.text = string.format("%.0f", rt.ref_table[rt.ref_value])
-        arrow.T.w = (rt.ref_table[rt.ref_value] - rt.min)/(rt.max - rt.min)*fill.T.w
-        arrow.config.w = arrow.T.w
+        fill.T.w = (rt.ref_table[rt.ref_value] - rt.min)/(rt.max - rt.min)*base.T.w
+        fill.config.w = fill.T.w
     end
 end
 
@@ -601,7 +592,7 @@ function G.FUNCS.arrow_grad_box(e)
             local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
             local idx = ArrowAPI.palette_ui_config.open_palette.idx
 
-            local palette_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+            local palette_color = palette.current_palette[idx]
 
             -- for the sake of UI which determines drawing depending on if palette_color[4] (alpha) is greater than 0
             -- when you only have a single color, palette_color[4] is set to a dummy 1
@@ -610,10 +601,15 @@ function G.FUNCS.arrow_grad_box(e)
                 palette_color[4] = nil
             end
 
+            sendDebugMessage('adding new palette colors for index: '..idx)
+
             table.insert(palette_color.grad_pos, insert, pos)
             table.insert(palette_color, start_idx + 1, 255)
             table.insert(palette_color, start_idx + 1, 255)
             table.insert(palette_color, start_idx + 1, 255)
+
+
+            sendDebugMessage('num colors: '..#palette_color)
 
             set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, idx, insert)
 
@@ -673,7 +669,7 @@ function G.FUNCS.arrow_grad_pointers(e)
                 local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
                 local idx = ArrowAPI.palette_ui_config.open_palette.idx
 
-                local palette_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+                local palette_color = palette.current_palette[idx]
                 table.remove(palette_color.grad_pos, grad_idx)
 
                 table.remove(palette_color, start_idx + 1)
@@ -715,7 +711,7 @@ function G.FUNCS.arrow_grad_pointers(e)
 
         local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
         local idx = ArrowAPI.palette_ui_config.open_palette.idx
-        local palette_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+        local palette_color = palette.current_palette[idx]
 
         palette_color.grad_pos[grad_points.selected] = cursor_x
 
@@ -742,6 +738,81 @@ function G.FUNCS.arrow_grad_pointers(e)
     end
 end
 
+
+--- Callback for the main visual display of a gradient widget, including interacting to create/remove gradient pips
+function G.FUNCS.arrow_angle_widget(e)
+    --[[
+    e.states.drag.can = true
+    if (G.CONTROLLER and G.CONTROLLER.dragging.target and G.CONTROLLER.dragging.target == e) then
+        local points = e.config.ref_table.points
+        local mode = e.config.ref_table.mode
+        local cursor_x = math.max(0, math.min(1, (G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w))
+        local cursor_y = (G.CURSOR.T.y - e.parent.T.y - G.ROOM.T.y)/e.T.h
+        if cursor_x < -0.25 or cursor_x > 1.25 or cursor_y < -0.25 or cursor_y > 1.25 then
+            e:stop_drag()
+            e.states.drag.is = false
+            G.CONTROLLER.dragging.target = nil
+            points.selected = nil
+            for i=1, #points do
+                points[i].selected = nil
+            end
+
+            return
+        end
+
+        if cursor_y <= 1.25 and not points.selected then
+            local hitbox_width = 0.075
+            for i=1, #points - (mode == 'linear' and 1 or 0) do
+                if math.abs(cursor_x - points[i].x) <= hitbox_width and math.abs(cursor_y - points[i].y) <= hitbox_width then
+                    points.selected = i
+                    points[i].selected = G.TIMERS.REAL
+                    play_sound('cardSlide1', 1 + math.random() * 0.1)
+                    break
+                end
+            end
+
+            if not points.selected then
+                e:stop_drag()
+                e.states.drag.is = false
+                G.CONTROLLER.dragging.target = nil
+                return
+            end
+        end
+
+        points[points.selected].x = cursor_x
+        points[points.selected].y = cursor_x
+
+        local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
+        local idx = ArrowAPI.palette_ui_config.open_palette.idx
+        local palette_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+        local config = palette_color.grad_config
+
+        if mode == 'linear' then
+            config.value = math.atan(points[1].y)
+        end
+
+        palette_color.grad_pos[points.selected] = cursor_x
+
+        table.sort(points, function(a, b) return a.pos < b.pos end)
+        table.sort(palette_color.grad_pos, function(a, b) return a < b end)
+
+        for i=1, #points do
+            if points[i].selected then
+                points.selected = i
+                ArrowAPI.palette_ui_config.open_palette.grad_idx = i
+                break
+            end
+        end
+    elseif e.config.points.selected then
+        local points = e.config.points
+        points.selected = nil
+        for i=1, #points do
+            points[i].selected = nil
+        end
+    end
+    --]]
+end
+
 function G.FUNCS.arrow_palette_button(e)
     -- grad idx is assumed to be 1 for non-gradient colors
     set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, e.config.palette_idx, 1)
@@ -755,8 +826,8 @@ function G.FUNCS.arrow_palette_reset(e)
     local idx = e.config.palette_idx
 
     -- reset the default color
-    local default_color = idx == 0 and palette.default_palette.badge_colour or palette.default_palette[idx]
-    local palette_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+    local default_color = palette.default_palette[idx]
+    local palette_color = palette.current_palette[idx]
     palette_color[1] = default_color[1]
     palette_color[2] = default_color[2]
     palette_color[3] = default_color[3]
@@ -778,7 +849,7 @@ function G.FUNCS.arrow_update_selected_colour(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     local palette = ArrowAPI.colors.palettes[set]
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
-    local current_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
+    local current_color = palette.current_palette[idx]
 
     local start_idx = (grad_idx - 1) * 3
     current_color[start_idx + 1] = rgb[1]
@@ -786,13 +857,6 @@ function G.FUNCS.arrow_update_selected_colour(e)
     current_color[start_idx + 3] = rgb[3]
 
     update_hex_input(current_color)
-
-    if idx == 0 then
-        current_color[start_idx + 1] = current_color[start_idx + 1]/255
-        current_color[start_idx + 2] = current_color[start_idx + 2]/255
-        current_color[start_idx + 3] = current_color[start_idx + 3]/255
-        current_color[4] = 1
-    end
 
     ArrowAPI.palette_changed_flag = nil
     G.OVERLAY_MENU:recalculate()
@@ -841,10 +905,6 @@ function G.FUNCS.arrow_save_palette(e)
         -- just save
         for i, v in ipairs(ArrowAPI.config.saved_palettes[set]) do
             if v.name == palette.current_palette.name then
-                if set ~= 'Background' then
-                    ArrowAPI.config.saved_palettes[set][i].badge_colour = copy_table(palette.current_palette.badge_colour)
-                end
-
                 for j, color in ipairs(palette.current_palette) do
                     local default = palette.default_palette[j]
                     -- TODO // save grad pos
@@ -858,6 +918,7 @@ function G.FUNCS.arrow_save_palette(e)
                     if not palette_table[4] then palette_table[4] = 1 end
                     ArrowAPI.config.saved_palettes[set][i][j] = palette_table
                 end
+
                 SMODS.save_mod_config(ArrowAPI)
                 return
             end
@@ -867,10 +928,11 @@ function G.FUNCS.arrow_save_palette(e)
     end
 
     local new_idx = #ArrowAPI.config.saved_palettes[set]+1
-    local save_palette = {name = ArrowAPI.palette_ui_config.name_input, badge_colour = set ~= 'Background' and copy_table(palette.current_palette.badge_colour) or nil}
+    local save_palette = {name = ArrowAPI.palette_ui_config.name_input}
+
     for i = 1, #palette.current_palette do
         local current_color = palette.current_palette[i]
-        local palette_table = {key = current_color.key, default = current_color.default}
+        local palette_table = {key = current_color.key, default = current_color.default, grad_pos = copy_table(current_color.grad_pos)}
         for j = 1, #current_color do
             palette_table[j] = current_color[j]
         end
@@ -894,9 +956,6 @@ function G.FUNCS.arrow_save_palette(e)
         config = {offset = {x=0,y=0}, parent = tab_contents, type = 'cm'}
     }
     tab_contents.UIBox:recalculate()
-
-    local open_idx = ArrowAPI.palette_ui_config.open_palette.idx
-    G.OVERLAY_MENU:recalculate()
 end
 
 function G.FUNCS.arrow_delete_palette(e)

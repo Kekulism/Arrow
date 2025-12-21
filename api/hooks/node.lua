@@ -44,7 +44,14 @@ function UIElement:draw_self()
                 love.graphics.setColor(G.C.UI.TEXT_LIGHT)
                 love.graphics.polygon("fill", grad_point(self.VT.w*G.TILESIZE*point.pos, self.VT.h*G.TILESIZE, 1.25))
                 love.graphics.pop()
+            elseif G.SETTINGS.GRAPHICS.shadows == 'On' then
+                prep_draw(self, 0.99)
+                love.graphics.scale(1/(G.TILESIZE))
+                love.graphics.setColor(0,0,0,0.3)
+                love.graphics.polygon("fill", grad_point(self.VT.w*G.TILESIZE*point.pos - self.shadow_parrallax.x*0.75, self.VT.h*G.TILESIZE - self.shadow_parrallax.y*0.75))
+                love.graphics.pop()
             end
+
 
             prep_draw(self, 1)
             love.graphics.scale(1/(G.TILESIZE))
@@ -63,6 +70,7 @@ function UIElement:draw_self()
 
     --Draw the 'chosen triangle'
     if self.config.slider_point then
+        --[[
         prep_draw(self, 0.98)
         love.graphics.scale(1/(G.TILESIZE))
         if self.config.shadow and G.SETTINGS.GRAPHICS.shadows == 'On' then
@@ -70,20 +78,15 @@ function UIElement:draw_self()
             love.graphics.polygon("fill", slider_point(0 - self.shadow_parrallax.x*0.75, 0 - self.shadow_parrallax.y*0.75, self.VT.w*G.TILESIZE))
         end
         love.graphics.pop()
+        --]]
+
 
         prep_draw(self, 1)
         love.graphics.scale(1/(G.TILESIZE))
-        love.graphics.setColor(self.config.colour)
+        love.graphics.setColor(G.C.UI.TEXT_LIGHT)
         love.graphics.polygon("fill", slider_point(0, 0, self.VT.w*G.TILESIZE))
         love.graphics.pop()
 
-        if self.config.inner_point then
-            prep_draw(self, 1)
-            love.graphics.scale(1/(G.TILESIZE))
-            love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.polygon("fill", slider_point(0, 0, self.VT.w*G.TILESIZE, 0.75))
-            love.graphics.pop()
-        end
     end
 
     return ret
@@ -105,10 +108,14 @@ function grad_color(x, y, scale)
     local y_off = (1 - scale) * 3.3 * 1.5
     scale = scale * 2
     return {
-        x - 0.9*scale, y-3.3*scale - y_off,
-        x - 0.9*scale, y-1.6*scale - y_off,
-        x + 0.9*scale, y-1.6*scale - y_off,
-        x + 0.9*scale, y-3.3*scale - y_off
+        x - 0.75*scale, y-3.3*scale - y_off,
+        x - 0.9*scale, y-3.15*scale - y_off,
+        x - 0.9*scale, y-1.75*scale - y_off,
+        x - 0.75*scale, y-1.6*scale - y_off,
+        x + 0.75*scale, y-1.6*scale - y_off,
+        x + 0.9*scale, y-1.75*scale - y_off,
+        x + 0.9*scale, y-3.15*scale - y_off,
+        x + 0.75*scale, y-3.3*scale - y_off
     }
 end
 
@@ -117,10 +124,12 @@ function grad_point(x, y, scale)
     local y_off = (1 - scale) * 3.3 * 1.5
     scale = scale * 2
     return {
-        x - 1.25*scale, y-3.5*scale - y_off,
+        x - 1.1*scale, y-3.5*scale - y_off,
+        x - 1.25*scale, y-3.3*scale - y_off,
         x - 1.25*scale, y-1.4*scale - y_off,
         x + 0, y-0.2*scale - y_off,
         x + 1.25*scale, y-1.4*scale - y_off,
-        x + 1.25*scale, y-3.5*scale - y_off
+        x + 1.25*scale, y-3.3*scale - y_off,
+        x + 1.1*scale, y-3.5*scale - y_off,
     }
 end

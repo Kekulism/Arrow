@@ -1029,11 +1029,10 @@ function arrow_create_rgb_slider(args)
 
     return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
         {n=G.UIT.C, config={align = "bm", minh = args.h * 1.3}, nodes={
-            {n=G.UIT.R, config = {align = "bl", w = args.w, minh = args.h*0.8}, nodes = {
-                {n=G.UIT.B, config={align = 'bl', slider_point = true, inner_point = true, colour = G.C.UI.TEXT_DARK, w = 0, h = 0, refresh_movement = true}}, ----------
-            }},
-            {n=G.UIT.R, config={id = args.id, align = "cl", minw = args.w, r = 0.1, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_rgb_slider', insta_func = 'arrow_rgb_slider_insta', refresh_movement = true}, nodes={
-                {n=G.UIT.B, config={id = 'arrow_rgb_slider', w = args.w, h = args.h, r = 0.1, colour = G.C.UI.TEXT_LIGHT, ref_table = args, refresh_movement = true}},
+            {n=G.UIT.R, config={id = args.id, align = "cl", r = 0.1, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_rgb_slider', insta_func = 'arrow_rgb_slider_insta', refresh_movement = true}, nodes={
+                {n=G.UIT.R, config={id = 'arrow_rgb_slider', minw = args.w, minh = args.h, r = 0.1, colour = G.C.UI.TEXT_LIGHT, ref_table = args, refresh_movement = true}, nodes = {
+                    {n=G.UIT.B, config={slider_point = true, w = args.w, h = args.h, refresh_movement = true}},
+                }},
             }}
         }},
         {n=G.UIT.C, config={align = "bm", minh = args.h * 1.3}, nodes={
@@ -1049,12 +1048,27 @@ function arrow_create_grad_widget(args)
     args.h = args.h or 0.5
     args.grad_points = args.grad_points or {selected = nil, min_points = 1, max_points = 8, {pos = 0, color = {255, 255, 255}}}
 
-    return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
+    return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, res = 0.45, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
         {n=G.UIT.R, config = {id = args.id and args.id..'_pointers', minw = args.w, minh = args.h, grad_points = args.grad_points, collideable = true, hover = true, colour = G.C.CLEAR, func = 'arrow_grad_pointers', refresh_movement = true}, nodes={
         }},
-        {n=G.UIT.R, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.1, padding = 0.025}, nodes={
+        {n=G.UIT.R, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.1, res = 0.45, padding = 0.025}, nodes={
             {n=G.UIT.R, config={id = args.id and args.id..'_box', align = "cl", minw = args.w, r = 0.1, ref_table = args, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_grad_box', refresh_movement = true}, nodes={
             }}
+        }},
+    }}
+end
+
+function arrow_create_angle_widget(args)
+    args.w = args.w or 1
+    args.h = args.h or 1
+    args.mode = args.mode or 'linear' -- alt is 'radial'
+
+    -- in linear mode, the first point is always along the outside of the node, while the second point is static in the center
+    -- in radial mode, both points can be dragged. The second point is the center and the first point determines the radius relative to the first
+    args.points = args.points or {selected = nil, {x = 1, y = 0.5}, {x = 0.5, y = 0.5}}
+
+    return {n=G.UIT.C, config={align = "cm", minw = args.w, minh = args.w, r = 1, colour = G.C.BLACK, padding = 0.025, focus_args = {type = 'slider'}}, nodes={
+            {n=G.UIT.R, config={id = 'arrow_angle_widget', align = "cm", minw = args.w, minh = args.h, r = 1, ref_table = args, collideable = true, hover = true, colour = G.C.UI.TEXT_LIGHT, func = 'arrow_angle_widget', refresh_movement = true}, nodes={
         }},
     }}
 end
@@ -1106,17 +1120,12 @@ function G.UIDEF.arrow_palette_tab(tab)
         ArrowAPI.palette_ui_config.open_palette = {set = tab, idx = 1, grad_idx = 1}
     end
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
+    sendDebugMessage('start idx: '..idx)
 
     local current_palette = palette.current_palette
-    local button_color = (idx == 0 and copy_table(current_palette.badge_colour)) or not current_palette[idx].default and current_palette[idx] or palette.default_palette[idx]
+    local button_color = current_palette[idx]
 
     local start_idx = (ArrowAPI.palette_ui_config.open_palette.grad_idx - 1) * 3
-    -- adjust for badge colour
-    if idx == 0 then
-        button_color[start_idx + 1] = button_color[start_idx + 1] * 255
-        button_color[start_idx + 2] = button_color[start_idx + 2] * 255
-        button_color[start_idx + 3] = button_color[start_idx + 3] * 255
-    end
 
     ArrowAPI.palette_ui_config.rgb = {button_color[start_idx + 1], button_color[start_idx + 2], button_color[start_idx + 3]}
 
@@ -1199,7 +1208,7 @@ function G.UIDEF.arrow_palette_tab(tab)
     local row_idx = 0
     local count = 0
 
-    local button_size = width * 0.9 / row_count
+    local button_size = width / row_count
     local default_palette = palette.default_palette
 
     for i=1, #default_palette do
@@ -1208,7 +1217,7 @@ function G.UIDEF.arrow_palette_tab(tab)
 
         if count % row_count == 0 then
             row_idx = row_idx + 1
-            color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm"}, nodes={}}
+            color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm", padding = 0.02}, nodes={}}
         end
 
         local default_id = 'arrow_palette_default_'..i
@@ -1221,7 +1230,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                 colour = G.C.UI.TEXT_LIGHT,
                 padding = 0.025,
                 r = 0.02,
-                emboss = 0.05
+                emboss = 0.025
             },
             nodes={
                 {n = G.UIT.R,
@@ -1237,7 +1246,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                         button_dist = 0.05,
                         res = 0.3,
                         colour = default_color,
-                        emboss = 0.05
+                        emboss = 0.025
                     },
                     nodes = {}
                 },
@@ -1254,7 +1263,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                         button_dist = 0.05,
                         res = 0.3,
                         colour = custom_color,
-                        emboss = 0.05
+                        emboss = 0.025
 
                     },
                     nodes = {}
@@ -1263,61 +1272,7 @@ function G.UIDEF.arrow_palette_tab(tab)
         }
         custom_color = nil
         count = count + 1
-
-        if i == #default_palette and tab ~= 'Background' and type(current_palette.badge_colour) == 'table' then
-            local badge_default = default_palette.badge_colour
-            local badge_colour = current_palette.badge_colour
-            color_nodes[row_idx].nodes[#color_nodes[row_idx].nodes+1] = {
-                n = G.UIT.C,
-                config={
-                    id = 'arrow_palette_wrapper',
-                    align = "cm",
-                    res = 0.3,
-                    colour = G.C.UI.TEXT_LIGHT,
-                    padding = 0.025,
-                    r = 0.02,
-                    emboss = 0.05
-                },
-                nodes={
-                    {n = G.UIT.R,
-                        config = {
-                            palette_idx = 0,
-                            id = 'arrow_palette_reset_0',
-                            button = 'arrow_palette_reset',
-                            align = "cm",
-                            minw = button_size,
-                            minh = button_size*0.5,
-                            r = 0.01,
-                            button_dist = 0.05,
-                            res = 0.3,
-                            hover = true,
-                            emboss = 0.05,
-                            colour = badge_default,
-                        },
-                        nodes = {}
-                    },
-                    {n = G.UIT.R,
-                        config = {
-                            palette_idx = 0,
-                            id = 'arrow_palette_button_0',
-                            align = "cm",
-                            minw = button_size,
-                            minh = button_size*0.75,
-                            colour = badge_colour,
-                            button = 'arrow_palette_button',
-                            r = 0.01,
-                            button_dist = 0.05,
-                            res = 0.3,
-                            hover = true,
-                            emboss = 0.05
-                        },
-                        nodes = {}
-                    }
-                }
-            }
-        end
     end
-
 
     ----------------- hex input
     local new_hex_string = string.upper(tostring(string.format("%02x", button_color[1])..string.format("%02x", button_color[2])..string.format("%02x", button_color[3])))
@@ -1399,6 +1354,12 @@ function G.UIDEF.arrow_palette_tab(tab)
         grad_points = grad_points
     }
 
+    ArrowAPI.palette_ui_config.angle_widget_config = {
+        w = 1,
+        h = 1,
+        points = {selected = nil, {x = 0.5, y = 0.5}, {x = 0.5, y = 0.5}}
+    }
+
     ----------------- put it all together
     return {n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes={
         {n=G.UIT.R, config={align = "cm"}, nodes={
@@ -1448,9 +1409,9 @@ function G.UIDEF.arrow_palette_tab(tab)
                 }}
             }},
             {n=G.UIT.C, config={align = "cm", minw = 0.4}, nodes = {}},
-            {n=G.UIT.C, config={align = "cm", padding = 0.05}, nodes = {
-                {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, emboss = 0.05, r = 0.1}, nodes = {
-                    {n = G.UIT.C, config={align = "cm", minw = width * 0.9, minh = 4}, nodes = color_nodes},
+            {n=G.UIT.C, config={align = "cm"}, nodes = {
+                {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, emboss = 0.04, r = 0.1}, nodes = {
+                    {n = G.UIT.C, config={align = "cm", minw = width * 0.9, padding = 0.1}, nodes = color_nodes},
                 }},
                 {n = G.UIT.R, config = {align = "cm"}, nodes = {
                     {n = G.UIT.C, config = {align = "cm"}, nodes = {
@@ -1473,12 +1434,15 @@ function G.UIDEF.arrow_palette_tab(tab)
                                             minh = width * 0.15,
                                             func = 'arrow_update_selected_colour',
                                             r = 0.4,
-                                            res = 0.3,
+                                            res = 0.45,
                                         },
                                         nodes = {}
                                     }
                                 }},
                             }},
+                        }},
+                        {n = G.UIT.R, config = {align = "cm", padding = 0.1}, nodes = {
+                            arrow_create_angle_widget(ArrowAPI.palette_ui_config.angle_widget_config)
                         }},
                         {n = G.UIT.R, config = {align = "cm", padding = 0.1}, nodes = {
                             {n = G.UIT.R, config = {align = "cm"}, nodes = {

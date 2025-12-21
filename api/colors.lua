@@ -19,7 +19,7 @@ local function collect_image_data(set, atlases)
         local atlas = SMODS.Atlases[k]
         local file_data = NFS.newFileData(atlas.full_path)
         local image_data = love.image.newImageData(file_data)
-        data_table[k] = image_data
+        data_table[k] = {data = image_data, key = k}
 
         local ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
         ffi.gc(ref_pointer, ffi.free)
@@ -28,12 +28,11 @@ local function collect_image_data(set, atlases)
         local colors_per_unit = width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
 
         for _, item in ipairs(v) do
-            local item_table = {}
+            local item_table = {table = item.table}
             for _, color in ipairs(ArrowAPI.colors.palettes[set].default_palette) do
                 local color_key = color[1]..'-'..color[2]..'-'..color[3]
                 item_table[color_key] = {}
             end
-
 
             local pos = G['P_'..item.table][item.key].pos
 
@@ -51,7 +50,7 @@ local function collect_image_data(set, atlases)
             end
 
             for kk, vv in pairs(item_table) do
-                if not next(vv) then
+                if type(vv) == 'table' and not next(vv) then
                     item_table[kk] = nil
                 end
             end
@@ -152,20 +151,16 @@ ArrowAPI.colors = {
             end)
 
             palette.items = items
-
-            local save_badge = copy_table(G.C.SECONDARY_SET[set])
-            save_badge.grad_pos = {0}
-            ArrowAPI.config.saved_palettes[set][1].badge_colour = save_badge
-
             palette.default_palette = copy_table(ArrowAPI.config.saved_palettes[set][1])
             local current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
-            if not current_palette.badge_colour then
-                current_palette.badge_colour = copy_table(G.C.SECONDARY_SET[set])
-                current_palette.badge_colour.grad_pos = {0}
+            if current_palette[#current_palette].key ~= 'badge' then
+                local idx = #current_palette+1
+                current_palette[idx] = copy_table(G.C.SECONDARY_SET[set])
+                current_palette[idx].grad_pos = {0}
             end
 
-            local data_table, pixel_map = collect_image_data(set, atlases)
-            palette.image_data = {data = data_table, pixel_map = pixel_map}
+            local atlas_table, pixel_map = collect_image_data(set, atlases)
+            palette.image_data = {atlases = atlas_table, pixel_map = pixel_map}
 
             palette.last_palette = copy_table(current_palette)
             palette.current_palette = current_palette
@@ -269,25 +264,27 @@ ArrowAPI.colors = {
         local custom_palette = {}
         if not saved_index then
             -- updating current palette
-            local badge = palette.current_palette.badge_colour
-            G.C.SECONDARY_SET[set][1] = badge[1]
-            G.C.SECONDARY_SET[set][2] = badge[2]
-            G.C.SECONDARY_SET[set][3] = badge[3]
-            G.C.SECONDARY_SET[set][4] = badge[4]
+            local badge = palette.current_palette[#palette.current_palette]
+            G.C.SECONDARY_SET[set][1] = badge[1]/255
+            G.C.SECONDARY_SET[set][2] = badge[2]/255
+            G.C.SECONDARY_SET[set][3] = badge[3]/255
+            G.C.SECONDARY_SET[set][4] = 1
 
-            for i=1, #palette.current_palette do
+            for i=1, #palette.current_palette-1 do
                 local last = palette.last_palette[i]
                 local current = palette.current_palette[i]
                 local default = palette.default_palette[i]
+                local changed = false
 
                 local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
                 local grad_pos = {}
                 for j = 1, #grad_points do
+                    if last.grad_pos[j] ~= grad_points[j].pos then changed = true end
                     grad_pos[j] = grad_points[j].pos
                 end
 
                 local palette_table = {key = default.key, default = true}
-                local changed = false
+
                 for j=1, #current do
                     if current[j] ~= default[j] then palette_table.default = false end
                     if current[j] ~= last[j] then changed = true end
@@ -307,7 +304,7 @@ ArrowAPI.colors = {
             SMODS.save_mod_config(ArrowAPI)
 
             custom_palette = ArrowAPI.config.saved_palettes[set][saved_index]
-            local new_palette = {name = custom_palette.name, badge_colour = copy_table(custom_palette.badge_colour)}
+            local new_palette = {name = custom_palette.name}
 
             for i = 1, #palette.default_palette do
                 local default = palette.default_palette[i]
@@ -338,21 +335,22 @@ ArrowAPI.colors = {
             end
 
             -- TODO // fix with grad pos
-            if SMODS.Gradients[new_palette.badge_colour] then
-                G.C.SECONDARY_SET[set] = SMODS.Gradients[new_palette.badge_colour]
-            else
-                G.C.SECONDARY_SET[set][1] = new_palette.badge_colour[1]
-                G.C.SECONDARY_SET[set][2] = new_palette.badge_colour[2]
-                G.C.SECONDARY_SET[set][3] = new_palette.badge_colour[3]
-                G.C.SECONDARY_SET[set][4] = new_palette.badge_colour[4]
-            end
+            G.C.SECONDARY_SET[set][1] = new_palette[#new_palette][1]/255
+            G.C.SECONDARY_SET[set][2] = new_palette[#new_palette][2]/255
+            G.C.SECONDARY_SET[set][3] = new_palette[#new_palette][3]/255
+            G.C.SECONDARY_SET[set][4] = 1
             palette.current_palette = new_palette
             palette.last_palette = copy_table(new_palette)
         end
 
         collectgarbage("stop")
-        for k, v in pairs(palette.image_data.data) do
-            local edit_pointer = ffi.cast("uint8_t*", v:getFFIPointer())
+        for k, v in pairs(palette.image_data.atlases) do
+            local atlas = SMODS.Atlases[v.key]
+            local color_width = v.data:getWidth() * 4
+            local width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
+
+            local debug_test = true
+            local edit_pointer = ffi.cast("uint8_t*", v.data:getFFIPointer())
             ffi.gc(edit_pointer, ffi.free)
             local pixel_map = palette.image_data.pixel_map[k]
             for i = 1, #custom_palette do
@@ -360,9 +358,77 @@ ArrowAPI.colors = {
                     -- todo add item filtering
                     local color_list = colors[custom_palette[i].key]
                     if color_list then
-                        local replace_color = custom_palette[i]
+
+                        local pos = G['P_'..colors.table][item].pos
+
+                        if debug_test then
+                            sendDebugMessage('checking palette index: '..i)
+                        end
+
+                        local palette_color = custom_palette[i]
                         for j = 1, #color_list do
                             local idx = color_list[j]
+                            local replace_color = {palette_color[1], palette_color[2], palette_color[3]}
+                            if #palette_color.grad_pos > 1 then
+                                if debug_test then
+                                    sendDebugMessage('checking for key: '..custom_palette[i].key)
+                                    sendDebugMessage('num grad points: '..#palette_color.grad_pos)
+                                end
+                                local grad_pos = palette_color.grad_pos
+                                local row_start = pos.x * width_per_unit
+
+
+                                local x = idx % color_width
+                                if debug_test then
+                                    sendDebugMessage('unadjusted x pos: '..x)
+                                end
+
+                                -- relative within the sprite
+                                x = x - row_start
+                                if debug_test then
+                                    sendDebugMessage('relative within sprite pos: '..x)
+                                end
+
+                                -- normalized x coord
+                                x = x / (width_per_unit)
+                                if debug_test then
+                                    sendDebugMessage('normalized pos: '..x)
+                                end
+
+                                if debug_test then
+                                    sendDebugMessage('num colors: '..#palette_color)
+                                    sendDebugMessage('relative x coord: '..x)
+                                end
+
+                                for grad = 1, #grad_pos - 1 do
+                                    if x <= grad_pos[grad+1] then
+                                        if debug_test then
+                                            sendDebugMessage('prev point: '..grad_pos[grad])
+                                            sendDebugMessage('next point: '..grad_pos[grad+1])
+                                        end
+                                        x = (x - grad_pos[grad]) / (grad_pos[grad+1] - grad_pos[grad])
+
+                                        local back = (grad - 1) * 3
+                                        local next = grad * 3
+
+                                        replace_color[1] = palette_color[back + 1] + x * (palette_color[next + 1] - palette_color[back + 1])
+                                        replace_color[2] = palette_color[back + 2] + x * (palette_color[next + 2] - palette_color[back + 2])
+                                        replace_color[3] = palette_color[back + 3] + x * (palette_color[next + 3] - palette_color[back + 3])
+
+
+                                        if debug_test then
+                                            sendDebugMessage('adjusted x coord: '..x)
+                                            sendDebugMessage('adjusted start indexes: '..back..' | '..next)
+                                            sendDebugMessage('replace[1]: '..replace_color[1])
+                                            sendDebugMessage('replace[2]: '..replace_color[2])
+                                            sendDebugMessage('replace[3]: '..replace_color[3])
+                                            debug_test = false
+                                        end
+                                        break
+                                    end
+                                end
+                            end
+
                             edit_pointer[idx] = replace_color[1]
                             edit_pointer[idx + 1] = replace_color[2]
                             edit_pointer[idx + 2] = replace_color[3]
@@ -373,7 +439,7 @@ ArrowAPI.colors = {
 
             edit_pointer = nil
 
-            SMODS.Atlases[k].image = love.graphics.newImage(v,
+            SMODS.Atlases[k].image = love.graphics.newImage(v.data,
                 { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
         end
 
@@ -386,7 +452,7 @@ function get_type_colour(_c, card)
     local ret = ref_type_colour(_c, card)
 
     if _c.unlocked and not card.debuff and ArrowAPI.colors.palettes[_c.set] then
-        ret = ArrowAPI.colors.palettes[_c.set].badge_colour or ret
+        ret = ArrowAPI.colors.palettes[_c.set][0] or ret
     end
 
     return ret
