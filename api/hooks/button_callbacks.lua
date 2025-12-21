@@ -711,6 +711,7 @@ function G.FUNCS.arrow_grad_pointers(e)
 
         local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
         local idx = ArrowAPI.palette_ui_config.open_palette.idx
+        sendDebugMessage('adding gradient to color at index: '..idx)
         local palette_color = palette.current_palette[idx]
 
         palette_color.grad_pos[grad_points.selected] = cursor_x

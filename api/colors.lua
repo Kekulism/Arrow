@@ -238,7 +238,7 @@ ArrowAPI.colors = {
             -- update background
             for i = 1, #palette.current_palette do
                 local color = palette.current_palette[i]
-                for j = 1, #G.C.BLIND[color.key] do
+                for j = 1, 3 do
                     G.C.BLIND[color.key][j] = color[j] and color[j]/255 or 1
                 end
             end
@@ -276,11 +276,10 @@ ArrowAPI.colors = {
                 local default = palette.default_palette[i]
                 local changed = false
 
-                local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
                 local grad_pos = {}
-                for j = 1, #grad_points do
-                    if last.grad_pos[j] ~= grad_points[j].pos then changed = true end
-                    grad_pos[j] = grad_points[j].pos
+                for j = 1, #current.grad_pos do
+                    if last.grad_pos[j] ~= current.grad_pos[j] then changed = true end
+                    grad_pos[j] = current.grad_pos[j]
                 end
 
                 local palette_table = {key = default.key, default = true}
@@ -396,7 +395,6 @@ ArrowAPI.colors = {
                                 end
 
                                 if debug_test then
-                                    sendDebugMessage('num colors: '..#palette_color)
                                     sendDebugMessage('relative x coord: '..x)
                                 end
 
@@ -411,14 +409,23 @@ ArrowAPI.colors = {
                                         local back = (grad - 1) * 3
                                         local next = grad * 3
 
+                                        if debug_test then
+                                            sendDebugMessage('num colors: '..#palette_color)
+                                            sendDebugMessage('adjusted x coord: '..tostring(x))
+                                            sendDebugMessage('idx '..(back+1)..': '..tostring(palette_color[back + 1]))
+                                            sendDebugMessage('idx '..(back+2)..': '..tostring(palette_color[back + 2]))
+                                            sendDebugMessage('idx '..(back+3)..': '..tostring(palette_color[back + 3]))
+                                            sendDebugMessage('idx '..(next+1)..': '..tostring(palette_color[next + 1]))
+                                            sendDebugMessage('idx '..(next+2)..': '..tostring(palette_color[next + 2]))
+                                            sendDebugMessage('idx '..(next+3)..': '..tostring(palette_color[next + 3]))
+                                        end
+
                                         replace_color[1] = palette_color[back + 1] + x * (palette_color[next + 1] - palette_color[back + 1])
                                         replace_color[2] = palette_color[back + 2] + x * (palette_color[next + 2] - palette_color[back + 2])
                                         replace_color[3] = palette_color[back + 3] + x * (palette_color[next + 3] - palette_color[back + 3])
 
 
                                         if debug_test then
-                                            sendDebugMessage('adjusted x coord: '..x)
-                                            sendDebugMessage('adjusted start indexes: '..back..' | '..next)
                                             sendDebugMessage('replace[1]: '..replace_color[1])
                                             sendDebugMessage('replace[2]: '..replace_color[2])
                                             sendDebugMessage('replace[3]: '..replace_color[3])
