@@ -85,8 +85,6 @@ G.FUNCS.can_select_from_booster = function(e)
     if e.config.button then
         local card = e.config.ref_table
 
-
-
         if card.ability.set == 'Stand' and not G.GAME.modifiers.unlimited_stands and ArrowAPI.stands.get_num_stands() >= G.GAME.modifiers.max_stands then
             e.config.colour = G.C.UI.BACKGROUND_INACTIVE
             e.config.button = nil
@@ -488,7 +486,6 @@ end
 ---------------------------
 
 local function update_hex_input(color)
-    --[[
     local new_hex_string = string.upper(tostring(string.format("%02x", color[1])..string.format("%02x", color[2])..string.format("%02x", color[3])))
     ArrowAPI.palette_ui_config.last_hex_input = ArrowAPI.palette_ui_config.hex_input
     ArrowAPI.palette_ui_config.hex_input = new_hex_string
@@ -498,10 +495,14 @@ local function update_hex_input(color)
         local new_letter = new_hex_string:sub(i, i)
         args.text.letters[i] = new_letter
     end
-    --]]
 end
 
 local function set_new_ui_palette(set, color_idx, grad_idx)
+    if ArrowAPI.palette_ui_config.open_palette.idx ~= color_idx then
+        G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..ArrowAPI.palette_ui_config.open_palette.idx).parent.config.colour = G.C.UI.TEXT_LIGHT
+        G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..color_idx).parent.config.colour = G.C.FILTER
+    end
+
     ArrowAPI.palette_ui_config.open_palette.idx = color_idx
     ArrowAPI.palette_ui_config.open_palette.grad_idx = grad_idx
 
@@ -528,6 +529,8 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
 
     update_hex_input(ArrowAPI.palette_ui_config.rgb)
 
+    G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_widget_box').config.grad_colour = color
+
     -- calls updates to the sliders rather than interpreting their new values
     G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
     G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
@@ -541,23 +544,204 @@ end
 
 function G.FUNCS.arrow_rgb_slider(e, update_only)
     -- this is to set the value of these sliders immediately after creation as an insta_func
-    local fill = e.children[1].children[1]
-    local base = e.children[1]
     e.states.drag.can = true -- parent
+    if update_only or G.CONTROLLER.dragging.target == e then
+        local fill = e.children[1].children[1]
+        local base = e.children[1]
 
-    if update_only or (G.CONTROLLER and G.CONTROLLER.dragging.target and G.CONTROLLER.dragging.target == e) then
         local rt = base.config.ref_table
-        if not update_only then
-            rt.ref_table[rt.ref_value] = math.floor(math.min(rt.max,math.max(rt.min, rt.min + (rt.max - rt.min)*(G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w)))
-            ArrowAPI.palette_changed_flag = true
+
+        if not update_only and not rt.last_dragged then
+            play_sound('cardSlide1', 1 + math.random() * 0.1, 0.6)
+            rt.last_dragged = true
         end
-        rt.text = string.format("%.0f", rt.ref_table[rt.ref_value])
+
+        if not update_only then
+            local old = rt.ref_table[rt.ref_value]
+            local new = math.floor(math.min(rt.max,math.max(rt.min, rt.min + (rt.max - rt.min)*(G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w)))
+            if new ==  rt.ref_table[rt.ref_value] then return end
+            rt.ref_table[rt.ref_value] = new
+
+            if old == rt.ref_table[rt.ref_value] then return end
+            ArrowAPI.palette_changed_flag = true
+
+
+            release_text_input()
+            local new_text = string.format("%.3u", rt.ref_table[rt.ref_value])
+            local text = e.parent.parent.children[3].config.ref_table.text
+            for i=1, 3 do
+                text.letters[i] = i <= #new_text and new_text:sub(i, i) or ''
+            end
+        end
+
         fill.T.w = (rt.ref_table[rt.ref_value] - rt.min)/(rt.max - rt.min)*base.T.w
+        fill.VT.w = fill.T.w
         fill.config.w = fill.T.w
+    else
+        e.children[1].config.ref_table.last_dragged = nil
     end
 end
 
---- Callback for the main visual display of a gradient widget, including interacting to create/remove gradient pips
+G.FUNCS.arrow_select_text_input = function(e)
+    G.CONTROLLER.text_input_hook = e
+    G.CONTROLLER.text_input_id = e.config.id
+
+    --Start by setting the cursor position to the correct location
+    TRANSPOSE_TEXT_INPUT(0)
+    local args = e.config.ref_table
+    sendDebugMessage('position on select: '..tostring(args.text.current_position))
+
+    e.UIBox:recalculate()
+end
+
+G.FUNCS.arrow_text_input = function(e)
+    local args = e.config.ref_table
+    if G.CONTROLLER.text_input_hook == e then
+        e.config.colour = args.hooked_colour
+    else
+        e.config.colour = args.colour
+    end
+
+    local OSkeyboard_e = e.parent.parent.parent
+    if G.CONTROLLER.text_input_hook == e and G.CONTROLLER.HID.controller then
+        if not OSkeyboard_e.children.controller_keyboard then
+            OSkeyboard_e.children.controller_keyboard = UIBox{
+            definition = create_keyboard_input{backspace_key = true, return_key = true, space_key = false},
+            config = {
+                align= 'cm',
+                offset = {x = 0, y = G.CONTROLLER.text_input_hook.config.ref_table.keyboard_offset or -4},
+                major = e.UIBox, parent = OSkeyboard_e}
+            }
+            G.CONTROLLER.screen_keyboard = OSkeyboard_e.children.controller_keyboard
+            G.CONTROLLER:mod_cursor_context_layer(1)
+        end
+    elseif OSkeyboard_e.children.controller_keyboard then
+        OSkeyboard_e.children.controller_keyboard:remove()
+        OSkeyboard_e.children.controller_keyboard = nil
+        G.CONTROLLER.screen_keyboard = nil
+        G.CONTROLLER:mod_cursor_context_layer(-1)
+    end
+end
+
+-- Redone text input due to a littany of changes
+G.FUNCS.text_input_key = function(args)
+    args = args or {}
+
+    --shortcut to hook config
+    local hook_config = G.CONTROLLER.text_input_hook.config.ref_table
+    hook_config.orig_colour = hook_config.orig_colour or copy_table(hook_config.colour)
+
+    args.key = args.key or '%'
+    local hook = G.CONTROLLER.text_input_hook
+
+    local corpus = hook_config.corpus or '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    local corpus_type = hook_config.corpus_type or 'alphanumeric'
+
+    if corpus_type == 'alphanumeric' then
+        if args.key == '[' or args.key == ']' then return end
+        if args.key == '0' then args.key = 'o' end
+    end
+
+    if corpus_type == 'alphanumeric' and hook.config.ref_table.extended_corpus then
+        corpus = corpus.." 0!$&()<>?:{}+-=,.[]_"
+        local lower_ext = '1234567890-=;\',./'
+        local upper_ext = '!@#$%^&*()_+:"<>?'
+        if string.find(lower_ext, args.key) and args.caps then
+            args.key = string.sub(string.sub(upper_ext, string.find(lower_ext, args.key)), 0, 1)
+        end
+    end
+
+    local text = hook_config.text
+
+    --Some special keys need to be mapped accordingly before passing through the corpus
+    local keymap = {
+      space = ' ',
+      backspace = 'BACKSPACE',
+      delete = 'DELETE',
+      ['return'] = 'RETURN',
+      right = 'RIGHT',
+      left = 'LEFT'
+    }
+
+    args.caps = args.caps or G.CONTROLLER.capslock or hook_config.all_caps
+    args.key = keymap[args.key] or (args.caps and string.upper(args.key) or args.key)
+
+    local length = string.len(text.ref_table[text.ref_value])
+
+    TRANSPOSE_TEXT_INPUT(0)
+    if length > 0 and args.key == 'BACKSPACE' then
+        MODIFY_TEXT_INPUT({letter = '', text_table = text, pos = text.current_position, delete = true})
+        TRANSPOSE_TEXT_INPUT(-1)
+        sendDebugMessage('current position: '..text.current_position)
+    elseif length > 0 and args.key == 'DELETE' then --if not at end, remove following letter
+        MODIFY_TEXT_INPUT({letter = '', text_table = text, pos = text.current_position+1,delete = true})
+        TRANSPOSE_TEXT_INPUT(0)
+        sendDebugMessage('current position: '..text.current_position)
+    elseif args.key == 'RETURN' then --Release the hook
+        release_text_input()
+        return
+    elseif args.key == 'LEFT' then --Move cursor position to the left
+        TRANSPOSE_TEXT_INPUT(-1)
+        sendDebugMessage('current position: '..text.current_position)
+    elseif args.key == 'RIGHT' then --Move cursor position to the right
+        TRANSPOSE_TEXT_INPUT(1)
+        sendDebugMessage('current position: '..text.current_position)
+    elseif hook_config.max_length > length and (string.len(args.key) == 1) and string.find(corpus, args.key, 1, true) then --check to make sure the key is in the valid corpus, add it to the string
+        MODIFY_TEXT_INPUT({letter = args.key, text_table = text, pos = text.current_position+1})
+        TRANSPOSE_TEXT_INPUT(1)
+        sendDebugMessage('current position: '..text.current_position)
+    end
+end
+
+local ref_text_from_input = GET_TEXT_FROM_INPUT
+function GET_TEXT_FROM_INPUT()
+    local ret = ref_text_from_input()
+    local hook_config = G.CONTROLLER.text_input_hook.config.ref_table
+    if hook_config.corpus_type and hook_config.corpus_type ~= 'alphanumeric' then
+        ret = tonumber(ret) or 0
+    end
+    return ret
+end
+
+--Helper function for G.FUNCS.text_input_key\
+--Moves the cursor left or right. Typing a key, deleting or backspacing also counts\
+--as a cursor move, since empty strings are used to fill the hook
+--
+---@param amount number
+function TRANSPOSE_TEXT_INPUT(amount)
+    local position_child = nil
+    local hook = G.CONTROLLER.text_input_hook
+    local text = G.CONTROLLER.text_input_hook.config.ref_table.text
+    for i = 1, #hook.children do
+        if hook.children[i].config then
+            if hook.children[i].config.id == G.CONTROLLER.text_input_id..'_position' then
+                position_child = i; break
+            end
+        end
+    end
+
+    local dir = (amount/math.abs(amount)) or 0
+
+    while amount ~= 0 do
+        if position_child + dir < 1 or position_child + dir >= #hook.children then break end
+        local real_letter = hook.children[position_child+dir].config.id:sub(1, 8+string.len(G.CONTROLLER.text_input_id)) == G.CONTROLLER.text_input_id..'_letter_' and hook.children[position_child+dir].config.text ~= ''
+        SWAP(hook.children, position_child, position_child + dir)
+        if real_letter then amount = amount - dir end
+        position_child = position_child + dir
+    end
+
+    local text_length = string.len(text.ref_table[text.ref_value])
+    if hook.config.ref_table.min_length then
+        sendDebugMessage('clamping min')
+        text_length = math.min(text_length, hook.config.ref_table.min_length)
+    end
+
+    text.current_position = math.min(position_child-1, text_length)
+    hook.UIBox:recalculate(true)
+    text.ref_table[text.ref_value] = GET_TEXT_FROM_INPUT()
+  end
+
+--- Callback for the main visual display of a gradient  widget, including interacting to create/remove gradient pips
 function G.FUNCS.arrow_grad_box(e)
     e.states.drag.can = true
     if (G.CONTROLLER and G.CONTROLLER.dragging.target and G.CONTROLLER.dragging.target == e) then
@@ -601,15 +785,10 @@ function G.FUNCS.arrow_grad_box(e)
                 palette_color[4] = nil
             end
 
-            sendDebugMessage('adding new palette colors for index: '..idx)
-
             table.insert(palette_color.grad_pos, insert, pos)
             table.insert(palette_color, start_idx + 1, 255)
             table.insert(palette_color, start_idx + 1, 255)
             table.insert(palette_color, start_idx + 1, 255)
-
-
-            sendDebugMessage('num colors: '..#palette_color)
 
             set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, idx, insert)
 
@@ -620,6 +799,32 @@ function G.FUNCS.arrow_grad_box(e)
     end
 end
 
+local function color_sort(array, colors, func)
+    for i = 2, #array do
+		local key = array[i]
+        local start_idx = (i - 1) * 3
+        local color_1, color_2, color_3 = colors[start_idx+1], colors[start_idx+2], colors[start_idx+3]
+		local j = i - 1
+
+		while j > 0 and func(key, array[j]) do
+			array[j + 1] = array[j]
+            local current = (j - 1) * 3
+            local next = j * 3
+            colors[next+1] = colors[current+1]
+            colors[next+2] = colors[current+2]
+            colors[next+3] = colors[current+3]
+			j = j - 1
+		end
+
+		array[j + 1] = key
+        local new_start = j * 3
+        colors[new_start+1] = color_1
+        colors[new_start+2] = color_2
+        colors[new_start+3] = color_3
+	end
+
+    return array
+end
 
 --- Callback for the main visual display of a gradient widget, including interacting to create/remove gradient pips
 function G.FUNCS.arrow_grad_pointers(e)
@@ -628,6 +833,7 @@ function G.FUNCS.arrow_grad_pointers(e)
         local grad_points = e.config.grad_points
         local cursor_x = math.max(0, math.min(1, (G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w))
         local cursor_y = (G.CURSOR.T.y - e.parent.T.y - G.ROOM.T.y)/e.T.h
+
         if cursor_x < -0.25 or cursor_x > 1.25 or cursor_y < -0.25 then
             e:stop_drag()
             e.states.drag.is = false
@@ -645,7 +851,6 @@ function G.FUNCS.arrow_grad_pointers(e)
                 if math.abs(cursor_x - grad_points[i].pos) <= hitbox_width then
                     grad_points.selected = i
                     grad_points[i].selected = G.TIMERS.REAL
-                    ArrowAPI.palette_ui_config.open_palette.grad_idx = i
                     play_sound('cardSlide1', 1 + math.random() * 0.1)
                     break
                 end
@@ -660,7 +865,9 @@ function G.FUNCS.arrow_grad_pointers(e)
         end
 
         if cursor_y > 1.25 then
-            if #grad_points > grad_points.min_points then
+            -- specifically, you can't remove the last grad point if there are are more than 2, so it must be removed
+            -- last to maintain the full length of the gradient
+            if #grad_points > grad_points.min_points and (grad_points.selected ~= #grad_points or #grad_points == 2) then
                 local grad_idx = ArrowAPI.palette_ui_config.open_palette.grad_idx
 
 
@@ -689,6 +896,16 @@ function G.FUNCS.arrow_grad_pointers(e)
                 -- this removes it when adding colors 4-6
                 if #grad_points == 2 then
                     palette_color[4] = 1
+
+                    -- resetting the angle stuff to linear mode as default
+                    local angle_config =  ArrowAPI.palette_ui_config.angle_widget_config
+                    angle_config.mode = 'linear'
+                    angle_config.value = 0
+                    angle_config.point.x = 0
+                    angle_config.point.y = 0
+                    angle_config.linear_toggle = true
+                    angle_config.radial_toggle = false
+                    angle_config.label_1 = localize('k_label_linear')
                 end
 
                 table.remove(grad_points, grad_points.selected)
@@ -711,18 +928,18 @@ function G.FUNCS.arrow_grad_pointers(e)
 
         local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
         local idx = ArrowAPI.palette_ui_config.open_palette.idx
-        sendDebugMessage('adding gradient to color at index: '..idx)
         local palette_color = palette.current_palette[idx]
 
         palette_color.grad_pos[grad_points.selected] = cursor_x
 
-        table.sort(grad_points, function(a, b) return a.pos < b.pos end)
-        table.sort(palette_color.grad_pos, function(a, b) return a < b end)
+        color_sort(grad_points, palette_color, function(a, b) return a.pos < b.pos end)
+        for i = 1, #grad_points do
+            palette_color.grad_pos[i] = grad_points[i].pos
+        end
 
         for i=1, #grad_points do
             if grad_points[i].selected then
                 grad_points.selected = i
-                ArrowAPI.palette_ui_config.open_palette.grad_idx = i
                 break
             end
         end
@@ -730,7 +947,7 @@ function G.FUNCS.arrow_grad_pointers(e)
         local grad_points = e.config.grad_points
         grad_points.selected = nil
         for i=1, #grad_points do
-            if grad_points[i].selected and G.TIMERS.REAL - grad_points[i].selected < 0.2 then
+            if grad_points[i].selected and G.TIMERS.REAL - grad_points[i].selected < 0.28 then
                 -- palette button basically
                 set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, ArrowAPI.palette_ui_config.open_palette.idx, i)
             end
@@ -742,76 +959,192 @@ end
 
 --- Callback for the main visual display of a gradient widget, including interacting to create/remove gradient pips
 function G.FUNCS.arrow_angle_widget(e)
-    --[[
-    e.states.drag.can = true
+    e.states.drag.can = #ArrowAPI.palette_ui_config.grad_widget_config.grad_points > 1
     if (G.CONTROLLER and G.CONTROLLER.dragging.target and G.CONTROLLER.dragging.target == e) then
-        local points = e.config.ref_table.points
+        local config = e.config.ref_table
         local mode = e.config.ref_table.mode
         local cursor_x = math.max(0, math.min(1, (G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w))
         local cursor_y = (G.CURSOR.T.y - e.parent.T.y - G.ROOM.T.y)/e.T.h
+
+        -- just generally outside the box compared to the grad points
         if cursor_x < -0.25 or cursor_x > 1.25 or cursor_y < -0.25 or cursor_y > 1.25 then
             e:stop_drag()
             e.states.drag.is = false
             G.CONTROLLER.dragging.target = nil
-            points.selected = nil
-            for i=1, #points do
-                points[i].selected = nil
-            end
-
+            config.dragging = nil
             return
         end
 
-        if cursor_y <= 1.25 and not points.selected then
-            local hitbox_width = 0.075
-            for i=1, #points - (mode == 'linear' and 1 or 0) do
-                if math.abs(cursor_x - points[i].x) <= hitbox_width and math.abs(cursor_y - points[i].y) <= hitbox_width then
-                    points.selected = i
-                    points[i].selected = G.TIMERS.REAL
+        if not config.dragging then
+            if mode == 'linear' then
+                config.dragging = true
+            else
+                local hitbox_width = 0.16
+                -- for linear mode, we only check the first point, as the second is always static
+                local adjusted_x = config.point.x / 2 + 0.5
+                local adjusted_y = config.point.y / -2 + 0.5
+
+                if math.abs(cursor_x - adjusted_x) <= hitbox_width and math.abs(cursor_y - adjusted_y) <= hitbox_width then
+                    config.dragging = true
                     play_sound('cardSlide1', 1 + math.random() * 0.1)
-                    break
+                else
+                    e:stop_drag()
+                    e.states.drag.is = false
+                    G.CONTROLLER.dragging.target = nil
+                    return
                 end
             end
-
-            if not points.selected then
-                e:stop_drag()
-                e.states.drag.is = false
-                G.CONTROLLER.dragging.target = nil
-                return
-            end
         end
-
-        points[points.selected].x = cursor_x
-        points[points.selected].y = cursor_x
-
-        local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
-        local idx = ArrowAPI.palette_ui_config.open_palette.idx
-        local palette_color = idx == 0 and palette.current_palette.badge_colour or palette.current_palette[idx]
-        local config = palette_color.grad_config
 
         if mode == 'linear' then
-            config.value = math.atan(points[1].y)
-        end
+            local adjusted_x = (cursor_x - 0.5) * 2
+            local adjusted_y = (cursor_y - 0.5) * -2
+            local angle = math.atan2(adjusted_y, adjusted_x)
+            local degree_angle = angle < 0 and 360 + math.deg(angle) or math.deg(angle)
+            ArrowAPI.palette_ui_config.angle_widget_config.value = angle
+            ArrowAPI.palette_ui_config.angle_widget_config.display_val = tostring(math.floor(degree_angle))
+            config.point.x = math.cos(angle)
+            config.point.y = math.sin(angle)
+        else
+            local adjusted_x = (cursor_x - 0.5) * 2
+            local adjusted_y = (cursor_y - 0.5) * -2
+            config.point.x = math.floor(math.min(1, math.max(-1, adjusted_x)) * 100) / 100
+            config.point.y = math.floor(math.min(1, math.max(-1, adjusted_y)) * 100) / 100
 
-        palette_color.grad_pos[points.selected] = cursor_x
-
-        table.sort(points, function(a, b) return a.pos < b.pos end)
-        table.sort(palette_color.grad_pos, function(a, b) return a < b end)
-
-        for i=1, #points do
-            if points[i].selected then
-                points.selected = i
-                ArrowAPI.palette_ui_config.open_palette.grad_idx = i
-                break
-            end
+            -- don't set the value here because it's handled separately
         end
-    elseif e.config.points.selected then
-        local points = e.config.points
-        points.selected = nil
-        for i=1, #points do
-            points[i].selected = nil
-        end
+    else
+        e.config.ref_table.dragging = nil
     end
-    --]]
+end
+
+
+G.FUNCS.arrow_can_edit_gradients = function(e)
+    local points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
+    if #points > 1 then
+        if not e.config.grad_active then
+            e.config.grad_active = true
+
+            -- enable first toggle
+            e.children[1].children[1].children[1].children[1].config.colour = G.C.UI.TEXT_LIGHT
+            local toggle1 = e.children[1].children[1].children[2].children[1].children[1]
+            local toggle1_active = toggle1.config.toggle_active or false
+            local toggle1_args = toggle1.config.ref_table
+            toggle1.config.outline_colour = G.C.WHITE
+            toggle1.config.button = 'toggle_button'
+            toggle1.config.hover = true
+            toggle1.config.colour = toggle1_active and G.C.RED or G.C.BLACK
+            toggle1_args.active_colour = G.C.RED
+            toggle1_args.inactive_colour = G.C.BLACK
+            toggle1.children[1].states.visible = toggle1_active
+            toggle1.children[1].config.object.states.visible = toggle1_active
+
+            -- enable second toggle
+            e.children[1].children[2].children[1].children[1].config.colour = G.C.UI.TEXT_LIGHT
+            local toggle2 = e.children[1].children[2].children[2].children[1].children[1]
+            local toggle2_active = toggle2.config.toggle_active or false
+            local toggle2_args = toggle2.config.ref_table
+            toggle2.config.outline_colour = G.C.WHITE
+            toggle2.config.button = 'toggle_button'
+            toggle2.config.hover = 'true'
+            toggle2.config.colour = toggle2_active and G.C.RED or G.C.BLACK
+            toggle2_args.active_colour = G.C.RED
+            toggle2_args.inactive_colour = G.C.BLACK
+            toggle2.children[1].states.visible = toggle2_active
+            toggle2.children[1].config.object.states.visible = toggle2_active
+
+            --[[
+            local value_node = e.children[2].children[1]
+            value_node.config.colour = G.C.UI.TEXT_LIGHT
+            value_node.children[1].children[1].config.colour = G.C.UI.TEXT_INACTIVE
+            value_node.children[2].children[1].config.colour = G.C.UI.TEXT_DARK
+            --]]
+            return
+        end
+
+        --[[
+        local center_node = e.children[2].children[3]
+        if ArrowAPI.palette_ui_config.angle_widget_config.mode == 'radial' and not center_node.config.radial_active then
+            center_node.config.radial_active = true
+            center_node.config.colour = G.C.UI.TEXT_LIGHT
+
+            center_node.children[1].children[1].config.colour = G.C.UI.TEXT_INACTIVE
+            local x_node = center_node.children[2].children[1]
+            x_node.config.colour = G.C.UI.TEXT_DARK
+            x_node.config.ref_table = ArrowAPI.palette_ui_config.angle_widget_config.point
+            x_node.config.ref_value = 'x'
+            x_node.config.text = nil
+
+            center_node.children[2].children[2].config.colour = G.C.UI.TEXT_DARK
+
+            local y_node = center_node.children[2].children[3]
+            y_node.config.colour = G.C.UI.TEXT_DARK
+            y_node.config.ref_table = ArrowAPI.palette_ui_config.angle_widget_config.point
+            y_node.config.ref_value = 'y'
+            y_node.config.text = nil
+        elseif ArrowAPI.palette_ui_config.angle_widget_config.mode == 'linear' and center_node.config.radial_active then
+            center_node.config.radial_active = nil
+            center_node.config.colour = G.C.UI.TEXT_INACTIVE
+            center_node.children[1].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
+
+            local x_node = center_node.children[2].children[1]
+            x_node.config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+            x_node.config.ref_table = nil
+            x_node.config.ref_value = nil
+            x_node.config.text = '0'
+
+            center_node.children[2].children[2].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+
+            local y_node = center_node.children[2].children[3]
+            y_node.config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+            y_node.config.ref_table = nil
+            y_node.config.ref_value = nil
+            y_node.config.text = '0'
+        end
+        --]]
+    elseif #points <= 1 and e.config.grad_active then
+        e.config.grad_active = nil
+
+        -- disable first toggle
+        e.children[1].children[1].children[1].children[1].config.colour = G.C.UI.TEXT_INACTIVE
+        local toggle1 = e.children[1].children[1].children[2].children[1].children[1]
+        local toggle1_args = toggle1.config.ref_table
+        toggle1.config.outline_colour = lighten(G.C.UI.TEXT_INACTIVE, 0.3)
+        toggle1.config.button = nil
+        toggle1.config.hover = nil
+        toggle1.config.colour = G.C.UI.TEXT_INACTIVE
+        toggle1_args.active_colour = G.C.UI.TEXT_INACTIVE
+        toggle1_args.inactive_colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
+        toggle1.children[1].states.visible = false
+        toggle1.children[1].config.object.states.visible = false
+
+        -- dissable second toggle
+        e.children[1].children[2].children[1].children[1].config.colour = G.C.UI.TEXT_INACTIVE
+        local toggle2 = e.children[1].children[2].children[2].children[1].children[1]
+        local toggle2_args = toggle2.config.ref_table
+        toggle2.config.outline_colour = lighten(G.C.UI.TEXT_INACTIVE, 0.3)
+        toggle2.config.button = nil
+        toggle2.config.hover = nil
+        toggle2.config.colour = G.C.UI.TEXT_INACTIVE
+        toggle2_args.active_colour = G.C.UI.TEXT_INACTIVE
+        toggle2_args.inactive_colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
+        toggle2.children[1].states.visible = false
+        toggle2.children[1].config.object.states.visible = false
+
+        --[[
+        local value_node = e.children[2].children[1]
+        value_node.config.colour = G.C.UI.TEXT_INACTIVE
+        value_node.children[1].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
+        value_node.children[2].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+
+        local center_node = e.children[2].children[3]
+        center_node.config.colour = G.C.UI.TEXT_INACTIVE
+        center_node.children[1].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
+        center_node.children[2].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+        center_node.children[2].children[2].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+        center_node.children[2].children[3].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+        --]]
+    end
 end
 
 function G.FUNCS.arrow_palette_button(e)
@@ -820,20 +1153,46 @@ function G.FUNCS.arrow_palette_button(e)
 end
 
 function G.FUNCS.arrow_palette_reset(e)
-    if ArrowAPI.palette_ui_config.open_palette.idx ~= e.config.palette_idx then
-        return
-    end
     local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
     local idx = e.config.palette_idx
 
     -- reset the default color
     local default_color = palette.default_palette[idx]
     local palette_color = palette.current_palette[idx]
-    palette_color[1] = default_color[1]
-    palette_color[2] = default_color[2]
-    palette_color[3] = default_color[3]
 
-    set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, idx, 1)
+    for i = 1, math.max(#default_color, #palette_color) do
+        palette_color[i] = default_color[i] or nil
+    end
+
+    for i = 1, math.max(#default_color.grad_pos, #palette_color.grad_pos) do
+        palette_color.grad_pos[i] = default_color.grad_pos[i] or nil
+    end
+
+    local angle_config = ArrowAPI.palette_ui_config.angle_widget_config
+    palette_color.grad_config.mode = default_color.grad_config.mode
+    palette_color.grad_config.val = default_color.grad_config.val
+    palette_color.grad_config.pos[1] = default_color.grad_config.pos[1]
+    palette_color.grad_config.pos[2] = default_color.grad_config.pos[1]
+
+    angle_config.mode = default_color.grad_config.mode
+    angle_config.value = default_color.grad_config.val
+
+    if angle_config.mode == 'linear' then
+        local angle = default_color.grad_config.val
+        angle_config.display_val = tostring(math.floor(angle < 0 and 360 + math.deg(angle) or math.deg(angle)))
+        angle_config.point.x = math.cos(angle)
+        angle_config.point.y = math.sin(angle)
+    else
+        -- TODO // this loses information from the save, so the first point wont accurately reflect the radius
+        angle_config.display_val = tostring(angle_config.value)
+        angle_config.point.x = palette_color.grad_config.pos[1]
+        angle_config.point.y = palette_color.grad_config.pos[2]
+    end
+
+    --- you can reset colors that aren't focused, just don't change the UI
+    if ArrowAPI.palette_ui_config.open_palette.idx == e.config.palette_idx then
+        set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, idx, 1)
+    end
 end
 
 function G.FUNCS.arrow_update_selected_colour(e)
@@ -860,17 +1219,32 @@ function G.FUNCS.arrow_update_selected_colour(e)
     update_hex_input(current_color)
 
     ArrowAPI.palette_changed_flag = nil
-    G.OVERLAY_MENU:recalculate()
+    local tab_contents = G.OVERLAY_MENU:get_UIE_by_ID('tab_contents')
+    tab_contents.UIBox:recalculate()
 end
 
 function G.FUNCS.arrow_apply_palette(e)
+    local palette_color = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette[ArrowAPI.palette_ui_config.open_palette.idx]
+
     local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
     local grad_pos = {}
     for k = 1, #grad_points do
         grad_pos[k] = grad_points[k].pos
     end
+    palette_color.grad_pos = grad_pos
 
-    ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette[ArrowAPI.palette_ui_config.open_palette.idx].grad_pos = grad_pos
+    local angle_config = ArrowAPI.palette_ui_config.angle_widget_config
+    palette_color.grad_config.mode = angle_config.mode
+    palette_color.grad_config.val = angle_config.value
+
+    if angle_config.mode == 'linear' then
+        palette_color.grad_config.pos[1] = 0
+        palette_color.grad_config.pos[2] = 0
+    else
+        palette_color.grad_config.pos[1] = angle_config.point.x
+        palette_color.grad_config.pos[2] = angle_config.point.y
+    end
+
     ArrowAPI.colors.use_custom_palette(ArrowAPI.palette_ui_config.open_palette.set)
 end
 

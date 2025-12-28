@@ -92,6 +92,11 @@ ArrowAPI.loc.add_loc_text_func(ArrowAPI, function()
     SMODS.process_loc_text(G.localization.misc.dictionary, 'b_apply_palette', {['en-us'] = 'Apply'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'b_save_palette', {['en-us'] = 'Save'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'b_delete_palette', {['en-us'] = 'Delete'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'k_gradient_linear', {['en-us'] = 'Linear'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'k_gradient_radial', {['en-us'] = 'Radial'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'k_label_linear', {['en-us'] = 'Angle'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'k_label_radial', {['en-us'] = 'Radius'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'k_label_center', {['en-us'] = 'Center'})
 
     --- tonsmth loc
     SMODS.process_loc_text(G.localization.misc.dictionary, 'k_soundpack', {['en-us'] = 'Sound Pack'})

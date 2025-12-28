@@ -1,5 +1,4 @@
 SMODS.Atlas({key = 'arrow_mystery', atlas_table = "ANIMATION_ATLAS", custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = "blinds/mystery.png", px = 34, py = 34, frames = 21, prefix_config = false })
-SMODS.Atlas({key = 'arrow_slider_point', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'slider_point.png', px = 18, py = 18, prefix_config = false})
 
 ---------------------------
 --------------------------- Maggie Speech Bubble Support
@@ -1019,41 +1018,185 @@ end
 --------------------------- Palette editor
 ---------------------------
 
-function arrow_create_rgb_slider(args)
-    args.w = args.w or 1
-    args.h = args.h or 0.5
-    args.text_scale = args.text_scale or 0.3
-    args.min = args.min
-    args.max = args.max
-    args.text = string.format("%.0f", args.ref_table[args.ref_value])
+function arrow_text_input(args)
+    args = args or {}
+    args.colour = copy_table(args.colour) or copy_table(G.C.BLUE)
+    args.hooked_colour = copy_table(args.hooked_colour) or darken(copy_table(G.C.BLUE), 0.3)
+    args.text_colour = copy_table(args.text_colour) or copy_table(G.C.UI.TEXT_LIGHT)
+    args.w = args.w or 2.5
+    args.h = args.h or 0.7
+    args.text_scale = args.text_scale or 0.4
+    args.max_length = args.max_length or 16
+    args.all_caps = args.all_caps or false
+    args.id = args.id or "text_input"
+    args.manual_colour = true
 
-    return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
-        {n=G.UIT.C, config={align = "bm", minh = args.h * 1.3}, nodes={
-            {n=G.UIT.R, config={id = args.id, align = "cl", r = 0.1, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_rgb_slider', insta_func = 'arrow_rgb_slider_insta', refresh_movement = true}, nodes={
-                {n=G.UIT.R, config={id = 'arrow_rgb_slider', minw = args.w, minh = args.h, r = 0.1, colour = G.C.UI.TEXT_LIGHT, ref_table = args, refresh_movement = true}, nodes = {
-                    {n=G.UIT.B, config={slider_point = true, w = args.w, h = args.h, refresh_movement = true}},
+    if args.corpus_type == 'numeric_base10' then
+        args.corpus = "1234567890"
+    elseif args.corpus_type == 'numeric_base10_dec' then
+        args.corpus = "1234567890."
+    elseif args.corpus_type == 'numeric_base16' then
+        args.corpus = "1234567890ABCDEFabcdef"
+    else
+        args.corpus_type = 'alphanumeric'
+        args.corpus = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    end
+
+    local text = {
+        ref_table = args.ref_table,
+        ref_value = args.ref_value,
+        letters = {},
+        current_position = string.len(args.ref_table[args.ref_value])
+    }
+    local ui_letters = {
+        {n=G.UIT.B, config={r = 0.03, w=0, h=args.h*0.7, colour = lighten(copy_table(G.C.BLUE), 0.4), id = args.id..'_position', func = 'flash'}},
+        {n=G.UIT.T, config={text = '', colour = G.C.CLEAR, scale = args.text_scale, id = 'arrow_dummy_prompt'}}
+    }
+    for i = args.max_length, 1, -1 do
+      text.letters[i] = (args.ref_table[args.ref_value] and (string.sub(args.ref_table[args.ref_value], i, i) or '')) or ''
+      table.insert(ui_letters, 1, {n=G.UIT.T, config={ref_table = text.letters, ref_value = i, scale = args.text_scale, colour = args.text_colour, id = args.id..'_letter_'..i}})
+    end
+    args.text = text
+
+    return {
+        n = G.UIT.C,
+        config = {
+            id = args.id,
+            align = "cm",
+            r = 0.1,
+            res = 0.45,
+            hover = true,
+            colour = args.colour,
+            minw = args.w,
+            minh = args.h,
+            button = 'arrow_select_text_input',
+            func = 'arrow_text_input',
+            emboss = 0.05,
+            ref_table = args
+        },
+        nodes = ui_letters
+    }
+end
+
+function replace_text_input(ref_table, ref_value, new_str, hook)
+    local hook = hook or G.CONTROLLER.text_input_hook
+    if hook then G.CONTROLLER.text_input_id = hook.config.id end
+    local text = hook.config.ref_table.text
+    for i=1, hook.config.ref_table.max_length do
+        text.letters[i] = i <= #new_str and new_str:sub(i, i) or ''
+    end
+
+    local position_child = nil
+    for i = 1, #hook.children do
+        if (hook.children[i].config or {}).id == G.CONTROLLER.text_input_id..'_position'then
+            position_child = i
+            break
+        end
+    end
+
+    if position_child ~= #new_str + 1 then
+        local position = table.remove(hook.children, position_child)
+        table.insert(hook.children, #new_str+1, position)
+    end
+
+    text.current_position = #new_str
+
+    ref_table[ref_value] = new_str
+end
+
+function release_text_input()
+    if not G.CONTROLLER.text_input_hook then return end
+    local hook = G.CONTROLLER.text_input_hook
+    local hook_config = hook.config.ref_table
+
+    if hook.config.ref_table.callback then
+        local callback_args = hook.config.ref_table.callback_args or {}
+        hook.config.ref_table.callback(unpack(callback_args))
+    end
+
+    if not hook.config.ref_table.manual_colour then
+        hook.parent.parent.config.colour = hook_config.colour
+        local temp_colour = copy_table(hook_config.orig_colour)
+        hook_config.colour[1] = G.C.WHITE[1]
+        hook_config.colour[2] = G.C.WHITE[2]
+        hook_config.colour[3] = G.C.WHITE[3]
+        ease_colour(hook_config.colour, temp_colour)
+    end
+    G.CONTROLLER.text_input_hook = nil
+end
+
+function arrow_create_rgb_slider(args)
+    args.w = args.w or 1.2
+    args.h = args.h or 0.8
+    args.text_scale = args.text_scale or 0.3
+    args.min = args.min or 0
+    args.max = args.max or 255
+    local startval = args.w * (args.ref_table[args.ref_value] - args.min)/(args.max - args.min)
+
+    return {n=G.UIT.C, config={align = "cm", minw = args.w, focus_args = {type = 'slider'}}, nodes={
+        {n=G.UIT.C, config={align = "cm", minh = args.h}, nodes={
+            {n=G.UIT.R, config={id = args.id, align = "cl", r = 0.1, res = 0.45, colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, padding = 0.03, collideable = true, func = 'arrow_rgb_slider', insta_func = 'arrow_rgb_slider_insta'}, nodes={
+                {n=G.UIT.R, config={id = 'arrow_rgb_slider', minw = args.w * 0.7, minh = args.h, r = 0.1, res = 0.45, ref_table = args}, nodes = {
+                    {n=G.UIT.B, config={slider_point = true, w = startval * 0.7, h = args.h}},
                 }},
             }}
         }},
-        {n=G.UIT.C, config={align = "bm", minh = args.h * 1.3}, nodes={
-            {n=G.UIT.R, config = {align = "cm", r = 0.05, minw = 0.6, minh = args.h, colour = G.C.UI.TEXT_LIGHT, emboss = 0.05}, nodes = {
-                {n=G.UIT.T, config={ref_table = args, ref_value = 'text', scale = args.text_scale, colour = G.C.UI.TEXT_DARK, decimal_places = 0}}
-            }}
-        }},
+        {n=G.UIT.B, config={align = 'cm', w = 0.1, h = 0.1}},
+        arrow_text_input({
+            id = args.id and args.id..'_text_input' or 'arrow_rgb_text_input',
+            max_length = 3,
+            min_length = 3,
+            text_scale = args.text_scale,
+            h = args.h*1.2,
+            w = args.w * 0.3,
+            corpus_type = 'numeric_base10',
+            colour = G.C.UI.BACKGROUND_DARK,
+            hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
+            prompt_text = '0',
+            ref_table = args.ref_table,
+            ref_value = args.ref_value,
+            callback = function(ref_table, ref_value, min, max, slider_id)
+                local new_val = math.max(min, math.min(max, ref_table[ref_value]))
+                ref_table[ref_value] = new_val
+                G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID(slider_id), true)
+
+                replace_text_input(ref_table, ref_value, string.format("%.3u", tostring(new_val)))
+                local args = G.CONTROLLER.text_input_hook.config.ref_table
+                sendDebugMessage('position on select: '..tostring(args.text.current_position))
+                G.CONTROLLER.text_input_hook.UIBox:recalculate()
+            end,
+            callback_args = {args.ref_table, args.ref_value, args.min, args.max, args.id}
+        }),
     }}
 end
 
 function arrow_create_grad_widget(args)
     args.w = args.w or 1
-    args.h = args.h or 0.5
+    args.h = args.h or 0.8
+    args.id = args.id or 'arrow_grad_widget'
+    local subh = args.h > 0.35 and 0.35 or args.h/2
+    local mainh = args.h - subh
     args.grad_points = args.grad_points or {selected = nil, min_points = 1, max_points = 8, {pos = 0, color = {255, 255, 255}}}
 
-    return {n=G.UIT.C, config={align = "cm", minw = args.w, padding = 0.03, r = 0.1, res = 0.45, colour = G.C.CLEAR, focus_args = {type = 'slider'}}, nodes={
-        {n=G.UIT.R, config = {id = args.id and args.id..'_pointers', minw = args.w, minh = args.h, grad_points = args.grad_points, collideable = true, hover = true, colour = G.C.CLEAR, func = 'arrow_grad_pointers', refresh_movement = true}, nodes={
+    return {n=(args.row and G.UIT.R or G.UIT.C), config={align = "cm", focus_args = {type = 'slider'}}, nodes={
+        {n=G.UIT.R, config = {id = args.id and args.id..'_pointers', minw = args.w, minh = subh, grad_points = args.grad_points, collideable = true, func = 'arrow_grad_pointers'}, nodes={
         }},
-        {n=G.UIT.R, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.1, res = 0.45, padding = 0.025}, nodes={
-            {n=G.UIT.R, config={id = args.id and args.id..'_box', align = "cl", minw = args.w, r = 0.1, ref_table = args, minh = args.h, collideable = true, hover = true, colour = G.C.BLACK, emboss = 0.05, func = 'arrow_grad_box', refresh_movement = true}, nodes={
-            }}
+        {n=G.UIT.R, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.1, res = 0.45, minw = args.w, minh = mainh, padding = 0.025}, nodes={
+            {
+                n=G.UIT.R,
+                config={
+                    id = args.id and args.id..'_box',
+                    align = "cl",
+                    minw = args.w-0.05,
+                    minh=mainh-0.05,
+                    r = 0.1,
+                    ref_table = args,
+                    grad_colour = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette[1],
+                    collideable = true,
+                    func = 'arrow_grad_box'
+                },
+                nodes={}
+            }
         }},
     }}
 end
@@ -1062,13 +1205,14 @@ function arrow_create_angle_widget(args)
     args.w = args.w or 1
     args.h = args.h or 1
     args.mode = args.mode or 'linear' -- alt is 'radial'
+    args.selected = nil
 
     -- in linear mode, the first point is always along the outside of the node, while the second point is static in the center
     -- in radial mode, both points can be dragged. The second point is the center and the first point determines the radius relative to the first
-    args.points = args.points or {selected = nil, {x = 1, y = 0.5}, {x = 0.5, y = 0.5}}
+    args.point = {x = 1, y = 0}
 
-    return {n=G.UIT.C, config={align = "cm", minw = args.w, minh = args.w, r = 1, colour = G.C.BLACK, padding = 0.025, focus_args = {type = 'slider'}}, nodes={
-            {n=G.UIT.R, config={id = 'arrow_angle_widget', align = "cm", minw = args.w, minh = args.h, r = 1, ref_table = args, collideable = true, hover = true, colour = G.C.UI.TEXT_LIGHT, func = 'arrow_angle_widget', refresh_movement = true}, nodes={
+    return {n=G.UIT.C, config={align = "cm", minw = args.w, minh = args.w, padding = 0.05, focus_args = {type = 'slider'}}, nodes={
+            {n=G.UIT.R, config={id = 'arrow_angle_widget', align = "cm", minw = args.w-0.1, minh = args.h-0.1, ref_table = args, collideable = true, func = 'arrow_angle_widget', refresh_movement = true}, nodes={
         }},
     }}
 end
@@ -1120,7 +1264,6 @@ function G.UIDEF.arrow_palette_tab(tab)
         ArrowAPI.palette_ui_config.open_palette = {set = tab, idx = 1, grad_idx = 1}
     end
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
-    sendDebugMessage('start idx: '..idx)
 
     local current_palette = palette.current_palette
     local button_color = current_palette[idx]
@@ -1134,13 +1277,14 @@ function G.UIDEF.arrow_palette_tab(tab)
     local cards_per_page = 0
     local items = {}
 
+    local options = {}
     if tab ~= 'Background' then
-        local w_mod = 1
-        local h_mod = 0.95
+        local w_mod = 0.85
+        local h_mod = 0.85
         items = palette.items
 
         G.arrow_palette_collection = {}
-        local rows = {6, 6}
+        local rows = {5, 5}
         local row_totals = {}
         for i = 1, #rows do
             if cards_per_page >= #items then
@@ -1149,9 +1293,9 @@ function G.UIDEF.arrow_palette_tab(tab)
                 row_totals[i] = cards_per_page
                 cards_per_page = cards_per_page + rows[i]
                 G.arrow_palette_collection[i] = CardArea(
-                    G.ROOM.T.x + 0.2*G.ROOM.T.w/2,
-                    G.ROOM.T.h,
-                    (w_mod*rows[i]+0.25)*G.CARD_W,
+                    0,
+                    0,
+                    (w_mod*rows[i]+0.15)*G.CARD_W,
                     h_mod*G.CARD_H,
                     {card_limit = rows[i], type = 'title', highlight_limit = 0, collection = true}
                 )
@@ -1162,7 +1306,6 @@ function G.UIDEF.arrow_palette_tab(tab)
             end
         end
 
-        local options = {}
         for i = 1, math.ceil(#items/cards_per_page) do
             table.insert(options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#items/cards_per_page)))
         end
@@ -1183,8 +1326,8 @@ function G.UIDEF.arrow_palette_tab(tab)
                     local disp_card = Card(
                         G.arrow_palette_collection[j].T.x + G.arrow_palette_collection[j].T.w/2,
                         G.arrow_palette_collection[j].T.y,
-                        G.CARD_W,
-                        G.CARD_H,
+                        G.CARD_W * 0.85,
+                        G.CARD_H * 0.85,
                         G.P_CARDS.empty,
                         (G.P_CENTERS[item.table == 'SEALS' and 'c_base' or item.key])
                     )
@@ -1202,14 +1345,14 @@ function G.UIDEF.arrow_palette_tab(tab)
 
 
     ----------------- palette buttons
-    local width = 4
+    local width = 6
     local color_nodes = {}
     local row_count = 8
     local row_idx = 0
     local count = 0
 
-    local button_size = width / row_count
     local default_palette = palette.default_palette
+    local button_size = width / row_count * (0.95 - #default_palette * 0.01)
 
     for i=1, #default_palette do
         local default_color = default_palette[i]
@@ -1217,7 +1360,7 @@ function G.UIDEF.arrow_palette_tab(tab)
 
         if count % row_count == 0 then
             row_idx = row_idx + 1
-            color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm", padding = 0.02}, nodes={}}
+            color_nodes[row_idx] = {n=G.UIT.R, config={align = "cm", padding = 0.05}, nodes={}}
         end
 
         local default_id = 'arrow_palette_default_'..i
@@ -1227,10 +1370,10 @@ function G.UIDEF.arrow_palette_tab(tab)
                 id = 'arrow_palette_wrapper',
                 align = "cm",
                 res = 0.3,
-                colour = G.C.UI.TEXT_LIGHT,
+                colour = i == ArrowAPI.palette_ui_config.open_palette.idx and G.C.FILTER or G.C.UI.TEXT_LIGHT,
                 padding = 0.025,
                 r = 0.02,
-                emboss = 0.025
+                shadow = true,
             },
             nodes={
                 {n = G.UIT.R,
@@ -1240,13 +1383,14 @@ function G.UIDEF.arrow_palette_tab(tab)
                         button = 'arrow_palette_reset',
                         align = "cm",
                         minw = button_size,
-                        minh = button_size*0.5,
+                        minh = button_size*0.35,
                         hover = true,
                         r = 0.05,
                         button_dist = 0.05,
                         res = 0.3,
-                        colour = default_color,
-                        emboss = 0.025
+                        grad_colour = default_color,
+                        emboss = 0.025,
+                        tooltip = {text = {"Reset Color"}}
                     },
                     nodes = {}
                 },
@@ -1257,12 +1401,12 @@ function G.UIDEF.arrow_palette_tab(tab)
                         button = 'arrow_palette_button',
                         align = "cm",
                         minw = button_size,
-                        minh = button_size * 0.75,
+                        minh = button_size * 0.65,
                         hover = true,
                         r = 0.01,
                         button_dist = 0.05,
                         res = 0.3,
-                        colour = custom_color,
+                        grad_colour = custom_color,
                         emboss = 0.025
 
                     },
@@ -1283,7 +1427,7 @@ function G.UIDEF.arrow_palette_tab(tab)
         id = 'arrow_hex_input',
         max_length = 6,
         all_caps = true,
-        w = width * 0.6,
+        w = 1.4,
         colour = G.C.UI.BACKGROUND_DARK,
         hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
         ref_table = ArrowAPI.palette_ui_config,
@@ -1294,11 +1438,12 @@ function G.UIDEF.arrow_palette_tab(tab)
             ArrowAPI.palette_ui_config.rgb[1] = math.min(255, math.max(0, tonumber(hex:sub(1, 2), 16) or 0))
             ArrowAPI.palette_ui_config.rgb[2] = math.min(255, math.max(0, tonumber(hex:sub(3, 4), 16) or 0))
             ArrowAPI.palette_ui_config.rgb[3] = math.min(255, math.max(0, tonumber(hex:sub(5, 6), 16) or 0))
-            ArrowAPI.palette_changed_flag = true
-            TRANSPOSE_TEXT_INPUT(0)
+
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('b_slider'), true)
+
+            ArrowAPI.palette_changed_flag = true
         end
     }
 
@@ -1327,6 +1472,7 @@ function G.UIDEF.arrow_palette_tab(tab)
 
     ArrowAPI.palette_ui_config.preset_cycle_config = {
         options = preset_options,
+        h = 0.6,
         w = 6.5,
         cycle_shoulders = true,
         current_option = ArrowAPI.config.saved_palettes[tab].saved_index,
@@ -1349,15 +1495,21 @@ function G.UIDEF.arrow_palette_tab(tab)
 
     ArrowAPI.palette_ui_config.grad_widget_config = {
         id = 'arrow_grad_widget',
-        w = width*0.8,
-        h = 0.5,
+        w = 3,
+        h = 0.75,
         grad_points = grad_points
     }
 
     ArrowAPI.palette_ui_config.angle_widget_config = {
         w = 1,
         h = 1,
-        points = {selected = nil, {x = 0.5, y = 0.5}, {x = 0.5, y = 0.5}}
+        value = 0,
+        display_val = '0',
+        point = {x = 1, y = 0},
+        mode = 'linear',
+        linear_toggle = true,
+        radial_toggle = false,
+        label_1 = localize('k_label_linear'),
     }
 
     ----------------- put it all together
@@ -1366,97 +1518,173 @@ function G.UIDEF.arrow_palette_tab(tab)
             {n=G.UIT.C, config={align = "cm"}, nodes={
                 {n=G.UIT.R, config={align = "cm", minw = 7}, nodes={
                     {n=G.UIT.R, config={align = "cm"}, nodes={
-                        {n=G.UIT.C, config={align = "cm"}, nodes={
-                            preset_cycle
-                        }},
-                        tab ~= 'Background' and {n=G.UIT.C, config={align = "cl"}, nodes={
-                            {n=G.UIT.C, config={align = "cl", minw = 2.8}, nodes={
-                                create_text_input(ArrowAPI.palette_ui_config.name_input_config)
-                            }},
-                        }} or nil,
-                        tab ~= 'Background' and {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
-                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, button = 'arrow_save_palette', func = 'arrow_can_save_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
-                                {n=G.UIT.T, config={align = 'cm', text = localize('b_save_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
-                            }},
-                        }} or nil,
-                        tab ~= 'Background' and {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
-                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, button = 'arrow_delete_palette', func = 'arrow_can_delete_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
-                                {n=G.UIT.T, config={align = 'cm', text = localize('b_delete_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
-                            }},
-                        }} or nil,
+                        preset_cycle
                     }},
-                    tab == 'Background' and {n=G.UIT.R, config={align = "cm"}, nodes={
-                        {n=G.UIT.C, config={align = "cm"}, nodes={
-                            {n=G.UIT.C, config={align = "cl", minw = 2.8}, nodes={
+                    {n=G.UIT.R, config={align = "tm", minh = 0.8}, nodes={
+                        {n=G.UIT.C, config={align = "tm"}, nodes={
+                            {n=G.UIT.C, config={align = "tm", minw = 2.8}, nodes={
                                 create_text_input(ArrowAPI.palette_ui_config.name_input_config)
                             }},
                         }},
-                        {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
-                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, button = 'arrow_save_palette', func = 'arrow_can_save_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
-                                {n=G.UIT.T, config={align = 'cm', text = localize('b_save_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                        {n=G.UIT.C, config={align = "tm", minw = 1.575}, nodes={
+                            {n=G.UIT.C, config={align = "tm", minw = 1.4, padding = 0.1, r = 0.1, hover = true, colour = G.C.BLUE, button = 'arrow_save_palette', func = 'arrow_can_save_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                                {n=G.UIT.T, config={align = 'tm', text = localize('b_save_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
                             }},
                         }},
-                        {n=G.UIT.C, config={align = "cm", minw = 1.575}, nodes={
-                            {n=G.UIT.C, config={align = "cm", minw = 1.4, h = 1, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, button = 'arrow_delete_palette', func = 'arrow_can_delete_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
-                                {n=G.UIT.T, config={align = 'cm', text = localize('b_delete_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                        {n=G.UIT.C, config={align = "tm", minw = 1.575}, nodes={
+                            {n=G.UIT.C, config={align = "tm", minw = 1.4, padding = 0.1, r = 0.1, hover = true, colour = G.C.RED, button = 'arrow_delete_palette', func = 'arrow_can_delete_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                                {n=G.UIT.T, config={align = 'tm', text = localize('b_delete_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
                             }},
                         }},
                     }} or nil,
                     tab ~= 'Background' and {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables} or nil,
                     tab ~= 'Background' and cards_per_page < #items and {n=G.UIT.R, config={align = "cm"}, nodes={
-                        create_option_cycle({options = options, w = 4.5, cycle_shoulders = true, opt_callback = 'arrow_palette_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
-                    }} or nil
+                        create_option_cycle({options = options, w = 6.5, h = 0.6, cycle_shoulders = true, opt_callback = 'arrow_palette_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+                    }} or nil,
                 }}
             }},
             {n=G.UIT.C, config={align = "cm", minw = 0.4}, nodes = {}},
             {n=G.UIT.C, config={align = "cm"}, nodes = {
-                {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, emboss = 0.04, r = 0.1}, nodes = {
-                    {n = G.UIT.C, config={align = "cm", minw = width * 0.9, padding = 0.1}, nodes = color_nodes},
+                {n = G.UIT.R, config = {align = "cm", colour = G.C.BLACK, emboss = 0.04, r = 0.1, minh = 4}, nodes = {
+                    {n = G.UIT.R, config={align = "cm", minw = width * 0.9, padding = 0.1}, nodes = color_nodes},
                 }},
                 {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                    {n = G.UIT.C, config = {align = "cm"}, nodes = {
-                        {n = G.UIT.R, config = {align = "cm", minh = 0.1}, nodes = {}},
-                        {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                            --[[{n = G.UIT.C, config={align = "cl", minw = width * 0.7}, nodes ={
-                                create_text_input(ArrowAPI.palette_ui_config.hex_input_config),
-                            }},--]]
-                            {n = G.UIT.C, config = {align = "cm"}, nodes = {
-                                arrow_create_grad_widget(ArrowAPI.palette_ui_config.grad_widget_config),
+                    {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                        {n = G.UIT.C, config = {align = "cm"}, nodes = {
+                            arrow_create_grad_widget(ArrowAPI.palette_ui_config.grad_widget_config),
+                        }},
+                        {n = G.UIT.B, config = {align = "cm", w = 0.15, h = 0.1}},
+                        {n = G.UIT.C, config = {align = "cm"}, nodes = {
+                            arrow_create_angle_widget(ArrowAPI.palette_ui_config.angle_widget_config)
+                        }},
+                        {n = G.UIT.C, config = {align = "cm", grad_active = true, func = 'arrow_can_edit_gradients'}, nodes = {
+                            {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                create_toggle({
+                                    col = true,
+                                    label = localize('k_gradient_linear'),
+                                    label_scale = 0.2,
+                                    w = 0.4,
+                                    h = 0.4,
+                                    scale = 0.55,
+                                    ref_table = ArrowAPI.palette_ui_config.angle_widget_config,
+                                    ref_value = 'linear_toggle',
+                                    callback = function()
+                                        local config = ArrowAPI.palette_ui_config.angle_widget_config
+                                        config.mode = 'linear'
+                                        config.value = 0
+                                        config.display_val = '0'
+                                        config.point.x = 0
+                                        config.point.y = 0
+                                        config.linear_toggle = true
+                                        config.radial_toggle = false
+                                        config.label_1 = localize('k_label_linear')
+                                        return true
+                                    end
+                                }),
+                                create_toggle({
+                                    col = true,
+                                    label = localize('k_gradient_radial'),
+                                    label_scale = 0.2,
+                                    w = 0.4,
+                                    h = 0.4,
+                                    scale = 0.55,
+                                    ref_table = ArrowAPI.palette_ui_config.angle_widget_config,
+                                    ref_value = 'radial_toggle',
+                                    callback = function()
+                                        local config = ArrowAPI.palette_ui_config.angle_widget_config
+                                        config.mode = 'radial'
+                                        config.value = 1
+                                        config.display_val = '1'
+                                        config.point.x = 0
+                                        config.point.y = 0
+                                        config.linear_toggle = false
+                                        config.radial_toggle = true
+                                        config.label_1 = localize('k_label_radial')
+                                        return true
+                                    end
+                                }),
                             }},
-                            {n = G.UIT.B, config = {w = 0.1, h = 0.1}},
-                            {n = G.UIT.C, config={align = "bl"}, nodes = {
-                                {n = G.UIT.C, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.4, res = 0.3, padding = 0.025}, nodes = {
+                            {n = G.UIT.R, config = {align = "cm", padding = 0.05}, nodes = {
+                                {n = G.UIT.C, config = {align = "cm", colour = G.C.UI.TEXT_LIGHT, padding = 0.05, r = 0.1, emboss = 0.05}, nodes = {
+                                    {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                        {n = G.UIT.T, config = {align = "cm", ref_table = ArrowAPI.palette_ui_config.angle_widget_config, ref_value = 'label_1', colour = G.C.UI.TEXT_INACTIVE, scale = 0.25}},
+                                    }},
+                                    arrow_text_input({
+                                        id = 'arrow_grad_text_input',
+                                        row = true,
+                                        min = 0,
+                                        max = 360,
+                                        max_length = 4,
+                                        text_scale = 0.32,
+                                        w = 0.25,
+                                        corpus_type = 'numeric_base10_dec',
+                                        colour = G.C.CLEAR,
+                                        hooked_colour = G.C.CLEAR,
+                                        text_colour = G.C.UI.TEXT_DARK,
+                                        prompt_text = '0',
+                                        ref_table = ArrowAPI.palette_ui_config.angle_widget_config,
+                                        ref_value = 'display_val',
+                                        callback = function()
+                                            local angle_config = ArrowAPI.palette_ui_config.angle_widget_config
+                                            if angle_config.mode == 'linear' then
+                                                angle_config.value = math.rad(tonumber(angle_config.display_val))
+                                            else
+                                                angle_config.value = tonumber(angle_config.display_val)
+                                            end
+                                        end,
+                                    }),
+                                }},
+                                {n = G.UIT.B, config = {align = "cm", w = 0.05, h = 0.1}},
+                                {n = G.UIT.C, config = {align = "cm", colour = G.C.UI.TEXT_LIGHT, padding = 0.05, r = 0.1, emboss = 0.05}, nodes = {
+                                    {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                        {n = G.UIT.T, config = {align = "cm", text = localize('k_label_center'), colour = G.C.UI.TEXT_INACTIVE, scale = 0.25}},
+                                    }},
+                                    {n = G.UIT.R, config = {align = "cm", minw = 1.35}, nodes = {
+                                        {n = G.UIT.T, config = {align = "cm", text = '0', colour = G.C.UI.TEXT_DARK, shadow = true, scale = 0.3}},
+                                        {n = G.UIT.T, config = {align = "cm", text = ', ', colour = G.C.UI.TEXT_DARK, shadow = true, scale = 0.3}},
+                                        {n = G.UIT.T, config = {align = "cm",  text = '0', colour = G.C.UI.TEXT_DARK, shadow = true, scale = 0.3}},
+                                    }},
+                                }},
+                            }},
+                        }},
+                    }},
+                    {n=G.UIT.R, config={align = "cm", minh = 0.15}, nodes = {}},
+                    {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                        {n = G.UIT.C, config={align = "cm", padding = 0.1}, nodes = {
+                            {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                {n = G.UIT.C, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.1, res = 0.45, padding = 0.03}, nodes = {
                                     {n = G.UIT.R,
                                         config = {
                                             id = 'arrow_selected_colour',
                                             align = "cm",
-                                            minw = width * 0.15,
-                                            minh = width * 0.15,
+                                            minw = 1.3,
+                                            minh = 0.6,
                                             func = 'arrow_update_selected_colour',
-                                            r = 0.4,
+                                            r = 0.05,
                                             res = 0.45,
                                         },
                                         nodes = {}
                                     }
                                 }},
                             }},
+                            {n = G.UIT.R, config={align = "cm"}, nodes ={
+                                create_text_input(ArrowAPI.palette_ui_config.hex_input_config),
+                            }},
                         }},
-                        {n = G.UIT.R, config = {align = "cm", padding = 0.1}, nodes = {
-                            arrow_create_angle_widget(ArrowAPI.palette_ui_config.angle_widget_config)
-                        }},
-                        {n = G.UIT.R, config = {align = "cm", padding = 0.1}, nodes = {
+                        {n = G.UIT.C, config={align = "cm", padding = 0.05}, nodes = {
                             {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                                arrow_create_rgb_slider({id = 'r_slider', w = 2.5, h = 0.3, text_scale = 0.2, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 1, min = 0, max = 255}),
+                                arrow_create_rgb_slider({id = 'r_slider', w = 4.4, h = 0.4, text_scale = 0.32, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 1, min = 0, max = 255}),
                             }},
                             {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                                arrow_create_rgb_slider({id = 'g_slider', w = 2.5, h = 0.3, text_scale = 0.2, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 2, min = 0, max = 255}),
+                                arrow_create_rgb_slider({id = 'g_slider', w = 4.4, h = 0.4, text_scale = 0.32, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 2, min = 0, max = 255}),
                             }},
                             {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                                arrow_create_rgb_slider({id = 'b_slider', w = 2.5, h = 0.3, text_scale = 0.2, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 3, min = 0, max = 255}),
+                                arrow_create_rgb_slider({id = 'b_slider', w = 4.4, h = 0.4, text_scale = 0.32, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 3, min = 0, max = 255}),
                             }},
                         }},
                     }},
                 }},
+                {n=G.UIT.R, config={align = "cm", minh = 0.15}, nodes = {}},
                 {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
                     {n=G.UIT.R, config={align = "cm"}, nodes={
                         {n=G.UIT.C, config={align = "cm", minw = 4, padding = 0.1, r = 0.1, hover = true, colour = G.C.ORANGE, button = 'arrow_apply_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
