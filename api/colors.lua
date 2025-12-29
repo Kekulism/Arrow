@@ -2,7 +2,6 @@ local ffi = require("ffi")
 SMODS.Gradient({key = 'arrow_spectrans', colours = {HEX('F98899'), HEX('5BA6DD')}, cycle = 3.5, prefix_config = false })
 
 local function collect_image_data(set, atlases)
-    collectgarbage("stop")
     local data_table = {}
     local pixel_map = {}
 
@@ -14,7 +13,6 @@ local function collect_image_data(set, atlases)
         data_table[k] = image_data
 
         local ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
-        ffi.gc(ref_pointer, ffi.free)
         local color_width = image_data:getWidth() * 4
         local width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
         local height_per_unit = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
@@ -34,15 +32,13 @@ local function collect_image_data(set, atlases)
                 local start_idx = prior_pixel_rows * color_width + pos.x * width_per_unit
 
                 for j = 0, (colors_per_unit - 1), 4 do
-                    local x = ((j % width_per_unit / width_per_unit) - 0.5) * 2
-                    local y = ((j / width_per_unit / height_per_unit) - 0.5) * -2
-
                     local true_idx = start_idx + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
                     if ref_pointer[true_idx + 3] > 0 then
                         local color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
                         if item_table[color_key] then
-                            item_table[color_key][#item_table[color_key]+1] = {true_idx = true_idx, x = x, y = y}
+                            item_table[color_key][#item_table[color_key]+1] = true_idx
                         end
+                        color_key = nil
                     end
                 end
 
@@ -54,12 +50,8 @@ local function collect_image_data(set, atlases)
 
                 pixel_map[k][key] = item_table
             end
-
         end
-
-        ref_pointer = nil
     end
-    collectgarbage("restart")
 
     return data_table, pixel_map
 end
@@ -400,36 +392,58 @@ ArrowAPI.colors = {
             palette.last_palette = copy_table(new_palette)
         end
 
-        collectgarbage("stop")
+        local rot
+        local rot_max
+        local lerp_val
+        local angle
+        local grad_pos
+        local replace_color = {1, 1, 1}
+        local idx
+        local palette_color
+        local color_list
+
+        local edit_pointer
+        local pixel_map
+        local back
+        local next
+        local dist
+        local center
+
         for k, v in pairs(palette.image_data.atlases) do
-            local edit_pointer = ffi.cast("uint8_t*", v:getFFIPointer())
-            ffi.gc(edit_pointer, ffi.free)
-            local pixel_map = palette.image_data.pixel_map[k]
+            edit_pointer = ffi.cast("uint8_t*", v:getFFIPointer())
+            pixel_map = palette.image_data.pixel_map[k]
+
             for i = 1, #custom_palette do
                 for item, colors in pairs(pixel_map) do
                     -- todo add item filtering
-                    local color_list = colors[custom_palette[i].key]
+                    color_list = colors[custom_palette[i].key]
                     if color_list then
-                        local palette_color = custom_palette[i]
+                        palette_color = custom_palette[i]
                         for j = 1, #color_list do
-                            local idx = color_list[j].true_idx
-                            local replace_color = {palette_color[1], palette_color[2], palette_color[3]}
+                            idx = color_list[j].true_idx
+                            replace_color[1] = palette_color[1]
+                            replace_color[2] = palette_color[2]
+                            replace_color[3] = palette_color[3]
+
+                            --[[
                             if #palette_color.grad_pos > 1 then
-                                local angle = palette_color.grad_config.val
-                                local grad_pos = palette_color.grad_pos
-                                local lerp_val
+                                angle = palette_color.grad_config.val
+                                grad_pos = palette_color.grad_pos
+
 
                                 if palette_color.grad_config.mode == 'linear' then
                                     -- value between 0 and pi/2 for the coord's x rotation
-                                    local rot = color_list[j].x * math.cos(angle) + color_list[j].y * math.sin(angle)
-                                    local rot_max = math.abs(math.cos(angle)) + math.abs(math.sin(angle))
+                                    rot = color_list[j].x * math.cos(angle) + color_list[j].y * math.sin(angle)
+                                    rot_max = math.abs(math.cos(angle)) + math.abs(math.sin(angle))
                                     lerp_val = 0.5 * (rot/rot_max + 1)
+                                    rot = nil
+                                    rot_max = nil
                                 else
-                                    local center = palette_color.grad_config.pos
+                                    center = palette_color.grad_config.pos
 
                                     -- depending on benchmark, might not need this approx
                                     -- local dist = math.sqrt((center[2] - color_list[j].y)^2 + (center[1] - color_list[j].x)^2)
-                                    local dist = amax_bmin(center[2] - color_list[j].y, center[1] - color_list[j].x)
+                                    dist = amax_bmin(center[2] - color_list[j].y, center[1] - color_list[j].x)
                                     lerp_val =  1 - math.min(1, math.max(0, (dist / palette_color.grad_config.val)))
                                 end
 
@@ -437,8 +451,8 @@ ArrowAPI.colors = {
                                     if lerp_val <= grad_pos[grad+1] then
                                         lerp_val = (lerp_val - grad_pos[grad]) / (grad_pos[grad+1] - grad_pos[grad])
 
-                                        local back = (grad - 1) * 3
-                                        local next = grad * 3
+                                        back = (grad - 1) * 3
+                                        next = grad * 3
 
                                         replace_color[1] = palette_color[back + 1] + lerp_val * (palette_color[next + 1] - palette_color[back + 1])
                                         replace_color[2] = palette_color[back + 2] + lerp_val * (palette_color[next + 2] - palette_color[back + 2])
@@ -447,6 +461,7 @@ ArrowAPI.colors = {
                                     end
                                 end
                             end
+                            --]]
 
                             edit_pointer[idx] = replace_color[1]
                             edit_pointer[idx + 1] = replace_color[2]
@@ -456,13 +471,9 @@ ArrowAPI.colors = {
                 end
             end
 
-            edit_pointer = nil
-
             SMODS.Atlases[k].image = love.graphics.newImage(v,
                 { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
         end
-
-        collectgarbage("restart")
     end,
 }
 
