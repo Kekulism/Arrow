@@ -1,7 +1,7 @@
 -- overwrite for palette generation
 function get_front_spriteinfo(_front)
     if not _front.suit or not SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[_front.suit]] then
-        return SMODS.get_atlas("cards_1"), _front.pos
+        return SMODS.get_atlas("arrow_suits"), _front.pos
     end
 
     local deckSkin = SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[_front.suit]]
@@ -46,7 +46,7 @@ function get_front_spriteinfo(_front)
         end
     end
 
-    return SMODS.get_atlas("cards_1"), _front.pos
+    return SMODS.get_atlas(_front.atlas) or SMODS.get_atlas("arrow_suits"), _front.pos
 end
 
 for suitName, _ in pairs(G.COLLABS.options) do
