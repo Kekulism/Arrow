@@ -55,7 +55,7 @@ for suitName, _ in pairs(G.COLLABS.options) do
             key = 'lc',
             ranks = {'2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', "King", "Ace",},
             display_ranks = {'King', 'Queen', 'Jack'},
-            atlas = 'arrow_'..suitName,
+            atlas = 'arrow_suits',
             pos_style = 'suit'
         }
     }
