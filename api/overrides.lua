@@ -1301,7 +1301,11 @@ SMODS.Atlas({key = 'arrow_tarots', custom_path = ArrowAPI.path..(ArrowAPI.custom
 SMODS.Atlas({key = 'arrow_planets', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'planets.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
 SMODS.Atlas({key = 'arrow_spectrals', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'spectrals.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
 SMODS.Atlas({key = 'arrow_tags', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'tags/tags.png', px = 34, py = 34, prefix_config = {key = {mod = false}}})
-SMODS.Atlas({key = 'arrow_suits', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'suits.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+
+SMODS.Atlas({key = 'arrow_Hearts', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'hearts.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_Spades', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'spades.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_Diamonds', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'diamonds.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_Clubs', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'clubs.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
 
 SMODS.Joker:take_ownership('8_ball', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 3, y = 2}}, true)
 SMODS.Joker:take_ownership('fortune_teller', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 4, y = 2}}, true)
@@ -1394,7 +1398,7 @@ G.C.SUITS.Clubs = HEX('255D59')
 --------------------------- suit jokers
 SMODS.Joker:take_ownership('lusty_joker', {
     palette_set = 'Hearts',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Hearts',
     prefix_config = {atlas = false},
     pos = {x = 13, y = 0},
     loc_vars = function(self, info_queue, card)
@@ -1420,7 +1424,7 @@ SMODS.Joker:take_ownership('lusty_joker', {
 
 SMODS.Joker:take_ownership('wrathful_joker', {
     palette_set = 'Spades',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Spades',
     prefix_config = {atlas = false},
     pos = {x = 13, y = 3},
     loc_vars = function(self, info_queue, card)
@@ -1446,7 +1450,7 @@ SMODS.Joker:take_ownership('wrathful_joker', {
 
 SMODS.Joker:take_ownership('gluttenous_joker', {
     palette_set = 'Clubs',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Clubs',
     prefix_config = {atlas = false},
     pos = {x = 13, y = 1},
     loc_vars = function(self, info_queue, card)
@@ -1472,7 +1476,7 @@ SMODS.Joker:take_ownership('gluttenous_joker', {
 
 SMODS.Joker:take_ownership('greedy_joker', {
     palette_set = 'Diamonds',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Diamonds',
     prefix_config = {atlas = false},
     pos = {x = 13, y = 2},
     loc_vars = function(self, info_queue, card)
@@ -1499,14 +1503,14 @@ SMODS.Joker:take_ownership('greedy_joker', {
 --------------------------- associated suit jokers
 SMODS.Joker:take_ownership('smeared', {
     palette_set = 'Hearts',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Hearts',
     prefix_config = {atlas = false},
     pos = {x = 15, y = 0},
 }, true)
 
 SMODS.Joker:take_ownership('blackboard', {
     palette_set = 'Spades',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Spades',
     prefix_config = {atlas = false},
     pos = {x = 15, y = 3},
     loc_vars = function(self, info_queue, card)
@@ -1534,7 +1538,7 @@ SMODS.Joker:take_ownership('blackboard', {
 
 SMODS.Joker:take_ownership('flower_pot', {
     palette_set = 'Diamonds',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Diamonds',
     prefix_config = {atlas = false},
     pos = {x = 15, y = 2},
     loc_vars = function(self, info_queue, card)
@@ -1571,7 +1575,7 @@ SMODS.Joker:take_ownership('flower_pot', {
 
 SMODS.Joker:take_ownership('seeing_double', {
     palette_set = 'Clubs',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Clubs',
     prefix_config = {atlas = false},
     pos = {x = 15, y = 1},
 }, true)
@@ -1579,7 +1583,7 @@ SMODS.Joker:take_ownership('seeing_double', {
 --------------------------- gem jokers
 SMODS.Joker:take_ownership('bloodstone', {
     palette_set = 'Hearts',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Hearts',
     prefix_config = {atlas = false},
     pos = {x = 14, y = 0},
     loc_vars = function(self, info_queue, card)
@@ -1613,7 +1617,7 @@ SMODS.Joker:take_ownership('bloodstone', {
 
 SMODS.Joker:take_ownership('onyx_agate', {
     palette_set = 'Clubs',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Clubs',
     prefix_config = {atlas = false},
     pos = {x = 14, y = 1},
     loc_vars = function(self, info_queue, card)
@@ -1644,7 +1648,7 @@ SMODS.Joker:take_ownership('onyx_agate', {
 
 SMODS.Joker:take_ownership('arrowhead', {
     palette_set = 'Spades',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Spades',
     prefix_config = {atlas = false},
     pos = {x = 14, y = 3},
     loc_vars = function(self, info_queue, card)
@@ -1675,7 +1679,7 @@ SMODS.Joker:take_ownership('arrowhead', {
 
 SMODS.Joker:take_ownership('rough_gem', {
     palette_set = 'Diamonds',
-    atlas = 'arrow_suits',
+    atlas = 'arrow_Diamonds',
     prefix_config = {atlas = false},
     pos = {x = 14, y = 2},
     loc_vars = function(self, info_queue, card)

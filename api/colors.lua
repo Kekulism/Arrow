@@ -14,7 +14,7 @@ local function collect_image_data(set, atlases)
         data_table[k] = image_data
 
         local ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
-        ffi.gc(ref_pointer, ffi.free)
+        --ffi.gc(ref_pointer, ffi.free)
         local color_width = image_data:getWidth() * 4
         local width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
         local height_per_unit = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
@@ -141,7 +141,7 @@ ArrowAPI.colors = {
 
             for k, v in pairs(G.P_CARDS) do
                 if not v.no_collection and v.suit == set and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    local atlas = "arrow_suits"
+                    local atlas = "arrow_"..set
                     if not atlases[atlas] then
                         atlases[atlas] = {}
                     end
@@ -198,10 +198,12 @@ ArrowAPI.colors = {
             palette.items = items
             palette.default_palette = copy_table(ArrowAPI.config.saved_palettes[set][1])
             local current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
+
             if current_palette[#current_palette].key ~= 'badge' then
                 local idx = #current_palette+1
                 current_palette[idx] = copy_table(G.C.SECONDARY_SET[set])
                 current_palette[idx].grad_pos = {0}
+                current_palette[idx].grad_config = {mode = 'linear', val = 0, pos = {0, 0}}
             end
 
             local atlas_table, pixel_map = collect_image_data(set, atlases)
