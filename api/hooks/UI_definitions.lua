@@ -1059,7 +1059,7 @@ function arrow_text_input(args)
     args.text = text
 
     return {
-        n = G.UIT.C,
+        n = (args.row and G.UIT.R or G.UIT.C),
         config = {
             id = args.id,
             align = "cm",
@@ -1100,7 +1100,6 @@ function replace_text_input(ref_table, ref_value, new_str, hook)
     end
 
     text.current_position = #new_str
-
     ref_table[ref_value] = new_str
 end
 
@@ -1161,8 +1160,6 @@ function arrow_create_rgb_slider(args)
                 G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID(slider_id), true)
 
                 replace_text_input(ref_table, ref_value, string.format("%.3u", tostring(new_val)))
-                local args = G.CONTROLLER.text_input_hook.config.ref_table
-                sendDebugMessage('position on select: '..tostring(args.text.current_position))
                 G.CONTROLLER.text_input_hook.UIBox:recalculate()
             end,
             callback_args = {args.ref_table, args.ref_value, args.min, args.max, args.id}
@@ -1178,7 +1175,7 @@ function arrow_create_grad_widget(args)
     local mainh = args.h - subh
     args.grad_points = args.grad_points or {selected = nil, min_points = 1, max_points = 8, {pos = 0, color = {255, 255, 255}}}
 
-    return {n=(args.row and G.UIT.R or G.UIT.C), config={align = "cm", focus_args = {type = 'slider'}}, nodes={
+    return {n=G.UIT.C, config={align = "cm", focus_args = {type = 'slider'}}, nodes={
         {n=G.UIT.R, config = {id = args.id and args.id..'_pointers', minw = args.w, minh = subh, grad_points = args.grad_points, collideable = true, func = 'arrow_grad_pointers'}, nodes={
         }},
         {n=G.UIT.R, config={align = "cm", colour = G.C.UI.TEXT_LIGHT, emboss = 0.05, r = 0.1, res = 0.45, minw = args.w, minh = mainh, padding = 0.025}, nodes={
@@ -1217,6 +1214,17 @@ function arrow_create_angle_widget(args)
     }}
 end
 
+local palette_order = {
+    Tarot = 1,
+    Planet = 2,
+    Spectral = 3,
+    Background = 4,
+    Hearts = 5,
+    Spades = 6,
+    Diamonds = 7,
+    Clubs = 8
+}
+
 function arrow_create_UIBox_palette_menu()
     -- clear additional garbage
     local palette_tabs = {}
@@ -1225,7 +1233,7 @@ function arrow_create_UIBox_palette_menu()
             if not ArrowAPI.palette_ui_config.open_palette then
                 ArrowAPI.palette_ui_config.open_palette = {set = k, idx = 1, grad_idx = 1}
             end
-            local loc = localize('b_arrow_pal_'..tostring(k))
+            local loc = localize('b_arrow_pal_'..string.lower(k))
             palette_tabs[#palette_tabs+1] = {
                 label = loc ~= 'ERROR' and loc or k,
                 chosen = k == ArrowAPI.palette_ui_config.open_palette.set,
@@ -1235,15 +1243,26 @@ function arrow_create_UIBox_palette_menu()
         end
     end
 
+    table.sort(palette_tabs, function(a, b)
+        return palette_order[a.tab_definition_function_args] < palette_order[b.tab_definition_function_args]
+    end)
+
     ArrowAPI.palette_ui_config.tabs_config = {tabs = palette_tabs, snap_to_nav = true}
     local tabs = create_tabs(ArrowAPI.palette_ui_config.tabs_config)
 
     -- set the tabs to be the set colors
     local tab_buttons = tabs.nodes[1].nodes[2].nodes
     for i = 1, #tab_buttons do
-        if palette_tabs[i].tab_definition_function_args ~= 'Background' then
-            tab_buttons[i].nodes[1].config.colour = G.C.SECONDARY_SET[palette_tabs[i].tab_definition_function_args]
-        end
+        local set = palette_tabs[i].tab_definition_function_args
+        local tab_colour = G.C.SECONDARY_SET[set] or G.C.SUITS[set] or G.C.RED
+        tab_buttons[i].nodes[1].config.colour = tab_colour
+        tab_buttons[i].nodes[1].config.minh = tab_buttons[i].nodes[1].config.minh * 0.75
+
+        local label_node = tab_buttons[i].nodes[1].nodes[1]
+        label_node.config.minw = label_node.config.minw * 0.75
+
+        local button_text = tab_buttons[i].nodes[1].nodes[1].nodes[1]
+        button_text.config.scale = button_text.config.scale * 0.75
     end
 
     return create_UIBox_generic_options({back_func = 'settings', contents = {tabs}})
@@ -1323,13 +1342,14 @@ function G.UIDEF.arrow_palette_tab(tab)
                     local item = items[i+row_totals[j] + (cards_per_page*(e.cycle_config.current_option - 1))]
                     if not item then break end
 
+                    local use_base = item.table == 'SEALS' or item.table == 'CARDS'
                     local disp_card = Card(
                         G.arrow_palette_collection[j].T.x + G.arrow_palette_collection[j].T.w/2,
                         G.arrow_palette_collection[j].T.y,
                         G.CARD_W * 0.85,
                         G.CARD_H * 0.85,
-                        G.P_CARDS.empty,
-                        (G.P_CENTERS[item.table == 'SEALS' and 'c_base' or item.key])
+                        G.P_CARDS[item.table == 'CARDS' and item.key or 'empty'],
+                        (G.P_CENTERS[use_base and 'c_base' or item.key])
                     )
 
                     if item.table == 'SEALS' then disp_card:set_seal(item.key, true) end
@@ -1606,7 +1626,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                             }},
                             {n = G.UIT.R, config = {align = "cm", padding = 0.05}, nodes = {
                                 {n = G.UIT.C, config = {align = "cm", colour = G.C.UI.TEXT_LIGHT, padding = 0.05, r = 0.1, emboss = 0.05}, nodes = {
-                                    {n = G.UIT.R, config = {align = "cm"}, nodes = {
+                                    {n = G.UIT.R, config = {align = "cm", minw = 0.6}, nodes = {
                                         {n = G.UIT.T, config = {align = "cm", ref_table = ArrowAPI.palette_ui_config.angle_widget_config, ref_value = 'label_1', colour = G.C.UI.TEXT_INACTIVE, scale = 0.25}},
                                     }},
                                     arrow_text_input({
@@ -1617,17 +1637,20 @@ function G.UIDEF.arrow_palette_tab(tab)
                                         max_length = 4,
                                         text_scale = 0.32,
                                         w = 0.25,
+                                        h = 0.25,
                                         corpus_type = 'numeric_base10_dec',
                                         colour = G.C.CLEAR,
                                         hooked_colour = G.C.CLEAR,
                                         text_colour = G.C.UI.TEXT_DARK,
-                                        prompt_text = '0',
                                         ref_table = ArrowAPI.palette_ui_config.angle_widget_config,
                                         ref_value = 'display_val',
                                         callback = function()
                                             local angle_config = ArrowAPI.palette_ui_config.angle_widget_config
                                             if angle_config.mode == 'linear' then
+                                                local rad = math.rad(tonumber(angle_config.display_val))
                                                 angle_config.value = math.rad(tonumber(angle_config.display_val))
+                                                angle_config.point.x = math.cos(rad)
+                                                angle_config.point.y = math.sin(rad)
                                             else
                                                 angle_config.value = tonumber(angle_config.display_val)
                                             end

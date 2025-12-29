@@ -1000,9 +1000,16 @@ function G.FUNCS.arrow_angle_widget(e)
             local adjusted_x = (cursor_x - 0.5) * 2
             local adjusted_y = (cursor_y - 0.5) * -2
             local angle = math.atan2(adjusted_y, adjusted_x)
-            local degree_angle = angle < 0 and 360 + math.deg(angle) or math.deg(angle)
+            local degree_angle = tostring(math.floor(angle < 0 and 360 + math.deg(angle) or math.deg(angle)))
             ArrowAPI.palette_ui_config.angle_widget_config.value = angle
-            ArrowAPI.palette_ui_config.angle_widget_config.display_val = tostring(math.floor(degree_angle))
+            ArrowAPI.palette_ui_config.angle_widget_config.display_val = degree_angle
+
+            release_text_input()
+            local text = e.parent.parent.parent.children[4].children[2].children[1].children[2].config.ref_table.text
+            for i=1, 4 do
+                text.letters[i] = i <= #degree_angle and degree_angle:sub(i, i) or ''
+            end
+
             config.point.x = math.cos(angle)
             config.point.y = math.sin(angle)
         else
@@ -1053,16 +1060,19 @@ G.FUNCS.arrow_can_edit_gradients = function(e)
             toggle2.children[1].states.visible = toggle2_active
             toggle2.children[1].config.object.states.visible = toggle2_active
 
-            --[[
             local value_node = e.children[2].children[1]
             value_node.config.colour = G.C.UI.TEXT_LIGHT
             value_node.children[1].children[1].config.colour = G.C.UI.TEXT_INACTIVE
-            value_node.children[2].children[1].config.colour = G.C.UI.TEXT_DARK
-            --]]
+
+            -- this needs to change the
+            local text_colour = value_node.children[2].config.ref_table.text_colour
+            text_colour[1] = G.C.UI.TEXT_DARK[1]
+            text_colour[2] = G.C.UI.TEXT_DARK[2]
+            text_colour[3] = G.C.UI.TEXT_DARK[3]
+            text_colour[4] = G.C.UI.TEXT_DARK[4]
             return
         end
 
-        --[[
         local center_node = e.children[2].children[3]
         if ArrowAPI.palette_ui_config.angle_widget_config.mode == 'radial' and not center_node.config.radial_active then
             center_node.config.radial_active = true
@@ -1101,7 +1111,6 @@ G.FUNCS.arrow_can_edit_gradients = function(e)
             y_node.config.ref_value = nil
             y_node.config.text = '0'
         end
-        --]]
     elseif #points <= 1 and e.config.grad_active then
         e.config.grad_active = nil
 
@@ -1131,19 +1140,36 @@ G.FUNCS.arrow_can_edit_gradients = function(e)
         toggle2.children[1].states.visible = false
         toggle2.children[1].config.object.states.visible = false
 
-        --[[
         local value_node = e.children[2].children[1]
         value_node.config.colour = G.C.UI.TEXT_INACTIVE
         value_node.children[1].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
-        value_node.children[2].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+
+        local new_colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+        local val_config = value_node.children[2].config.ref_table
+        local text_colour = val_config.text_colour
+        text_colour[1] = new_colour[1]
+        text_colour[2] = new_colour[2]
+        text_colour[3] = new_colour[3]
+        text_colour[4] = new_colour[4]
 
         local center_node = e.children[2].children[3]
         center_node.config.colour = G.C.UI.TEXT_INACTIVE
         center_node.children[1].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
-        center_node.children[2].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+
+        local x_node = center_node.children[2].children[1]
+        x_node.config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+        x_node.config.ref_table = nil
+        x_node.config.ref_value = nil
+        x_node.config.text = '0'
+
+        -- comma
         center_node.children[2].children[2].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
-        center_node.children[2].children[3].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
-        --]]
+
+        local y_node = center_node.children[2].children[3]
+        y_node.config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)
+        y_node.config.ref_table = nil
+        y_node.config.ref_value = nil
+        y_node.config.text = '0'
     end
 end
 
@@ -1402,4 +1428,18 @@ G.FUNCS.change_tab = function(e)
         config = {offset = {x=0,y=0}, parent = tab_contents, type = 'cm'}
         }
     tab_contents.UIBox:recalculate()
+end
+
+-- TODO rework refresh contrast mode to use palette settings
+G.FUNCS.refresh_contrast_mode = function()
+    local new_colour_proto = G.C["SO_"..(G.SETTINGS.colourblind_option and 2 or 1)]
+    G.C.SUITS.Hearts = new_colour_proto.Hearts
+    G.C.SUITS.Diamonds = new_colour_proto.Diamonds
+    G.C.SUITS.Spades = new_colour_proto.Spades
+    G.C.SUITS.Clubs = new_colour_proto.Clubs
+    for k, v in pairs(G.I.CARD) do
+        if v.config and v.config.card and v.children.front and v.ability.effect ~= 'Stone Card' then
+            v:set_sprites(nil, v.config.card)
+        end
+    end
 end

@@ -5,14 +5,6 @@ local function collect_image_data(set, atlases)
     collectgarbage("stop")
     local data_table = {}
     local pixel_map = {}
-    for _, v in ipairs(ArrowAPI.colors.palettes[set].default_palette) do
-        local color_key = v[1]..'-'..v[2]..'-'..v[3]
-        local map_table = {}
-        for k, _ in pairs(atlases) do
-            map_table[k] = {}
-        end
-        pixel_map[color_key] = map_table
-    end
 
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
@@ -35,8 +27,7 @@ local function collect_image_data(set, atlases)
 
                 local item_table = {table = item.table, pos = pos}
                 for _, color in ipairs(ArrowAPI.colors.palettes[set].default_palette) do
-                    local color_key = color[1]..'-'..color[2]..'-'..color[3]
-                    item_table[color_key] = {}
+                    item_table[color.key] = {}
                 end
 
                 local prior_pixel_rows = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling * pos.y
@@ -82,6 +73,7 @@ local set_order = {
     Booster = 6,
     Back = 7,
     Seal = 8,
+    Cards = 9,
 }
 
 local ignore_states = {
@@ -110,7 +102,10 @@ ArrowAPI.colors = {
         Spectral = {},
         Planet = {},
         Tarot = {},
-        Unique = {}
+        Hearts = {},
+        Spades = {},
+        Diamonds = {},
+        Clubs = {},
     },
 
     --- Caches the default image_data for all given palette sets
@@ -126,7 +121,7 @@ ArrowAPI.colors = {
         bkg_palette.last_palette = copy_table(current_bkg)
         bkg_palette.current_palette = current_bkg
 
-        set_list = set_list or {"Tarot", "Planet", "Spectral"}
+        set_list = set_list or {"Tarot", "Planet", "Spectral", "Hearts", "Spades", "Diamonds", "Clubs"}
         for i = 1, #set_list do
             local set = set_list[i]
             local palette = ArrowAPI.colors.palettes[set]
@@ -140,7 +135,19 @@ ArrowAPI.colors = {
                     end
 
                     atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, table = 'CENTERS'}
-                    items[#items+1] = {key = k, table = 'CENTERS', set = v.set}
+                    items[#items+1] = {key = k, table = 'CENTERS', set = (v.set or v.palette_set)}
+                end
+            end
+
+            for k, v in pairs(G.P_CARDS) do
+                if not v.no_collection and v.suit == set and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
+                    local atlas = "arrow_suits"
+                    if not atlases[atlas] then
+                        atlases[atlas] = {}
+                    end
+
+                    atlases[atlas][#atlases[atlas]+1] = {key = k, table = 'CARDS'}
+                    items[#items+1] = {key = k, table = 'CARDS', set = 'Card'}
                 end
             end
 
@@ -150,7 +157,7 @@ ArrowAPI.colors = {
                         atlases[v.atlas] = {}
                     end
 
-                    atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, table = 'TAGS'}
+                    atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, table = 'TAGS', set = 'Tag'}
                 end
             end
 
@@ -166,7 +173,26 @@ ArrowAPI.colors = {
             end
 
             table.sort(items, function(a, b)
-                return (set_order[a.set] or 0) < (set_order[b.set] or 0) or (a.order or 0) < (b.order or 0)
+                local a_order = set_order[a.set] or 0
+                local b_order = set_order[b.set] or 0
+                if a_order ~= b_order then
+                    return a_order < b_order
+                end
+
+                local a_item = G['P_'..a.table][a.key]
+                local b_item = G['P_'..b.table][b.key]
+
+                if a.table == 'CARDS' and b.table == 'CARDS' then
+                    local a_rank = SMODS.Ranks[a_item.value]
+                    local a_suit = SMODS.Suits[a_item.suit]
+                    local b_rank = SMODS.Ranks[b_item.value]
+                    local b_suit = SMODS.Suits[b_item.suit]
+                    local a_nominal = 10*(a_rank.nominal or 0) + (a_suit.suit_nominal or 0) + 10*(a_rank.face_nominal or 0)
+                    local b_nominal = 10*(b_rank.nominal or 0) + (b_suit.suit_nominal or 0) + 10*(b_rank.face_nominal or 0)
+                    return a_nominal < b_nominal
+                end
+
+                return (a_item.order or 0) < (a_item.order or 0)
             end)
 
             palette.items = items
@@ -284,10 +310,13 @@ ArrowAPI.colors = {
         if not saved_index then
             -- updating current palette
             local badge = palette.current_palette[#palette.current_palette]
-            G.C.SECONDARY_SET[set][1] = badge[1]/255
-            G.C.SECONDARY_SET[set][2] = badge[2]/255
-            G.C.SECONDARY_SET[set][3] = badge[3]/255
-            G.C.SECONDARY_SET[set][4] = 1
+            local badge_table = G.C.SECONDARY_SET[set] or G.C.SUITS[set]
+            if badge_table then
+                badge_table[1] = badge[1]/255
+                badge_table[2] = badge[2]/255
+                badge_table[3] = badge[3]/255
+                badge_table[4] = 1
+            end
 
             for i=1, #palette.current_palette-1 do
                 local last = palette.last_palette[i]
@@ -345,7 +374,6 @@ ArrowAPI.colors = {
                 for j = 1, #new_palette do
                     local default_color = new_palette[j]
                     if cust_color.key == default_color.key then
-
                         local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos), grad_config = copy_table(cust_color.grad_config)}
                         for k = 1, #cust_color do
                             if cust_color[k] ~= default_color[k] then
@@ -360,10 +388,14 @@ ArrowAPI.colors = {
             end
 
             -- TODO // fix with grad pos
-            G.C.SECONDARY_SET[set][1] = new_palette[#new_palette][1]/255
-            G.C.SECONDARY_SET[set][2] = new_palette[#new_palette][2]/255
-            G.C.SECONDARY_SET[set][3] = new_palette[#new_palette][3]/255
-            G.C.SECONDARY_SET[set][4] = 1
+            local badge_table = G.C.SECONDARY_SET[set] or G.C.SUITS[set]
+            if badge_table then
+                badge_table[1] = new_palette[#new_palette][1]/255
+                badge_table[2] = new_palette[#new_palette][2]/255
+                badge_table[3] = new_palette[#new_palette][3]/255
+                badge_table[4] = 1
+            end
+
             palette.current_palette = new_palette
             palette.last_palette = copy_table(new_palette)
         end
