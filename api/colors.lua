@@ -137,7 +137,7 @@ ArrowAPI.colors = {
 
             for k, v in pairs(G.P_CARDS) do
                 if not v.no_collection and v.suit == set and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    local atlas = "arrow_suits"
+                    local atlas = "arrow_"..string.lower(set)
                     if not atlases[atlas] then
                         atlases[atlas] = {}
                     end
@@ -396,7 +396,6 @@ ArrowAPI.colors = {
         local y
 
         local width_per_unit
-        local colors_per_unit
 
         for k, v in pairs(palette.image_data.atlases) do
             local atlas = SMODS.Atlases[k]
