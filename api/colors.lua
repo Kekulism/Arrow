@@ -5,40 +5,48 @@ local function collect_image_data(set, atlases)
     local data_table = {}
     local pixel_map = {}
 
+    local atlas
+    local file_data
+    local image_data
+
+    local ref_pointer
+    local color_width
+    local width_per_unit
+    local colors_per_unit
+    local obj
+    local positions
+
+    local color_key
+
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
-        local atlas = SMODS.Atlases[k]
-        local file_data = NFS.newFileData(atlas.full_path)
-        local image_data = love.image.newImageData(file_data)
+        atlas = SMODS.Atlases[k]
+        file_data = NFS.newFileData(atlas.full_path)
+        image_data = love.image.newImageData(file_data)
         data_table[k] = image_data
 
-        local ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
-        local color_width = image_data:getWidth() * 4
-        local width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
-        local height_per_unit = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
-        local colors_per_unit = width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
+        ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
+        color_width = image_data:getWidth() * 4
+        width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
+        colors_per_unit = width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
 
         for _, item in ipairs(v) do
-            local obj = G['P_'..item.table][item.key]
-            local positions = {[item.key] = obj.pos, [item.key..'_soul'] = obj.soul_pos or nil }
+            obj = G['P_'..item.table][item.key]
+            positions = {[item.key] = obj.pos, [item.key..'_soul'] = obj.soul_pos or nil }
             for key, pos in pairs(positions) do
 
-                local item_table = {table = item.table, pos = pos}
+                local item_table = {pos_x = pos.x, pos_y = pos.y}
                 for _, color in ipairs(ArrowAPI.colors.palettes[set].default_palette) do
                     item_table[color.key] = {}
                 end
 
-                local prior_pixel_rows = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling * pos.y
-                local start_idx = prior_pixel_rows * color_width + pos.x * width_per_unit
-
                 for j = 0, (colors_per_unit - 1), 4 do
-                    local true_idx = start_idx + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
+                    local true_idx = ((atlas.py * G.SETTINGS.GRAPHICS.texture_scaling * pos.y) * color_width + pos.x * width_per_unit) + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
                     if ref_pointer[true_idx + 3] > 0 then
-                        local color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
+                        color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
                         if item_table[color_key] then
                             item_table[color_key][#item_table[color_key]+1] = true_idx
                         end
-                        color_key = nil
                     end
                 end
 
@@ -106,12 +114,8 @@ ArrowAPI.colors = {
         -- background palette handled differently
         local bkg_palette = ArrowAPI.colors.palettes.Background
         local saved_bkg_palettes = ArrowAPI.config.saved_palettes['Background']
-        bkg_palette.default_palette = copy_table(saved_bkg_palettes[1])
-
-        local current_bkg = copy_table(saved_bkg_palettes[saved_bkg_palettes.saved_index])
-
-        bkg_palette.last_palette = copy_table(current_bkg)
-        bkg_palette.current_palette = current_bkg
+        bkg_palette.default_palette = saved_bkg_palettes[1]
+        bkg_palette.current_palette = copy_table(saved_bkg_palettes[saved_bkg_palettes.saved_index])
 
         set_list = set_list or {"Tarot", "Planet", "Spectral", "Hearts", "Spades", "Diamonds", "Clubs"}
         for i = 1, #set_list do
@@ -188,19 +192,12 @@ ArrowAPI.colors = {
             end)
 
             palette.items = items
-            palette.default_palette = copy_table(ArrowAPI.config.saved_palettes[set][1])
-            local current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
-            if current_palette[#current_palette].key ~= 'badge' then
-                local idx = #current_palette+1
-                current_palette[idx] = copy_table(G.C.SECONDARY_SET[set])
-                current_palette[idx].grad_pos = {0}
-            end
+            palette.default_palette = ArrowAPI.config.saved_palettes[set][1]
 
             local atlas_table, pixel_map = collect_image_data(set, atlases)
             palette.image_data = {atlases = atlas_table, pixel_map = pixel_map}
 
-            palette.last_palette = copy_table(current_palette)
-            palette.current_palette = current_palette
+            palette.current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
         end
     end,
 
@@ -244,7 +241,7 @@ ArrowAPI.colors = {
                 local new_palette = {name = saved.name}
                 for i = 1, #palette.default_palette do
                     local default = palette.default_palette[i]
-                    local palette_table = {key = default.key, default = true, grad_pos = copy_table(default.grad_pos), grad_config = copy_table(default.grad_config)}
+                    local palette_table = {key = default.key, default = true, default.grad_pos, grad_config = copy_table(default.grad_config)}
                     for k = 1, #default do
                         palette_table[k] = default[k]
                     end
@@ -253,23 +250,17 @@ ArrowAPI.colors = {
 
                 for i = 1, #saved do
                     local cust_color = saved[i]
-                    for j = 1, #new_palette do
-                        local default_color = new_palette[j]
-                        if cust_color.key == default_color.key then
-                            local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos), grad_config = copy_table(cust_color.grad_config)}
-                            for k = 1, #cust_color do
-                                if cust_color[k] ~= default_color[k] then
-                                    palette_table.default = false
-                                end
-                                palette_table[k] = cust_color[k]
-                            end
-                            new_palette[j] = palette_table
+                    local default_color = new_palette[i]
+                    if cust_color.key == default_color.key then
+                        local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos), grad_config = copy_table(cust_color.grad_config)}
+                        for k = 1, #cust_color do
+                            palette_table[k] = cust_color[k]
                         end
+                        new_palette[i] = palette_table
                     end
                 end
 
                 palette.current_palette = new_palette
-                palette.last_palette = copy_table(new_palette)
             end
 
             -- update background
@@ -328,10 +319,9 @@ ArrowAPI.colors = {
                     changed = true
                 end
 
-                local palette_table = {key = default.key, default = true}
+                local palette_table = {key = default.key}
 
                 for j=1, #current do
-                    if current[j] ~= default[j] then palette_table.default = false end
                     if current[j] ~= last[j] then changed = true end
                     palette_table[j] = current[j]
                 end
@@ -339,7 +329,6 @@ ArrowAPI.colors = {
                 if changed then
                     palette_table.grad_pos = grad_pos
                     palette_table.grad_config = grad_config
-                    palette.current_palette[i].default = palette_table.default
                     custom_palette[#custom_palette+1] = palette_table
                     palette.last_palette[i] = copy_table(palette_table)
                 end
@@ -354,7 +343,7 @@ ArrowAPI.colors = {
 
             for i = 1, #palette.default_palette do
                 local default = palette.default_palette[i]
-                local palette_table = {key = default.key, default = true, grad_pos = copy_table(default.grad_pos), grad_config = copy_table(default.grad_config)}
+                local palette_table = {key = default.key, grad_pos = copy_table(default.grad_pos), grad_config = copy_table(default.grad_config)}
                 for j = 1, #default do
                     palette_table[j] = default[j]
                 end
@@ -363,19 +352,14 @@ ArrowAPI.colors = {
 
             for i = 1, #custom_palette do
                 local cust_color = custom_palette[i]
-                for j = 1, #new_palette do
-                    local default_color = new_palette[j]
-                    if cust_color.key == default_color.key then
-                        local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos), grad_config = copy_table(cust_color.grad_config)}
-                        for k = 1, #cust_color do
-                            if cust_color[k] ~= default_color[k] then
-                                palette_table.default = false
-                            end
-                            palette_table[k] = cust_color[k]
-                        end
-
-                        new_palette[j] = palette_table
+                local default_color = new_palette[i]
+                if cust_color.key == default_color.key then
+                    local palette_table = {key = default_color.key, grad_pos = copy_table(cust_color.grad_pos), grad_config = copy_table(cust_color.grad_config)}
+                    for k = 1, #cust_color do
+                        palette_table[k] = cust_color[k]
                     end
+
+                    new_palette[i] = palette_table
                 end
             end
 
@@ -408,8 +392,19 @@ ArrowAPI.colors = {
         local next
         local dist
         local center
+        local x
+        local y
+
+        local width_per_unit
+        local colors_per_unit
 
         for k, v in pairs(palette.image_data.atlases) do
+            local atlas = SMODS.Atlases[k]
+
+            color_width = v:getWidth() * 4
+            width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
+            height_per_unit = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
+
             edit_pointer = ffi.cast("uint8_t*", v:getFFIPointer())
             pixel_map = palette.image_data.pixel_map[k]
 
@@ -420,20 +415,24 @@ ArrowAPI.colors = {
                     if color_list then
                         palette_color = custom_palette[i]
                         for j = 1, #color_list do
-                            idx = color_list[j].true_idx
+                            idx = color_list[j]
                             replace_color[1] = palette_color[1]
                             replace_color[2] = palette_color[2]
                             replace_color[3] = palette_color[3]
 
-                            --[[
                             if #palette_color.grad_pos > 1 then
                                 angle = palette_color.grad_config.val
                                 grad_pos = palette_color.grad_pos
 
+                                local row_start = colors.pos_x * width_per_unit
+                                local prev_rows = colors.pos_y * height_per_unit
+
+                                x = (idx % color_width - row_start) / width_per_unit
+                                y = (math.floor(idx / color_width) - prev_rows) / height_per_unit
 
                                 if palette_color.grad_config.mode == 'linear' then
                                     -- value between 0 and pi/2 for the coord's x rotation
-                                    rot = color_list[j].x * math.cos(angle) + color_list[j].y * math.sin(angle)
+                                    rot = x * math.cos(angle) + y * math.sin(angle)
                                     rot_max = math.abs(math.cos(angle)) + math.abs(math.sin(angle))
                                     lerp_val = 0.5 * (rot/rot_max + 1)
                                     rot = nil
@@ -443,7 +442,7 @@ ArrowAPI.colors = {
 
                                     -- depending on benchmark, might not need this approx
                                     -- local dist = math.sqrt((center[2] - color_list[j].y)^2 + (center[1] - color_list[j].x)^2)
-                                    dist = amax_bmin(center[2] - color_list[j].y, center[1] - color_list[j].x)
+                                    dist = amax_bmin(center[2] - y, center[1] - x)
                                     lerp_val =  1 - math.min(1, math.max(0, (dist / palette_color.grad_config.val)))
                                 end
 
@@ -461,7 +460,6 @@ ArrowAPI.colors = {
                                     end
                                 end
                             end
-                            --]]
 
                             edit_pointer[idx] = replace_color[1]
                             edit_pointer[idx + 1] = replace_color[2]

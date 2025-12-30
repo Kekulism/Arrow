@@ -1309,11 +1309,8 @@ function G.FUNCS.arrow_save_palette(e)
                 for j, color in ipairs(palette.current_palette) do
                     local default = palette.default_palette[j]
                     -- TODO // save grad pos
-                    local palette_table = {key = default.key, default = true, grad_pos = copy_table(color.grad_pos)}
+                    local palette_table = {key = default.key, grad_pos = copy_table(color.grad_pos)}
                     for k, channel in ipairs(color) do
-                        if channel ~= default[k] then
-                            palette_table.default = false
-                        end
                         palette_table[k] = channel
                     end
                     if not palette_table[4] then palette_table[4] = 1 end
@@ -1333,7 +1330,7 @@ function G.FUNCS.arrow_save_palette(e)
 
     for i = 1, #palette.current_palette do
         local current_color = palette.current_palette[i]
-        local palette_table = {key = current_color.key, default = current_color.default, grad_pos = copy_table(current_color.grad_pos)}
+        local palette_table = {key = current_color.key, grad_pos = copy_table(current_color.grad_pos)}
         for j = 1, #current_color do
             palette_table[j] = current_color[j]
         end
