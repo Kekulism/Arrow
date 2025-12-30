@@ -1,5 +1,5 @@
 # Arrow
-A lightweight API Mod for Balatro that adds expandable features introduced in Cardsauce
+An API Mod for Balatro that adds expandable features introduced in Cardsauce
 
 ## Installation
 This mod requires [Lovely (**V0.8.0 or later**)](https://github.com/ethangreen-dev/lovely-injector) and [Steammodded **V1.0.0-beta-1016c or later**](https://github.com/Steamodded/smods). Follow these links to install these respective mods, which will create a Mods directory (`%APPDATA%/Balatro/Mods`)
