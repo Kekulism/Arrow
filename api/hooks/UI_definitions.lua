@@ -1230,13 +1230,9 @@ function arrow_create_UIBox_palette_menu()
     local palette_tabs = {}
     for k, v in pairs(ArrowAPI.colors.palettes) do
         if (v.items and #v.items > 0) or k == 'Background' then
-            if not ArrowAPI.palette_ui_config.open_palette then
-                ArrowAPI.palette_ui_config.open_palette = {set = k, idx = 1, grad_idx = 1}
-            end
             local loc = localize('b_arrow_pal_'..string.lower(k))
             palette_tabs[#palette_tabs+1] = {
                 label = loc ~= 'ERROR' and loc or k,
-                chosen = k == ArrowAPI.palette_ui_config.open_palette.set,
                 tab_definition_function = G.UIDEF.arrow_palette_tab,
                 tab_definition_function_args = k
             }
@@ -1246,6 +1242,11 @@ function arrow_create_UIBox_palette_menu()
     table.sort(palette_tabs, function(a, b)
         return palette_order[a.tab_definition_function_args] < palette_order[b.tab_definition_function_args]
     end)
+
+    palette_tabs[1].chosen = true
+    if not ArrowAPI.palette_ui_config.open_palette then
+        ArrowAPI.palette_ui_config.open_palette = {set = palette_tabs[1].tab_definition_function_args, idx = 1, grad_idx = 1}
+    end
 
     ArrowAPI.palette_ui_config.tabs_config = {tabs = palette_tabs, snap_to_nav = true}
     local tabs = create_tabs(ArrowAPI.palette_ui_config.tabs_config)
@@ -1471,7 +1472,7 @@ function G.UIDEF.arrow_palette_tab(tab)
     ----------------- name input
     ArrowAPI.palette_ui_config.name_input_config = {
         id = 'arrow_save_name_input',
-        max_length = 12,
+        max_length = 15,
         h = 1,
         w = 2.65,
         colour = G.C.UI.BACKGROUND_DARK,

@@ -1301,7 +1301,11 @@ SMODS.Atlas({key = 'arrow_tarots', custom_path = ArrowAPI.path..(ArrowAPI.custom
 SMODS.Atlas({key = 'arrow_planets', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'planets.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
 SMODS.Atlas({key = 'arrow_spectrals', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'spectrals.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
 SMODS.Atlas({key = 'arrow_tags', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'tags/tags.png', px = 34, py = 34, prefix_config = {key = {mod = false}}})
-SMODS.Atlas({key = 'arrow_suits', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'suits.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+
+SMODS.Atlas({key = 'arrow_suits', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'hearts.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_suits', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'spades.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_suits', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'diamonds.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
+SMODS.Atlas({key = 'arrow_suits', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'clubs.png', px = 71, py = 95, prefix_config = {key = {mod = false}}})
 
 SMODS.Joker:take_ownership('8_ball', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 3, y = 2}}, true)
 SMODS.Joker:take_ownership('fortune_teller', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 4, y = 2}}, true)
