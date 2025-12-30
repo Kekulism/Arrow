@@ -1309,7 +1309,7 @@ function G.FUNCS.arrow_save_palette(e)
                 for j, color in ipairs(palette.current_palette) do
                     local default = palette.default_palette[j]
                     -- TODO // save grad pos
-                    local palette_table = {key = default.key, grad_pos = copy_table(color.grad_pos)}
+                    local palette_table = {key = default.key, grad_pos = copy_table(color.grad_pos), grad_config = copy_table(color.grad_config)}
                     for k, channel in ipairs(color) do
                         palette_table[k] = channel
                     end
@@ -1330,7 +1330,7 @@ function G.FUNCS.arrow_save_palette(e)
 
     for i = 1, #palette.current_palette do
         local current_color = palette.current_palette[i]
-        local palette_table = {key = current_color.key, grad_pos = copy_table(current_color.grad_pos)}
+        local palette_table = {key = current_color.key, grad_pos = copy_table(current_color.grad_pos), grad_config = copy_table(current_color.grad_config)}
         for j = 1, #current_color do
             palette_table[j] = current_color[j]
         end
@@ -1343,8 +1343,6 @@ function G.FUNCS.arrow_save_palette(e)
     ArrowAPI.config.saved_palettes[set][new_idx] = save_palette
     ArrowAPI.config.saved_palettes[set].saved_index = new_idx
     SMODS.save_mod_config(ArrowAPI)
-
-    -- kinda have to recreate it
 
     local tab_config = ArrowAPI.palette_ui_config.tabs_config
     local tab_contents = G.OVERLAY_MENU:get_UIE_by_ID('tab_contents')

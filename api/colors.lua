@@ -205,6 +205,16 @@ ArrowAPI.colors = {
             palette.image_data = {atlases = atlas_table, pixel_map = pixel_map}
 
             palette.current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
+            local badge = palette.current_palette[#palette.current_palette]
+            local badge_table = G.C.SECONDARY_SET[set] or G.C.SUITS[set]
+            if badge_table then
+                badge_table[1] = badge[1]/255
+                badge_table[2] = badge[2]/255
+                badge_table[3] = badge[3]/255
+                badge_table[4] = 1
+            end
+
+
             palette.last_palette = copy_table(palette.current_palette)
         end
     end,
