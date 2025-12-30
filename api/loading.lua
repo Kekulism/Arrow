@@ -66,7 +66,6 @@ ArrowAPI.loading = {
                     local key = 'enable_'..v.key..'s'
                     if mod.config[key] == nil then
                         ArrowAPI.config_tools.update_config(mod, key, true, nil)
-                        ArrowAPI.loading.write_default_config(mod)
                     else
                         ArrowAPI.config_tools.update_config(mod, key, true, nil, false)
                     end
@@ -181,7 +180,7 @@ ArrowAPI.loading = {
         if item_type ~= 'Deck' and item_type ~= 'Challenge' and item_type ~= 'Edition' then
             local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
             function info.loc_vars(self, info_queue, card)
-                if info_queue and ArrowAPI.current_config['enable_ItemCredits'] then
+                if info_queue and ArrowAPI.config['enable_ItemCredits'] then
                     if info.artist then
                         local vars = (type(info.artist) == 'function' and info:artist()) or (type(info.artist) == 'table' and info.artist) or {info.artist}
                         info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
@@ -208,7 +207,7 @@ ArrowAPI.loading = {
                     table.insert(ret.vars, card.ability.runtime-card.ability.uses)
                 end
 
-                if ret and ret.key == self.key and ArrowAPI.current_config['enable_DetailedDescs'] then
+                if ret and ret.key == self.key and ArrowAPI.config['enable_DetailedDescs'] then
                     ret.key = ret.key..'_detailed'
                 end
                 return ret
@@ -278,7 +277,6 @@ ArrowAPI.loading = {
             local key = 'enable_'..item_type..'s'
             if mod.config[key] == nil then
                 ArrowAPI.config_tools.update_config(mod, key, true, nil)
-                ArrowAPI.loading.write_default_config(mod)
             else
                 ArrowAPI.config_tools.update_config(mod, key, true, nil, false)
             end
@@ -328,17 +326,6 @@ ArrowAPI.loading = {
             SMODS.Atlas(atlas_args)
         end
         return true
-    end,
-
-    write_default_config = function(mod)
-        local success = pcall(function()
-            NFS.createDirectory('config')
-            assert(mod.config and next(mod.config))
-            local current_config = 'return '..serialize(mod.config)
-            NFS.write(('config/%s.jkr'):format(mod.id), current_config)
-            NFS.write(mod.path..(mod.config_file or 'config.lua'), current_config)
-        end)
-        return success
     end,
 
     --- Simple wrapper for SMODS.DeckSkin to automatically table card credits
