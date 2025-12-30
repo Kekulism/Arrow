@@ -318,8 +318,6 @@ ArrowAPI.config_tools.use_config(ArrowAPI, {
 				{169,226,242,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["key"]="169-226-242",["default"]=true},
 				{226,235,249,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["key"]="226-235-249",["default"]=true},
 				{239,250,254,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["key"]="239-250-254",["default"]=true},
-				{255,84,104,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["key"]="255-84-104",["default"]=true},
-				{170,64,92,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["key"]="170-64-92",["default"]=true},
 				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["key"]="255-255-255",["default"]=true},
 				{69,132,250,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["key"]="badge",["default"]=true},
 				["name"] = "Default",

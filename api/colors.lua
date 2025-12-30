@@ -2,37 +2,39 @@ local ffi = require("ffi")
 SMODS.Gradient({key = 'arrow_spectrans', colours = {HEX('F98899'), HEX('5BA6DD')}, cycle = 3.5, prefix_config = false })
 
 local function collect_image_data(set, atlases)
+    collectgarbage('stop')
     local data_table = {}
     local pixel_map = {}
 
     local atlas
     local file_data
-    local image_data
 
     local ref_pointer
     local color_width
     local width_per_unit
     local colors_per_unit
     local obj
-    local positions
 
     local color_key
+    local prior_pixel_rows
+    local start_idx
 
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
         atlas = SMODS.Atlases[k]
         file_data = NFS.newFileData(atlas.full_path)
-        image_data = love.image.newImageData(file_data)
+        local image_data = love.image.newImageData(file_data)
         data_table[k] = image_data
 
         ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
         color_width = image_data:getWidth() * 4
-        width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
-        colors_per_unit = width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
+        width_per_unit = atlas.px * 4
+        colors_per_unit = math.min(image_data:getSize(), width_per_unit * atlas.py)
 
         for _, item in ipairs(v) do
             obj = G['P_'..item.table][item.key]
-            positions = {[item.key] = obj.pos, [item.key..'_soul'] = obj.soul_pos or nil }
+
+            local positions = {[item.key] = obj.pos, [item.key..'_soul'] = obj.soul_pos or nil }
             for key, pos in pairs(positions) do
 
                 local item_table = {pos_x = pos.x, pos_y = pos.y}
@@ -40,8 +42,11 @@ local function collect_image_data(set, atlases)
                     item_table[color.key] = {}
                 end
 
+                prior_pixel_rows = atlas.py * pos.y
+                start_idx = prior_pixel_rows * color_width + pos.x * width_per_unit
+
                 for j = 0, (colors_per_unit - 1), 4 do
-                    local true_idx = ((atlas.py * G.SETTINGS.GRAPHICS.texture_scaling * pos.y) * color_width + pos.x * width_per_unit) + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
+                    local true_idx = start_idx + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
                     if ref_pointer[true_idx + 3] > 0 then
                         color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
                         if item_table[color_key] then
@@ -60,6 +65,8 @@ local function collect_image_data(set, atlases)
             end
         end
     end
+    collectgarbage('collect')
+    collectgarbage('restart')
 
     return data_table, pixel_map
 end
@@ -198,6 +205,7 @@ ArrowAPI.colors = {
             palette.image_data = {atlases = atlas_table, pixel_map = pixel_map}
 
             palette.current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
+            palette.last_palette = copy_table(palette.current_palette)
         end
     end,
 
@@ -376,6 +384,8 @@ ArrowAPI.colors = {
             palette.last_palette = copy_table(new_palette)
         end
 
+        collectgarbage('stop')
+
         local rot
         local rot_max
         local lerp_val
@@ -394,6 +404,9 @@ ArrowAPI.colors = {
         local center
         local x
         local y
+
+        local row_start
+        local prev_rows
 
         local width_per_unit
 
@@ -423,11 +436,11 @@ ArrowAPI.colors = {
                                 angle = palette_color.grad_config.val
                                 grad_pos = palette_color.grad_pos
 
-                                local row_start = colors.pos_x * width_per_unit
-                                local prev_rows = colors.pos_y * height_per_unit
+                                row_start = colors.pos_x * width_per_unit
+                                prev_rows = colors.pos_y * height_per_unit
 
-                                x = (idx % color_width - row_start) / width_per_unit
-                                y = (math.floor(idx / color_width) - prev_rows) / height_per_unit
+                                x = (((idx % color_width - row_start) / width_per_unit) - 0.5) * 2
+                                y = (((math.floor(idx / color_width) - prev_rows) / height_per_unit) - 0.5) * -2
 
                                 if palette_color.grad_config.mode == 'linear' then
                                     -- value between 0 and pi/2 for the coord's x rotation
@@ -471,6 +484,9 @@ ArrowAPI.colors = {
             SMODS.Atlases[k].image = love.graphics.newImage(v,
                 { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
         end
+
+        collectgarbage('collect')
+        collectgarbage('restart')
     end,
 }
 

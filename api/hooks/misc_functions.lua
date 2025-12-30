@@ -54,16 +54,38 @@ SMODS.Suits.Spades.pos.y = 0
 SMODS.Suits.Diamonds.pos.y = 0
 SMODS.Suits.Clubs.pos.y = 0
 
-for suitName, _ in pairs(G.COLLABS.options) do
-    local palettes = {
-        {
-            key = 'lc',
-            ranks = {'2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', "King", "Ace",},
-            display_ranks = {'King', 'Queen', 'Jack'},
-            atlas = 'arrow_'..string.lower(suitName),
-            pos_style = 'suit'
+local default_suits = {
+    Hearts = true,
+    Clubs = true,
+    Diamonds = true,
+    Spades = true
+}
+
+for k, v in pairs(SMODS.Ranks) do
+    v.suit_map.Hearts = 0
+    v.suit_map.Clubs = 0
+    v.suit_map.Diamonds = 0
+    v.suit_map.Spades = 0
+end
+
+for k, v in pairs(G.P_CARDS) do
+    if default_suits[v.suit] then
+        v.pos.y = 0
+    end
+end
+
+for suit, _ in pairs(G.COLLABS.options) do
+    if default_suits[suit] then
+        local palettes = {
+            {
+                key = 'lc',
+                ranks = {'2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', "King", "Ace",},
+                display_ranks = {'King', 'Queen', 'Jack'},
+                atlas = 'arrow_'..string.lower(suit),
+                pos_style = 'suit'
+            }
         }
-    }
-    SMODS.DeckSkins['default_'..suitName].palettes[1] = palettes[1]
-    SMODS.DeckSkins['default_'..suitName].palette_map['lc'] = palettes[1]
+        SMODS.DeckSkins['default_'..suit].palettes[1] = palettes[1]
+        SMODS.DeckSkins['default_'..suit].palette_map['lc'] = palettes[1]
+    end
 end
