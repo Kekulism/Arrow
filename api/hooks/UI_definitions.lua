@@ -1711,9 +1711,14 @@ function G.UIDEF.arrow_palette_tab(tab)
                 }},
                 {n=G.UIT.R, config={align = "cm", minh = 0.15}, nodes = {}},
                 {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
-                    {n=G.UIT.R, config={align = "cm"}, nodes={
-                        {n=G.UIT.C, config={align = "cm", minw = 4, padding = 0.1, r = 0.1, hover = true, colour = G.C.ORANGE, button = 'arrow_apply_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                    {n=G.UIT.C, config={align = "cm"}, nodes={
+                        {n=G.UIT.C, config={align = "cm", minw = 3.5, padding = 0.1, r = 0.1, hover = true, colour = G.C.ORANGE, button = 'arrow_apply_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
                             {n=G.UIT.T, config={align = 'cm', text = localize('b_apply_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                        }},
+                    }},
+                    {n=G.UIT.C, config={align = "cm"}, nodes={
+                        {n=G.UIT.C, config={align = "cm", minw = 1.5, padding = 0.1, r = 0.1, hover = true, colour = G.C.GREEN, button = 'arrow_copy_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
+                            {n=G.UIT.T, config={align = 'cm', text = localize('b_copy_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
                         }},
                     }},
                 }}

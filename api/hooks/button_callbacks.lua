@@ -1274,6 +1274,14 @@ function G.FUNCS.arrow_apply_palette(e)
     ArrowAPI.colors.use_custom_palette(ArrowAPI.palette_ui_config.open_palette.set)
 end
 
+function G.FUNCS.arrow_copy_palette(e)
+    local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette
+    local serialized = serialize(palette)
+
+    love.system.setClipboardText(serialized)
+    print('Copied to clipboard')
+end
+
 function G.FUNCS.arrow_can_save_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     local palette = ArrowAPI.colors.palettes[set]
