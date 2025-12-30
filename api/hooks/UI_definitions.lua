@@ -1283,9 +1283,11 @@ function G.UIDEF.arrow_palette_tab(tab)
     if tab ~= ArrowAPI.palette_ui_config.open_palette.set then
         ArrowAPI.palette_ui_config.open_palette = {set = tab, idx = 1, grad_idx = 1}
     end
+
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
 
     local current_palette = palette.current_palette
+    sendDebugMessage('opening with index: '..idx)
     local button_color = current_palette[idx]
 
     local start_idx = (ArrowAPI.palette_ui_config.open_palette.grad_idx - 1) * 3
@@ -1507,6 +1509,7 @@ function G.UIDEF.arrow_palette_tab(tab)
 
 
     ----------------- grad widget
+    sendDebugMessage('button color key: '..tostring(button_color.key))
     local size = #button_color.grad_pos
     local grad_points = {selected = nil, min_points = 1, max_points = 8}
     for i=1, size do

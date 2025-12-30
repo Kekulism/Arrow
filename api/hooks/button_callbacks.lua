@@ -1308,7 +1308,6 @@ function G.FUNCS.arrow_save_palette(e)
             if v.name == palette.current_palette.name then
                 for j, color in ipairs(palette.current_palette) do
                     local default = palette.default_palette[j]
-                    -- TODO // save grad pos
                     local palette_table = {key = default.key, grad_pos = copy_table(color.grad_pos), grad_config = copy_table(color.grad_config)}
                     for k, channel in ipairs(color) do
                         palette_table[k] = channel
