@@ -68,10 +68,6 @@ function Game:prep_stage(new_stage, new_state, new_game_obj)
 		end
 
 		ArrowAPI.colors.setup_palettes()
-		ArrowAPI.colors.use_custom_palette('Background')
-		ArrowAPI.colors.use_custom_palette('Hearts', 2)
-		ArrowAPI.colors.use_custom_palette('Diamonds', 2)
-		ArrowAPI.colors.use_custom_palette('Clubs', 2)
 
         self:init_post_splash()
     end
