@@ -162,6 +162,17 @@ ArrowAPI.colors = {
             local items = {}
 
             local atlases = {}
+
+            -- some weird stuff with the soul atlas
+            -- since it uses this shared thing
+            if set == 'Spectral' then
+                G.P_ARROW_SOUL_DUMMY = {shared_soul = {pos = {x = 9, y = 2}}}
+                if not atlases['arrow_spectrals'] then
+                    atlases['arrow_spectrals'] = {}
+                end
+                atlases['arrow_spectrals'][#atlases['arrow_spectrals']+1] = {key = 'shared_soul', table = 'ARROW_SOUL_DUMMY'}
+            end
+
             for k, v in pairs(G.P_CENTERS) do
                 if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
                     if not atlases[v.atlas] then
@@ -239,6 +250,7 @@ ArrowAPI.colors = {
             palette.last_palette = copy_table(palette.current_palette)
             ArrowAPI.colors.use_custom_palette(set, nil, true)
         end
+        G.P_ARROW_SOUL_DUMMY = nil
     end,
 
     set_background_color = function(args)

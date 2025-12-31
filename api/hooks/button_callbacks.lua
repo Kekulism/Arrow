@@ -1386,6 +1386,7 @@ end
 function G.FUNCS.arrow_can_delete_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
+    sendDebugMessage('checking idx: '..idx..' for palette of color length '..#ArrowAPI.config.saved_palettes[set])
     if ArrowAPI.config.saved_palettes[set][idx].default then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
