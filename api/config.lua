@@ -49,7 +49,6 @@ ArrowAPI.config_tools = {
 
         -- create default sections
         if use_default_sections then
-            sendDefaultMessage('setting default credit sections')
             -- check for already used sections with provided info
             local used_sections = {}
             for i, v in ipairs(credit_table) do
@@ -164,7 +163,7 @@ ArrowAPI.config_tools = {
                 table.insert(palettes, i, palette_table)
                 break
             elseif i == #palettes then
-                insert_index = i
+                insert_index = i+1
                 table.insert(palettes, i+1, palette_table)
                 break
             end

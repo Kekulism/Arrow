@@ -1385,7 +1385,8 @@ end
 
 function G.FUNCS.arrow_can_delete_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
-    if ArrowAPI.colors.palettes[set].current_palette.default then
+    local idx = ArrowAPI.palette_ui_config.open_palette.idx
+    if ArrowAPI.config.saved_palettes[set][idx].default then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     else
@@ -1397,6 +1398,7 @@ end
 function G.FUNCS.arrow_load_palette_preset(args)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     ArrowAPI.config.saved_palettes[set].saved_index = args.cycle_config.current_option
+    ArrowAPI.palette_ui_config.open_palette.idx = args.cycle_config.current_option
     ArrowAPI.palette_ui_config.name_input = ArrowAPI.config.saved_palettes[set][args.cycle_config.current_option].name
 
     -- kinda have to recreate it

@@ -152,6 +152,8 @@ ArrowAPI.colors = {
         local saved_bkg_palettes = ArrowAPI.config.saved_palettes['Background']
         bkg_palette.default_palette = saved_bkg_palettes[1]
         bkg_palette.current_palette = copy_table(saved_bkg_palettes[saved_bkg_palettes.saved_index])
+        bkg_palette.last_palette = copy_table(bkg_palette.current_palette)
+        ArrowAPI.colors.use_custom_palette('Background')
 
         set_list = set_list or {"Tarot", "Planet", "Spectral", "Hearts", "Spades", "Diamonds", "Clubs"}
         for i = 1, #set_list do
@@ -243,8 +245,8 @@ ArrowAPI.colors = {
                 badge_table[4] = 1
             end
 
-
             palette.last_palette = copy_table(palette.current_palette)
+            ArrowAPI.colors.use_custom_palette(set, nil, true)
         end
     end,
 
@@ -276,7 +278,7 @@ ArrowAPI.colors = {
         G.C.BACKGROUND.contrast = args.contrast - G.C.BACKGROUND.contrast
     end,
 
-    use_custom_palette = function(set, saved_index)
+    use_custom_palette = function(set, saved_index, bypass_last)
         local palette = ArrowAPI.colors.palettes[set]
         if set == 'Background' then
             if saved_index then
@@ -361,7 +363,7 @@ ArrowAPI.colors = {
                 end
 
                 local grad_config = {pos = copy_table(current.grad_config.pos), mode = current.grad_config.mode, val = current.grad_config.val }
-                if grad_config.pos[1] ~= last.grad_config.pos[1] or grad_config.pos[2] ~= last.grad_config.pos[2]
+                if bypass_last or grad_config.pos[1] ~= last.grad_config.pos[1] or grad_config.pos[2] ~= last.grad_config.pos[2]
                 or grad_config.mode ~= last.grad_config.mode or grad_config.val ~= last.grad_config.val then
                     changed = true
                 end
