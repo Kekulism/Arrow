@@ -1,6 +1,12 @@
 return {
 	["cols"] = 6,
 	["rows"] = 2,
+	["loaded_packs"] = {
+		"sp_csau_cardsauce",
+		"sp_balatro",
+		["replace_map"] = {
+		},
+	},
 	["saved_palettes"] = {
 		["Spades"] = {
 			{
@@ -5497,12 +5503,6 @@ return {
 			["saved_index"] = 3,
 		},
 	},
-	["enable_ItemCredits"] = true,
 	["enable_DetailedDescs"] = false,
-	["loaded_packs"] = {
-		"sp_csau_cardsauce",
-		"sp_balatro",
-		["replace_map"] = {
-		},
-	},
+	["enable_ItemCredits"] = true,
 }

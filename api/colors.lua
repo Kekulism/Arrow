@@ -163,6 +163,8 @@ ArrowAPI.colors = {
 
             local atlases = {}
 
+            -- some weird stuff with the soul atlas
+            -- since it uses this shared thing
             if set == 'Spectral' then
                 G.P_ARROW_SOUL_DUMMY = {shared_soul = {pos = {x = 9, y = 2}}}
                 if not atlases['arrow_spectrals'] then
