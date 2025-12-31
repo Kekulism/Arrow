@@ -1,6 +1,6 @@
 return {
 	["cols"] = 6,
-	["rows"] = 2,
+	["enable_ItemCredits"] = true,
 	["saved_palettes"] = {
 		["Spades"] = {
 			{
@@ -3421,11 +3421,11 @@ return {
 			["saved_index"] = 1,
 		},
 	},
-	["enable_ItemCredits"] = true,
-	["enable_DetailedDescs"] = false,
 	["loaded_packs"] = {
 		"sp_balatro",
 		["replace_map"] = {
 		},
 	},
+	["enable_DetailedDescs"] = false,
+	["rows"] = 2,
 }

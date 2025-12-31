@@ -130,12 +130,16 @@ ArrowAPI.colors = {
         local edited_config = false
         local default_palettes = default_config.saved_palettes
         local saved_palettes = ArrowAPI.config.saved_palettes
+        sendDebugMessage('setting up palettes')
         for k, v in pairs(default_palettes) do
-            local num_palettes = math.max(#v or #saved_palettes[k])
+            local num_palettes = math.max(#v, #saved_palettes[k])
+            sendDebugMessage('checking '..num_palettes..' '..k..' palettes')
             for i = num_palettes, 1, -1 do
+                sendDebugMessage('iter '..i.. ' for palette '..tostring((saved_palettes[k][i] or default_palettes[k][i]).name))
                 local saved_palette = saved_palettes[k][i]
                 local default_palette = default_palettes[k][i]
                 if (saved_palette and saved_palette.default and not default_palette) then
+                    sendDebugMessage('clearing config of missing default palette')
                     table.remove(saved_palettes[k], i)
                     saved_palettes[k].saved_index = math.min(saved_palettes[k].saved_index, #saved_palettes[k])
                     edited_config = true
