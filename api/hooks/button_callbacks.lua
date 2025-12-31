@@ -522,6 +522,7 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
         end
     end
 
+    sendDebugMessage('setting new ui palette')
     local start_idx = (grad_idx - 1) * 3
     ArrowAPI.palette_ui_config.rgb[1] = color[start_idx + 1]
     ArrowAPI.palette_ui_config.rgb[2] = color[start_idx + 2]
@@ -868,7 +869,7 @@ function G.FUNCS.arrow_grad_pointers(e)
             -- specifically, you can't remove the last grad point if there are are more than 2, so it must be removed
             -- last to maintain the full length of the gradient
             if #grad_points > grad_points.min_points and (grad_points.selected ~= #grad_points or #grad_points == 2) then
-                local grad_idx = ArrowAPI.palette_ui_config.open_palette.grad_idx
+                local grad_idx = grad_points.selected
 
 
                 -- create new grad color and set the rgb to it?
@@ -883,10 +884,13 @@ function G.FUNCS.arrow_grad_pointers(e)
                 table.remove(palette_color, start_idx + 1)
                 table.remove(palette_color, start_idx + 1)
 
-                grad_idx = grad_idx - 1
-                ArrowAPI.palette_ui_config.open_palette.grad_idx = grad_idx
+                local new_idx = grad_idx - 1
+                if grad_idx == ArrowAPI.palette_ui_config.open_palette.grad_idx then
+                    ArrowAPI.palette_ui_config.open_palette.grad_idx = new_idx
+                end
 
-                local new_start_idx = (grad_idx - 1) * 3
+                local new_start_idx = (new_idx - 1) * 3
+
                 ArrowAPI.palette_ui_config.rgb[1] = palette_color[new_start_idx + 1]
                 ArrowAPI.palette_ui_config.rgb[2] = palette_color[new_start_idx + 2]
                 ArrowAPI.palette_ui_config.rgb[3] = palette_color[new_start_idx + 3]
@@ -1285,8 +1289,8 @@ end
 function G.FUNCS.arrow_can_save_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     local palette = ArrowAPI.colors.palettes[set]
-    local valid_save = #ArrowAPI.config.saved_palettes[set] <= 15
-    if valid_save and ArrowAPI.palette_ui_config.name_input ~= palette.current_palette.name then
+    local valid_save = ArrowAPI.palette_ui_config.name_input ~= palette.current_palette.name and #ArrowAPI.config.saved_palettes[set] <= 15
+    if valid_save then
         for i=1, #ArrowAPI.config.saved_palettes[set] do
             if ArrowAPI.palette_ui_config.name_input == ArrowAPI.config.saved_palettes[set][i].name then
                 valid_save = false
@@ -1397,7 +1401,7 @@ end
 function G.FUNCS.arrow_load_palette_preset(args)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     ArrowAPI.config.saved_palettes[set].saved_index = args.cycle_config.current_option
-    ArrowAPI.palette_ui_config.open_palette.idx = args.cycle_config.current_option
+    ArrowAPI.palette_ui_config.open_palette.idx = 1
     ArrowAPI.palette_ui_config.name_input = ArrowAPI.config.saved_palettes[set][args.cycle_config.current_option].name
 
     -- kinda have to recreate it
