@@ -1390,11 +1390,6 @@ SMODS.Seal:take_ownership('Blue', {atlas = 'arrow_planets', prefix_config = {atl
 --------------------------- Overrides for vanilla card localization
 ---------------------------
 
-G.C.SUITS.Hearts = HEX('F03464')
-G.C.SUITS.Diamonds = HEX('F06B3F')
-G.C.SUITS.Spades = HEX('40486F')
-G.C.SUITS.Clubs = HEX('255D59')
-
 --------------------------- suit jokers
 SMODS.Joker:take_ownership('lusty_joker', {
     palette_set = 'Hearts',

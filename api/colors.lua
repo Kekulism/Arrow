@@ -236,17 +236,6 @@ ArrowAPI.colors = {
             palette.image_data = {atlases = atlas_table, pixel_map = pixel_map}
 
             palette.current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
-            local badge = palette.current_palette[#palette.current_palette]
-            local badge_table = G.C.SECONDARY_SET[set] or G.C.SUITS[set]
-            sendDebugMessage('[ArrowAPI] initializing '..set)
-            if badge_table then
-                sendDebugMessage('[ArrowAPI] setting badge color for '..set)
-                badge_table[1] = badge[1]/255
-                badge_table[2] = badge[2]/255
-                badge_table[3] = badge[3]/255
-                badge_table[4] = 1
-            end
-
             palette.last_palette = copy_table(palette.current_palette)
             ArrowAPI.colors.use_custom_palette(set, nil, true)
         end
@@ -344,12 +333,20 @@ ArrowAPI.colors = {
         if not saved_index then
             -- updating current palette
             local badge = palette.current_palette[#palette.current_palette]
-            local badge_table = G.C.SECONDARY_SET[set] or G.C.SUITS[set]
+            local suit_table = G.C.SUITS[set]
+            local badge_table = suit_table or G.C.SECONDARY_SET[set]
             if badge_table then
                 badge_table[1] = badge[1]/255
                 badge_table[2] = badge[2]/255
                 badge_table[3] = badge[3]/255
                 badge_table[4] = 1
+
+                if suit_table then
+                    G.C.SO_1[1] = badge_table[1]
+                    G.C.SO_1[2] = badge_table[2]
+                    G.C.SO_1[3] = badge_table[3]
+                    G.C.SO_1[4] = badge_table[4]
+                end
             end
 
             for i=1, #palette.current_palette-1 do
@@ -415,12 +412,20 @@ ArrowAPI.colors = {
             end
 
             -- TODO // fix with grad pos
-            local badge_table = G.C.SECONDARY_SET[set] or G.C.SUITS[set]
+            local suit_table = G.C.SUITS[set]
+            local badge_table = suit_table or G.C.SECONDARY_SET[set]
             if badge_table then
                 badge_table[1] = new_palette[#new_palette][1]/255
                 badge_table[2] = new_palette[#new_palette][2]/255
                 badge_table[3] = new_palette[#new_palette][3]/255
                 badge_table[4] = 1
+
+                if suit_table then
+                    G.C.SO_1[1] = badge_table[1]
+                    G.C.SO_1[2] = badge_table[2]
+                    G.C.SO_1[3] = badge_table[3]
+                    G.C.SO_1[4] = badge_table[4]
+                end
             end
 
             palette.current_palette = new_palette
