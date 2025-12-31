@@ -1436,6 +1436,11 @@ function G.UIDEF.arrow_palette_tab(tab)
             local bright_c = 0.9
             local bright_l = 1.3
             local bright_d = 0.7
+            if args.special_colour and args.tertiary_colour then
+                bright_c = 1
+                bright_l = 1
+                bright_d = 1
+            end
 
             G.ARROW_DUMMY_BACKGROUND.C[1] = color_c[1]*bright_c
             G.ARROW_DUMMY_BACKGROUND.C[2] = color_c[2]*bright_c
