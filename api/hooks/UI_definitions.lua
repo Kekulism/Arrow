@@ -1366,9 +1366,9 @@ function G.UIDEF.arrow_palette_tab(tab)
     else
         items_per_page = 1
         items = {
-            {key = 'palette_bkg_standard', args = {new_colour = G.C.BLIND.Small, contrast = 1}},
+            {key = 'palette_bkg_standard', args = {new_colour = G.C.BLIND.Small, contrast = 3}},
             {key = 'palette_bkg_boss', args = {new_colour = G.C.BLIND.SHOWDOWN_COL_2, special_colour = G.C.BLIND.SHOWDOWN_COL_1, tertiary_colour = darken(G.C.BLACK, 0.4), contrast = 3}},
-            {key = 'palette_bkg_endless', args = {new_colour = G.C.BLIND.won, contrast = 1}}
+            {key = 'palette_bkg_endless', args = {new_colour = G.C.BLIND.won, contrast = 3}}
         }
 
         G.ARROW_DUMMY_BACKGROUND = {
