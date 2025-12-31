@@ -1435,6 +1435,7 @@ end
 -- TODO rework refresh contrast mode to use palette settings
 G.FUNCS.refresh_contrast_mode = function()
     local new_colour_proto = G.C["SO_"..(G.SETTINGS.colourblind_option and 2 or 1)]
+    sendDebugMessage('[ArrowAPI] refreshing contrast colors')
     G.C.SUITS.Hearts = new_colour_proto.Hearts
     G.C.SUITS.Diamonds = new_colour_proto.Diamonds
     G.C.SUITS.Spades = new_colour_proto.Spades

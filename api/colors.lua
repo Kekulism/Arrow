@@ -236,7 +236,9 @@ ArrowAPI.colors = {
             palette.current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
             local badge = palette.current_palette[#palette.current_palette]
             local badge_table = G.C.SECONDARY_SET[set] or G.C.SUITS[set]
+            sendDebugMessage('[ArrowAPI] initializing '..set)
             if badge_table then
+                sendDebugMessage('[ArrowAPI] setting badge color for '..set)
                 badge_table[1] = badge[1]/255
                 badge_table[2] = badge[2]/255
                 badge_table[3] = badge[3]/255
