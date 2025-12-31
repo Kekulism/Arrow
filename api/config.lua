@@ -135,7 +135,7 @@ ArrowAPI.config_tools = {
         return success
     end,
 
-    add_default_palette = function(mod, palette_set, palette_table)
+    add_default_palette = function(mod, palette_set, palette_table, set_to_default)
         local s1, default_config = pcall(function()
             return load(NFS.read(mod.path..(mod.config_file or 'config.lua')), ('=[SMODS %s "default_config"]'):format(mod.id))()
         end)
@@ -151,21 +151,28 @@ ArrowAPI.config_tools = {
         end
 
         palette_table.default = true
+        local insert_index = nil
         local palettes = default_config.saved_palettes[palette_set]
         for i, v in ipairs(palettes) do
             if v.name == palette_table.name then
-                sendDebugMessage('overwriting existing palettes')
                 palettes[i] = palette_table
                 break
             end
 
             if not v.default then
+                insert_index = i
                 table.insert(palettes, i, palette_table)
                 break
             elseif i == #palettes then
+                insert_index = i
                 table.insert(palettes, i+1, palette_table)
                 break
             end
+        end
+
+        if set_to_default and insert_index then
+            palettes.saved_index = insert_index
+            ArrowAPI.config.saved_palettes[palette_set].saved_index = insert_index
         end
 
         ArrowAPI.config_tools.write_default_config(mod, default_config)
