@@ -1295,7 +1295,7 @@ function G.UIDEF.arrow_palette_tab(tab)
 
     ----------------- palette_items
     local deck_tables = {}
-    local cards_per_page = 0
+    local items_per_page = 0
     local items = {}
 
     local options = {}
@@ -1308,11 +1308,11 @@ function G.UIDEF.arrow_palette_tab(tab)
         local rows = {5, 5}
         local row_totals = {}
         for i = 1, #rows do
-            if cards_per_page >= #items then
+            if items_per_page >= #items then
                 rows[i] = nil
             else
-                row_totals[i] = cards_per_page
-                cards_per_page = cards_per_page + rows[i]
+                row_totals[i] = items_per_page
+                items_per_page = items_per_page + rows[i]
                 G.arrow_palette_collection[i] = CardArea(
                     0,
                     0,
@@ -1327,8 +1327,8 @@ function G.UIDEF.arrow_palette_tab(tab)
             end
         end
 
-        for i = 1, math.ceil(#items/cards_per_page) do
-            table.insert(options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#items/cards_per_page)))
+        for i = 1, math.ceil(#items/items_per_page) do
+            table.insert(options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#items/items_per_page)))
         end
 
         G.FUNCS.arrow_palette_page = function(e)
@@ -1341,7 +1341,7 @@ function G.UIDEF.arrow_palette_tab(tab)
             end
             for j = 1, #rows do
                 for i = 1, rows[j] do
-                    local item = items[i+row_totals[j] + (cards_per_page*(e.cycle_config.current_option - 1))]
+                    local item = items[i+row_totals[j] + (items_per_page*(e.cycle_config.current_option - 1))]
                     if not item then break end
 
                     local use_base = item.table == 'SEALS' or item.table == 'CARDS'
@@ -1360,6 +1360,99 @@ function G.UIDEF.arrow_palette_tab(tab)
                     G.arrow_palette_collection[j]:emplace(disp_card)
                 end
             end
+        end
+
+        G.FUNCS.arrow_palette_page{cycle_config = { current_option = 1 }}
+    else
+        items_per_page = 1
+        items = {
+            {key = 'palette_bkg_standard', args = {new_colour = G.C.BLIND.Small, contrast = 1}},
+            {key = 'palette_bkg_boss', args = {new_colour = G.C.BLIND.SHOWDOWN_COL_2, special_colour = G.C.BLIND.SHOWDOWN_COL_1, tertiary_colour = darken(G.C.BLACK, 0.4), contrast = 3}},
+            {key = 'palette_bkg_endless', args = {new_colour = G.C.BLIND.won, contrast = 1}}
+        }
+
+        G.ARROW_DUMMY_BACKGROUND = {
+            L = {1, 1, 1, 1},
+            D = {1, 1, 1, 1},
+            C = {1, 1, 1, 1},
+            contrast = 0,
+            amount = 0,
+            real = 0,
+            eased = 0,
+            current_config_option = 1
+        }
+
+        G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            blocking = false,
+            blockable = false,
+            func = function()
+                if ArrowAPI.palette_ui_config.open_palette.set ~= 'Background' then
+                    -- return whenever this is no longer amanging the background
+                    return true
+                end
+                local _dt = G.ARROW_DUMMY_BACKGROUND.amount > G.ARROW_DUMMY_BACKGROUND.eased and G.real_dt*2. or 0.3*G.real_dt
+                local delta = G.ARROW_DUMMY_BACKGROUND.real - G.ARROW_DUMMY_BACKGROUND.eased
+                if math.abs(delta) > _dt then delta = delta*_dt/math.abs(delta) end
+                G.ARROW_DUMMY_BACKGROUND.eased = G.ARROW_DUMMY_BACKGROUND.eased + delta
+                G.ARROW_DUMMY_BACKGROUND.amount = _dt*(G.ARROW_DUMMY_BACKGROUND.eased) + (1 - _dt)*G.ARROW_DUMMY_BACKGROUND.amount
+                G.TIMERS.BACKGROUND = G.TIMERS.BACKGROUND - 60*(G.ARROW_DUMMY_BACKGROUND.eased - G.ARROW_DUMMY_BACKGROUND.amount)*_dt
+            end
+        }))
+
+        if G.arrow_background_palette then G.arrow_background_palette:remove() end
+        G.arrow_background_palette = Sprite(0, 0, 7, 5, G.ASSET_ATLAS["ui_1"], {x = 2, y = 0})
+        G.arrow_background_palette:define_draw_steps({{
+            shader = 'background',
+            send = {
+                {name = 'time', ref_table = G.TIMERS, ref_value = 'REAL_SHADER'},
+                {name = 'spin_time', ref_table = G.TIMERS, ref_value = 'BACKGROUND'},
+                {name = 'colour_1', ref_table = G.ARROW_DUMMY_BACKGROUND, ref_value = 'C'},
+                {name = 'colour_2', ref_table = G.ARROW_DUMMY_BACKGROUND, ref_value = 'L'},
+                {name = 'colour_3', ref_table = G.ARROW_DUMMY_BACKGROUND, ref_value = 'D'},
+                {name = 'contrast', ref_table = G.ARROW_DUMMY_BACKGROUND, ref_value = 'contrast'},
+                {name = 'spin_amount', ref_table = G.ARROW_DUMMY_BACKGROUND, ref_value = 'amount'}
+            }}})
+
+        deck_tables[1] = {n=G.UIT.R, config={align = "cm", padding = 0.07, no_fill = true}, nodes={
+            {n=G.UIT.O, config={object = G.arrow_background_palette}}
+        }}
+
+        for i = 1, #items do
+            table.insert(options, localize(items[i].key)..' ('..i..'/'..#items..')')
+        end
+
+        G.FUNCS.arrow_palette_page = function(e)
+            if not e then
+                e = {cycle_config = { current_option = G.ARROW_DUMMY_BACKGROUND.current_config_option }}
+            end
+
+            G.ARROW_DUMMY_BACKGROUND.current_config_option = e.cycle_config.current_option
+            local args = items[e.cycle_config.current_option].args
+
+            local color_c = args.special_colour or args.new_colour
+            local color_l = args.new_colour
+            local color_d = args.tertiary_colour or args.new_colour
+            local bright_c = 0.9
+            local bright_l = 1.3
+            local bright_d = 0.7
+
+            G.ARROW_DUMMY_BACKGROUND.C[1] = color_c[1]*bright_c
+            G.ARROW_DUMMY_BACKGROUND.C[2] = color_c[2]*bright_c
+            G.ARROW_DUMMY_BACKGROUND.C[3] = color_c[3]*bright_c
+            G.ARROW_DUMMY_BACKGROUND.C[4] = 1
+
+            G.ARROW_DUMMY_BACKGROUND.L[1] = color_l[1]*bright_l
+            G.ARROW_DUMMY_BACKGROUND.L[2] = color_l[2]*bright_l
+            G.ARROW_DUMMY_BACKGROUND.L[3] = color_l[3]*bright_l
+            G.ARROW_DUMMY_BACKGROUND.L[4] = 1
+
+            G.ARROW_DUMMY_BACKGROUND.D[1] = color_d[1]*bright_d
+            G.ARROW_DUMMY_BACKGROUND.D[2] = color_d[2]*bright_d
+            G.ARROW_DUMMY_BACKGROUND.D[3] = color_d[3]*bright_d
+            G.ARROW_DUMMY_BACKGROUND.D[4] = 1
+
+            G.ARROW_DUMMY_BACKGROUND.contrast = args.contrast
         end
 
         G.FUNCS.arrow_palette_page{cycle_config = { current_option = 1 }}
@@ -1559,8 +1652,8 @@ function G.UIDEF.arrow_palette_tab(tab)
                             }},
                         }},
                     }} or nil,
-                    tab ~= 'Background' and {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables} or nil,
-                    tab ~= 'Background' and cards_per_page < #items and {n=G.UIT.R, config={align = "cm"}, nodes={
+                    {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables} or nil,
+                    items_per_page < #items and {n=G.UIT.R, config={align = "cm"}, nodes={
                         create_option_cycle({options = options, w = 6.5, h = 0.6, cycle_shoulders = true, opt_callback = 'arrow_palette_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
                     }} or nil,
                 }}

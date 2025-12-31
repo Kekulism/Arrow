@@ -251,7 +251,7 @@ ArrowAPI.colors = {
         G.P_ARROW_SOUL_DUMMY = nil
     end,
 
-    set_background_color = function(args)
+    set_background_color = function(background_table, args)
         local color_c = args.special_colour or args.new_colour
         local color_l = args.new_colour
         local color_d = args.tertiary_colour or args.new_colour
@@ -264,19 +264,19 @@ ArrowAPI.colors = {
             bright_d = 1
         end
 
-        G.C.BACKGROUND.C[1] = color_c[1]*bright_c - G.C.BACKGROUND.C[1]
-        G.C.BACKGROUND.C[2] = color_c[2]*bright_c - G.C.BACKGROUND.C[2]
-        G.C.BACKGROUND.C[3] = color_c[3]*bright_c - G.C.BACKGROUND.C[3]
+        background_table.C[1] = color_c[1]*bright_c - background_table.C[1]
+        background_table.C[2] = color_c[2]*bright_c - background_table.C[2]
+        background_table.C[3] = color_c[3]*bright_c - background_table.C[3]
 
-        G.C.BACKGROUND.L[1] = color_l[1]*bright_l - G.C.BACKGROUND.L[1]
-        G.C.BACKGROUND.L[2] = color_l[2]*bright_l - G.C.BACKGROUND.L[2]
-        G.C.BACKGROUND.L[3] = color_l[3]*bright_l - G.C.BACKGROUND.L[3]
+        background_table.L[1] = color_l[1]*bright_l - background_table.L[1]
+        background_table.L[2] = color_l[2]*bright_l - background_table.L[2]
+        background_table.L[3] = color_l[3]*bright_l - background_table.L[3]
 
-        G.C.BACKGROUND.D[1] = color_d[1]*bright_d - G.C.BACKGROUND.D[1]
-        G.C.BACKGROUND.D[2] = color_d[2]*bright_d - G.C.BACKGROUND.D[2]
-        G.C.BACKGROUND.D[3] = color_d[3]*bright_d - G.C.BACKGROUND.D[3]
+        background_table.D[1] = color_d[1]*bright_d - background_table.D[1]
+        background_table.D[2] = color_d[2]*bright_d - background_table.D[2]
+        background_table.D[3] = color_d[3]*bright_d - background_table.D[3]
 
-        G.C.BACKGROUND.contrast = args.contrast - G.C.BACKGROUND.contrast
+        background_table.contrast = args.contrast - background_table.contrast
     end,
 
     use_custom_palette = function(set, saved_index, bypass_last)
@@ -322,22 +322,26 @@ ArrowAPI.colors = {
             end
 
             -- updating
+            local background_args = nil
             if G.GAME then
                 if G.GAME.won then
-                    ArrowAPI.colors.set_background_color({new_colour = G.C.BLIND.won, contrast = 1})
+                    background_args = {new_colour = G.C.BLIND.won, contrast = 1}
                 else
                     local current_blind = G.GAME.blind and G.GAME.blind.config.blind
                     if G.STAGE == G.STAGES.MAIN_MENU or (current_blind and current_blind.boss and current_blind.boss.showdown) then
-                        ArrowAPI.colors.set_background_color({new_colour = G.C.BLIND.SHOWDOWN_COL_2, special_colour = G.C.BLIND.SHOWDOWN_COL_1, tertiary_colour = darken(G.C.BLACK, 0.4), contrast = 3})
+                        background_args = {new_colour = G.C.BLIND.SHOWDOWN_COL_2, special_colour = G.C.BLIND.SHOWDOWN_COL_1, tertiary_colour = darken(G.C.BLACK, 0.4), contrast = 3}
                     elseif not ignore_states[G.STATE] then
-                        ArrowAPI.colors.set_background_color({new_colour = G.C.BLIND.Small, contrast = 1})
+                        background_args = {new_colour = G.C.BLIND.Small, contrast = 1}
                     end
                 end
             end
 
+            if background_args then
+                ArrowAPI.colors.set_background_color(G.C.BACKGROUND, background_args)
+            end
+
             return
         end
-
 
         local custom_palette = {}
         if not saved_index then

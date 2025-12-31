@@ -1276,6 +1276,10 @@ function G.FUNCS.arrow_apply_palette(e)
     end
 
     ArrowAPI.colors.use_custom_palette(ArrowAPI.palette_ui_config.open_palette.set)
+
+    if ArrowAPI.palette_ui_config.open_palette.set == 'Background' then
+        G.FUNCS.arrow_palette_page()
+    end
 end
 
 function G.FUNCS.arrow_copy_palette(e)
