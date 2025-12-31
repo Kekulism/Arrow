@@ -1285,7 +1285,7 @@ end
 function G.FUNCS.arrow_can_save_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     local palette = ArrowAPI.colors.palettes[set]
-    local valid_save = ArrowAPI.palette_ui_config.name_input ~= 'Default' or #ArrowAPI.config.saved_palettes[set] >= 12
+    local valid_save = #ArrowAPI.config.saved_palettes[set] <= 15
     if valid_save and ArrowAPI.palette_ui_config.name_input ~= palette.current_palette.name then
         for i=1, #ArrowAPI.config.saved_palettes[set] do
             if ArrowAPI.palette_ui_config.name_input == ArrowAPI.config.saved_palettes[set][i].name then
@@ -1385,7 +1385,7 @@ end
 
 function G.FUNCS.arrow_can_delete_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
-    if ArrowAPI.colors.palettes[set].current_palette.name == 'Default' or #ArrowAPI.config.saved_palettes[set] <= 1 then
+    if ArrowAPI.colors.palettes[set].current_palette.default then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     else

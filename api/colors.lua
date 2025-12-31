@@ -118,6 +118,35 @@ ArrowAPI.colors = {
     --- Caches the default image_data for all given palette sets
     --- @param set_list table | nil List of set keys for card types, i.e. "Tarot", "Planet"
     setup_palettes = function(set_list)
+        local s1, default_config = pcall(function()
+            return load(NFS.read(ArrowAPI.path..('config.lua')), ('=[SMODS %s "default_config"]'):format(ArrowAPI.id))()
+        end)
+
+        if not s1 or not default_config.saved_palettes then
+            ArrowAPI.logging.warn('[ArrowAPI - WARN] Missing config file or malformed config')
+            return
+        end
+
+        local edited_config = false
+        local default_palettes = default_config.saved_palettes
+        local saved_palettes = ArrowAPI.config.saved_palettes
+        for k, v in pairs(default_palettes) do
+            local num_palettes = math.max(#v or #saved_palettes[k])
+            for i = #num_palettes, 1, -1 do
+                local saved_palette = saved_palettes[k][i]
+                local default_palette = default_palettes[k][i]
+                if (saved_palette and saved_palette.default and not default_palette) then
+                    table.remove(saved_palettes[k], i)
+                    saved_palettes[k].saved_index = math.min(saved_palettes[k].saved_index, #saved_palettes[k])
+                    edited_config = true
+                end
+            end
+        end
+
+        if edited_config then
+            SMODS.save_mod_config(ArrowAPI)
+        end
+
         -- background palette handled differently
         local bkg_palette = ArrowAPI.colors.palettes.Background
         local saved_bkg_palettes = ArrowAPI.config.saved_palettes['Background']
