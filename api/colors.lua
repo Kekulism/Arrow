@@ -132,7 +132,7 @@ ArrowAPI.colors = {
         local saved_palettes = ArrowAPI.config.saved_palettes
         for k, v in pairs(default_palettes) do
             local num_palettes = math.max(#v or #saved_palettes[k])
-            for i = #num_palettes, 1, -1 do
+            for i = num_palettes, 1, -1 do
                 local saved_palette = saved_palettes[k][i]
                 local default_palette = default_palettes[k][i]
                 if (saved_palette and saved_palette.default and not default_palette) then
