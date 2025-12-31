@@ -1385,8 +1385,7 @@ end
 
 function G.FUNCS.arrow_can_delete_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
-    local idx = ArrowAPI.palette_ui_config.open_palette.idx
-    if ArrowAPI.config.saved_palettes[set][idx].default then
+    if ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index].default then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     else
@@ -1432,19 +1431,4 @@ G.FUNCS.change_tab = function(e)
         config = {offset = {x=0,y=0}, parent = tab_contents, type = 'cm'}
         }
     tab_contents.UIBox:recalculate()
-end
-
--- TODO rework refresh contrast mode to use palette settings
-G.FUNCS.refresh_contrast_mode = function()
-    local new_colour_proto = G.C["SO_"..(G.SETTINGS.colourblind_option and 2 or 1)]
-    sendDebugMessage('[ArrowAPI] refreshing contrast colors')
-    G.C.SUITS.Hearts = new_colour_proto.Hearts
-    G.C.SUITS.Diamonds = new_colour_proto.Diamonds
-    G.C.SUITS.Spades = new_colour_proto.Spades
-    G.C.SUITS.Clubs = new_colour_proto.Clubs
-    for k, v in pairs(G.I.CARD) do
-        if v.config and v.config.card and v.children.front and v.ability.effect ~= 'Stone Card' then
-            v:set_sprites(nil, v.config.card)
-        end
-    end
 end

@@ -29,7 +29,7 @@ function Game:prep_stage(new_stage, new_state, new_game_obj)
 		TNSMI.save_soundpacks()
 
 		G.shared_soul.atlas = G.ASSET_ATLAS['arrow_spectrals']
-		G.shared_soul:set_sprite_pos({x = 9, y = 5})
+		G.shared_soul:set_sprite_pos({x = 9, y = 2})
 
 		ArrowAPI.loading.disable_empty()
 
