@@ -507,8 +507,8 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
         -- unhighlight any existing palette overrides
         for _, palette_area in ipairs(G.arrow_palette_collection) do
             for i = #palette_area.highlighted, 1, -1 do
-                table.remove(palette_area.highlighted, i)
-                palette_area.highlighted[i].highlighted = false
+                local removed = table.remove(palette_area.highlighted, i)
+                removed.highlighted = false
             end
         end
 
