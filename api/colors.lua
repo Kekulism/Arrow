@@ -122,6 +122,8 @@ ArrowAPI.colors = {
             return
         end
 
+        -- this is intended to clean settings between the embedded cardsauce arrow installation
+        -- and an independent installation when switching between them
         local edited_config = false
         local default_palettes = default_config.saved_palettes
         local saved_palettes = ArrowAPI.config.saved_palettes
@@ -143,6 +145,7 @@ ArrowAPI.colors = {
         end
 
         -- background palette handled differently
+        -- so we don't have to collect card and atlas data
         local bkg_palette = ArrowAPI.colors.palettes.Background
         local saved_bkg_palettes = ArrowAPI.config.saved_palettes['Background']
         bkg_palette.default_palette = saved_bkg_palettes[1]
@@ -150,6 +153,7 @@ ArrowAPI.colors = {
         bkg_palette.last_palette = copy_table(bkg_palette.current_palette)
         ArrowAPI.colors.use_custom_palette('Background')
 
+        -- TODO // create a way to edit this list or add to it via compatible mods
         set_list = set_list or {"Tarot", "Planet", "Spectral", "Hearts", "Spades", "Diamonds", "Clubs"}
         for i = 1, #set_list do
             local set = set_list[i]
@@ -167,71 +171,83 @@ ArrowAPI.colors = {
                 atlases['arrow_spectrals'][#atlases['arrow_spectrals']+1] = {key = 'shared_soul', pos = {x = 9, y = 2}}
             end
 
-            for k, v in pairs(G.P_CENTERS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
+            for k, center in pairs(G.P_CENTERS) do
+                if not center.no_collection and (center.set == set or center.palette_set == set)
+                and (not center.original_mod or (center.original_mod.optional_features or {}).arrow_palettes) then
 
-                    local positions = {[k] = v.pos, [k..'_soul'] = v.soul_pos}
+                    local center_key = center.key
+                    local positions = {[center_key] = center.pos, [center_key..'_soul'] = center.soul_pos}
+
+                    -- this captures any additional draw layers you might use in modded cards
+                    -- but it expects that you use the same atlas (and generally you should tbh)
+                    for _, pos in ipairs(center.palette_register or {}) do
+                        positions[#positions+1] = pos
+                    end
+
                     for key, pos in pairs(positions) do
-                        if not atlases[v.atlas] then
-                            atlases[v.atlas] = {}
+                        if not atlases[center.atlas] then
+                            atlases[center.atlas] = {}
                         end
 
-                        atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, pos = pos}
-                        items[#items+1] = {key = key, item_key = k, table = 'CENTERS', set = (v.set or v.palette_set)}
+                        atlases[center.atlas][#atlases[center.atlas]+1] = {key = center_key, pos = pos}
+                        items[#items+1] = {key = key, order = center.order, item_key = center_key, table = 'CENTERS', set = (center.set or center.palette_set)}
                     end
 
                 end
             end
 
+            -- playing card collection uses a pared down version of
+            -- get_front_spriteinfo for this, but I don't like it
             local card_map = {}
-            for k, v in pairs(G.P_CARDS) do
-                if not v.no_collection and v.suit == set and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
+            for k, card in pairs(G.P_CARDS) do
+                if not card.no_collection and card.suit == set
+                and (not card.original_mod or (card.original_mod.optional_features or {}).arrow_palettes) then
                     card_map[k] = {}
-                    for collab_key, info in ipairs(G.COLLABS.options[v.suit]) do
+                    for collab_key, info in ipairs(G.COLLABS.options[card.suit]) do
                         local deckSkin = SMODS.DeckSkins[info]
 
                         local atlas, pos
-                        local pal_map = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[v.suit] or ''] or (deckSkin.palettes or {})[1]
+                        local pal_map = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[card.suit] or ''] or (deckSkin.palettes or {})[1]
                         local rank_type = false
                         for j = 1, #pal_map.ranks do
-                            if pal_map.ranks[j] == v.value then rank_type = true break end
+                            if pal_map.ranks[j] == card.value then rank_type = true break end
                         end
 
                         if rank_type then
                             atlas = pal_map.atlas
                             if type(pal_map.pos_style) == "table" then
-                                if pal_map.pos_style[v.value] then
-                                    if pal_map.pos_style[v.value].atlas then
-                                        atlas = pal_map.pos_style[v.value].atlas
+                                if pal_map.pos_style[card.value] then
+                                    if pal_map.pos_style[card.value].atlas then
+                                        atlas = pal_map.pos_style[card.value].atlas
                                     end
-                                    if pal_map.pos_style[v.value].pos then
-                                        pos = pal_map.pos_style[v.value].pos
+                                    if pal_map.pos_style[card.value].pos then
+                                        pos = pal_map.pos_style[card.value].pos
                                     end
                                 elseif pal_map.pos_style.fallback_style then
                                     if pal_map.pos_style.fallback_style == 'collab' then
-                                        pos = G.COLLABS.pos[v.value]
+                                        pos = G.COLLABS.pos[card.value]
                                     elseif pal_map.pos_style.fallback_style == 'suit' then
-                                        pos = { x = v.pos.x, y = 0}
+                                        pos = { x = card.pos.x, y = 0}
                                     elseif pal_map.pos_style.fallback_style == 'deck' then
-                                        pos = v.pos
+                                        pos = card.pos
                                     end
                                 end
                             elseif pal_map.pos_style == 'collab' then
-                                pos = G.COLLABS.pos[v.value]
+                                pos = G.COLLABS.pos[card.value]
                             elseif pal_map.pos_style == 'suit' then
-                                pos = { x = v.pos.x, y = 0}
+                                pos = { x = card.pos.x, y = 0}
                             elseif pal_map.pos_style == 'deck' then
-                                pos = v.pos
+                                pos = card.pos
                             elseif pal_map.pos_style == 'ranks' or nil then
                                 for j, rank in ipairs(pal_map.ranks) do
-                                    if rank == v.value then
+                                    if rank == card.value then
                                         pos = { x = j - 1, y = 0}
                                     end
                                 end
                             end
                         else
-                            atlas = "arrow_"..string.lower(v.suit)
-                            pos = v.pos
+                            atlas = "arrow_"..string.lower(card.suit)
+                            pos = card.pos
                         end
 
                         if not card_map[k][atlas] then
@@ -242,56 +258,62 @@ ArrowAPI.colors = {
                             end
 
                             atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..collab_key, pos = pos}
-                            items[#items+1] = {key = k..'_'..collab_key, collab_key = collab_key, item_key = k, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
+                            items[#items+1] = {key = k..'_'..collab_key, collab_key = collab_key, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
                         end
                     end
                 end
             end
 
-            for k, v in pairs(G.P_TAGS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    if not atlases[v.atlas] then
-                        atlases[v.atlas] = {}
+            -- TODO // Tags are not currently displayed at all in the palette editor due to
+            -- distinct rendering, would want to fix that eventually
+            for _, tag in ipairs(G.P_CENTER_POOLS['Tag']) do
+                if not tag.no_collection and (tag.set == set or tag.palette_set == set)
+                and (not tag.original_mod or (tag.original_mod.optional_features or {}).arrow_palettes) then
+                    if not atlases[tag.atlas] then
+                        atlases[tag.atlas] = {}
                     end
 
-                    atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, pos = v.pos}
+                    atlases[tag.atlas][#atlases[tag.atlas]+1] = {key = tag.key, pos = tag.pos}
                 end
             end
 
-            for k, v in pairs(G.P_SEALS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    if not atlases[v.atlas] then
-                        atlases[v.atlas] = {}
+            for _, seal in ipairs(G.P_CENTER_POOLS['Seal']) do
+                if not seal.no_collection and (seal.set == set or seal.palette_set == set)
+                and (not seal.original_mod or (seal.original_mod.optional_features or {}).arrow_palettes) then
+                    if not atlases[seal.atlas] then
+                        atlases[seal.atlas] = {}
                     end
 
-                    atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, pos = v.pos}
-                    items[#items+1] = {key = k, table = 'SEALS', set = 'Seal'}
+                    atlases[seal.atlas][#atlases[seal.atlas]+1] = {key = seal.key, pos = seal.pos}
+                    items[#items+1] = {key = seal.key, table = 'SEALS', order = seal.order, set = 'Seal'}
                 end
             end
 
+
+            -- result of this sort function is prioritizing set order, however
+            -- centers don't have a built in order value, just the object buffers
+            -- and the center pools
+            -- TODO // add sorting properly for centers
             table.sort(items, function(a, b)
                 local a_order = set_order[a.set] or 0
                 local b_order = set_order[b.set] or 0
-                if a_order ~= b_order then
+                if a.set ~= b.set  and a_order ~= b_order then
                     return a_order < b_order
                 end
-
-                local a_item = G['P_'..a.table][a.item_key or a.key]
-                local b_item = G['P_'..b.table][b.item_key or b.key]
 
                 if a.table == 'CARDS' and b.table == 'CARDS' then
                     if a.collab_key ~= b.collab_key then
                         return a.collab_key < b.collab_key
                     end
-                    local a_rank = SMODS.Ranks[a_item.value]
-                    local b_rank = SMODS.Ranks[b_item.value]
+                    local a_rank = SMODS.Ranks[a.rank]
+                    local b_rank = SMODS.Ranks[b.rank]
                     local a_nominal = 10*(a_rank.nominal or 0) + 10*(a_rank.face_nominal or 0)
                     local b_nominal = 10*(b_rank.nominal or 0) + 10*(b_rank.face_nominal or 0)
 
                     return a_nominal < b_nominal
                 end
 
-                return (a_item.order or 0) < (a_item.order or 0)
+                return (a.order or 0) < (b.order or 0)
             end)
 
             palette.items = items
