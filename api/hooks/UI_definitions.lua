@@ -1354,6 +1354,11 @@ function G.UIDEF.arrow_palette_tab(tab)
                         (G.P_CENTERS[use_base and 'c_base' or item.key])
                     )
 
+                    if item.front_atlas then
+                        disp_card.children.front.atlas = G.ASSET_ATLAS[item.front_atlas]
+                        disp_card.children.front:set_sprite_pos(item.front_pos)
+                    end
+
                     if item.table == 'SEALS' then disp_card:set_seal(item.key, true) end
 
                     --disp_card:start_materialize(nil, i>1 or j>1)

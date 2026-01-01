@@ -21,6 +21,7 @@ local function collect_image_data(set, atlases)
 
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
+        sendDebugMessage('getting atlas '..k)
         atlas = SMODS.Atlases[k]
         file_data = NFS.newFileData(atlas.full_path)
         local image_data = love.image.newImageData(file_data)
@@ -32,7 +33,7 @@ local function collect_image_data(set, atlases)
         colors_per_unit = math.min(image_data:getSize(), width_per_unit * atlas.py)
 
         for _, item in ipairs(v) do
-            obj = G['P_'..item.table][item.key]
+            obj = item.table and G['P_'..item.table][item.key] or {pos = item.pos}
 
             local positions = {[item.key] = obj.pos, [item.key..'_soul'] = obj.soul_pos or nil }
             for key, pos in pairs(positions) do
@@ -166,11 +167,10 @@ ArrowAPI.colors = {
             -- some weird stuff with the soul atlas
             -- since it uses this shared thing
             if set == 'Spectral' then
-                G.P_ARROW_SOUL_DUMMY = {shared_soul = {pos = {x = 9, y = 2}}}
                 if not atlases['arrow_spectrals'] then
                     atlases['arrow_spectrals'] = {}
                 end
-                atlases['arrow_spectrals'][#atlases['arrow_spectrals']+1] = {key = 'shared_soul', table = 'ARROW_SOUL_DUMMY'}
+                atlases['arrow_spectrals'][#atlases['arrow_spectrals']+1] = {key = 'shared_soul', pos = {x = 9, y = 2}}
             end
 
             for k, v in pairs(G.P_CENTERS) do
@@ -184,15 +184,69 @@ ArrowAPI.colors = {
                 end
             end
 
+            local card_map = {}
             for k, v in pairs(G.P_CARDS) do
                 if not v.no_collection and v.suit == set and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    local atlas = "arrow_"..string.lower(set)
-                    if not atlases[atlas] then
-                        atlases[atlas] = {}
-                    end
+                    card_map[k] = {}
+                    for collab_key, info in ipairs(G.COLLABS.options[v.suit]) do
+                        local deckSkin = SMODS.DeckSkins[info]
 
-                    atlases[atlas][#atlases[atlas]+1] = {key = k, table = 'CARDS'}
-                    items[#items+1] = {key = k, table = 'CARDS', set = 'Card'}
+                        local atlas, pos
+                        local pal_map = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[v.suit] or ''] or (deckSkin.palettes or {})[1]
+                        local rank_type = false
+                        for j = 1, #pal_map.ranks do
+                            if pal_map.ranks[j] == v.value then rank_type = true break end
+                        end
+
+                        if rank_type then
+                            atlas = pal_map.atlas
+                            if type(pal_map.pos_style) == "table" then
+                                if pal_map.pos_style[v.value] then
+                                    if pal_map.pos_style[v.value].atlas then
+                                        atlas = pal_map.pos_style[v.value].atlas
+                                    end
+                                    if pal_map.pos_style[v.value].pos then
+                                        pos = pal_map.pos_style[v.value].pos
+                                    end
+                                elseif pal_map.pos_style.fallback_style then
+                                    if pal_map.pos_style.fallback_style == 'collab' then
+                                        pos = G.COLLABS.pos[v.value]
+                                    elseif pal_map.pos_style.fallback_style == 'suit' then
+                                        pos = { x = v.pos.x, y = 0}
+                                    elseif pal_map.pos_style.fallback_style == 'deck' then
+                                        pos = v.pos
+                                    end
+                                end
+                            elseif pal_map.pos_style == 'collab' then
+                                pos = G.COLLABS.pos[v.value]
+                            elseif pal_map.pos_style == 'suit' then
+                                pos = { x = v.pos.x, y = 0}
+                            elseif pal_map.pos_style == 'deck' then
+                                pos = v.pos
+                            elseif pal_map.pos_style == 'ranks' or nil then
+                                for j, rank in ipairs(pal_map.ranks) do
+                                    if rank == v.value then
+                                        pos = { x = j - 1, y = 0}
+                                    end
+                                end
+                            end
+                        else
+                            atlas = "arrow_"..string.lower(v.suit)
+                            pos = v.pos
+                        end
+
+                        if not card_map[k][atlas] then
+                            card_map[k] = {[atlas] = true}
+
+                            if not atlases[atlas] then
+                                atlases[atlas] = {}
+                            end
+
+                            sendDebugMessage('adding '..k..'_'..collab_key..' with atlas '..atlas)
+                            atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..collab_key, pos = pos}
+                            items[#items+1] = {key = k, collab_key = tonumber(collab_key), table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
+                        end
+                    end
                 end
             end
 
@@ -234,6 +288,11 @@ ArrowAPI.colors = {
                     local b_suit = SMODS.Suits[b_item.suit]
                     local a_nominal = 10*(a_rank.nominal or 0) + (a_suit.suit_nominal or 0) + 10*(a_rank.face_nominal or 0)
                     local b_nominal = 10*(b_rank.nominal or 0) + (b_suit.suit_nominal or 0) + 10*(b_rank.face_nominal or 0)
+
+                    if a_nominal == b_nominal then
+                        return a.collab_key < b.collab_key
+                    end
+
                     return a_nominal < b_nominal
                 end
 
@@ -250,7 +309,6 @@ ArrowAPI.colors = {
             palette.last_palette = copy_table(palette.current_palette)
             ArrowAPI.colors.use_custom_palette(set, nil, true)
         end
-        G.P_ARROW_SOUL_DUMMY = nil
     end,
 
     set_background_color = function(background_table, args)
