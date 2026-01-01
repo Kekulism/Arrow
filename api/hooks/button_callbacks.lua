@@ -498,16 +498,46 @@ local function update_hex_input(color)
 end
 
 local function set_new_ui_palette(set, color_idx, grad_idx)
+    local current_palette = ArrowAPI.colors.palettes[set].current_palette
+    local palette_button = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..color_idx)
     if ArrowAPI.palette_ui_config.open_palette.idx ~= color_idx then
-        G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..ArrowAPI.palette_ui_config.open_palette.idx).parent.config.colour = G.C.UI.TEXT_LIGHT
-        G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..color_idx).parent.config.colour = G.C.FILTER
+        -- always reset overrides upon switching main palette index
+        ArrowAPI.palette_ui_config.open_palette.current_override = nil
+
+        -- unhighlight any existing palette overrides
+        for _, palette_area in ipairs(G.arrow_palette_collection) do
+            for i = #palette_area.highlighted, 1, -1 do
+                table.remove(palette_area.highlighted, i)
+                palette_area.highlighted[i].highlighted = false
+            end
+        end
+
+        -- reset old button
+        local old_button = G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..ArrowAPI.palette_ui_config.open_palette.idx)
+        old_button.config.grad_colour = current_palette[ArrowAPI.palette_ui_config.open_palette.idx]
+        old_button.parent.config.colour = G.C.UI.TEXT_LIGHT
+
+        -- apply new button
+        palette_button.config.grad_colour = current_palette[color_idx]
+        palette_button.parent.config.colour = G.C.FILTER
+    elseif not ArrowAPI.palette_ui_config.open_palette.current_override then
+        palette_button.config.grad_colour = current_palette[color_idx]
+        palette_button.parent.config.colour = G.C.FILTER
     end
 
     ArrowAPI.palette_ui_config.open_palette.idx = color_idx
     ArrowAPI.palette_ui_config.open_palette.grad_idx = grad_idx
 
-    local current_palette = ArrowAPI.colors.palettes[set].current_palette
-    local color = current_palette[color_idx]
+    local color
+    if ArrowAPI.palette_ui_config.open_palette.current_override then
+        -- set the palette override
+        color = current_palette[color_idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+        palette_button.parent.config.colour = lighten(G.C.PURPLE, 0.1)
+        palette_button.config.grad_colour = color
+    else
+        color = current_palette[color_idx]
+        color.overrides.changed_flag = nil
+    end
 
     -- set this color's new grad points
     local size = #color.grad_pos
@@ -522,13 +552,15 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
         end
     end
 
-    sendDebugMessage('setting new ui palette')
     local start_idx = (grad_idx - 1) * 3
     ArrowAPI.palette_ui_config.rgb[1] = color[start_idx + 1]
     ArrowAPI.palette_ui_config.rgb[2] = color[start_idx + 2]
     ArrowAPI.palette_ui_config.rgb[3] = color[start_idx + 3]
 
-    update_hex_input(ArrowAPI.palette_ui_config.rgb)
+    ArrowAPI.palette_ui_config.display_rgb[1] = tostring(ArrowAPI.palette_ui_config.rgb[1])
+    ArrowAPI.palette_ui_config.display_rgb[2] = tostring(ArrowAPI.palette_ui_config.rgb[2])
+    ArrowAPI.palette_ui_config.display_rgb[3] = tostring(ArrowAPI.palette_ui_config.rgb[3])
+    update_hex_input(ArrowAPI.palette_ui_config.display_rgb)
 
     G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_widget_box').config.grad_colour = color
 
@@ -562,17 +594,10 @@ function G.FUNCS.arrow_rgb_slider(e, update_only)
             local new = math.floor(math.min(rt.max,math.max(rt.min, rt.min + (rt.max - rt.min)*(G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w)))
             if new ==  rt.ref_table[rt.ref_value] then return end
             rt.ref_table[rt.ref_value] = new
+            rt.display_table[rt.ref_value] = tostring(new)
 
             if old == rt.ref_table[rt.ref_value] then return end
             ArrowAPI.palette_changed_flag = true
-
-
-            release_text_input()
-            local new_text = string.format("%.3u", rt.ref_table[rt.ref_value])
-            local text = e.parent.parent.children[3].config.ref_table.text
-            for i=1, 3 do
-                text.letters[i] = i <= #new_text and new_text:sub(i, i) or ''
-            end
         end
 
         fill.T.w = (rt.ref_table[rt.ref_value] - rt.min)/(rt.max - rt.min)*base.T.w
@@ -589,8 +614,6 @@ G.FUNCS.arrow_select_text_input = function(e)
 
     --Start by setting the cursor position to the correct location
     TRANSPOSE_TEXT_INPUT(0)
-    local args = e.config.ref_table
-    sendDebugMessage('position on select: '..tostring(args.text.current_position))
 
     e.UIBox:recalculate()
 end
@@ -679,7 +702,22 @@ G.FUNCS.text_input_key = function(args)
         TRANSPOSE_TEXT_INPUT(0)
         sendDebugMessage('current position: '..text.current_position)
     elseif args.key == 'RETURN' then --Release the hook
-        release_text_input()
+        if not G.CONTROLLER.text_input_hook then return end
+
+        if hook.config.ref_table.callback then
+            local callback_args = hook.config.ref_table.callback_args or {}
+            hook.config.ref_table.callback(unpack(callback_args))
+        end
+
+        if not hook.config.ref_table.manual_colour then
+            hook.parent.parent.config.colour = hook_config.colour
+            local temp_colour = copy_table(hook_config.orig_colour)
+            hook_config.colour[1] = G.C.WHITE[1]
+            hook_config.colour[2] = G.C.WHITE[2]
+            hook_config.colour[3] = G.C.WHITE[3]
+            ease_colour(hook_config.colour, temp_colour)
+        end
+        G.CONTROLLER.text_input_hook = nil
         return
     elseif args.key == 'LEFT' then --Move cursor position to the left
         TRANSPOSE_TEXT_INPUT(-1)
@@ -777,7 +815,12 @@ function G.FUNCS.arrow_grad_box(e)
             local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
             local idx = ArrowAPI.palette_ui_config.open_palette.idx
 
-            local palette_color = palette.current_palette[idx]
+            local palette_color
+            if ArrowAPI.palette_ui_config.open_palette.current_override then
+                palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+            else
+                palette_color = palette.current_palette[idx]
+            end
 
             -- for the sake of UI which determines drawing depending on if palette_color[4] (alpha) is greater than 0
             -- when you only have a single color, palette_color[4] is set to a dummy 1
@@ -874,10 +917,17 @@ function G.FUNCS.arrow_grad_pointers(e)
 
                 -- create new grad color and set the rgb to it?
                 local start_idx = (grad_idx - 1) * 3
-                local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
+                local set = ArrowAPI.palette_ui_config.open_palette.set
                 local idx = ArrowAPI.palette_ui_config.open_palette.idx
+                local palette = ArrowAPI.colors.palettes[set]
+                local palette_color
+                if ArrowAPI.palette_ui_config.open_palette.current_override then
+                    palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+                    palette.current_palette[idx].overrides.changed_flag = true
+                else
+                    palette_color = palette.current_palette[idx]
+                end
 
-                local palette_color = palette.current_palette[idx]
                 table.remove(palette_color.grad_pos, grad_idx)
 
                 table.remove(palette_color, start_idx + 1)
@@ -889,11 +939,7 @@ function G.FUNCS.arrow_grad_pointers(e)
                     ArrowAPI.palette_ui_config.open_palette.grad_idx = new_idx
                 end
 
-                local new_start_idx = (new_idx - 1) * 3
-
-                ArrowAPI.palette_ui_config.rgb[1] = palette_color[new_start_idx + 1]
-                ArrowAPI.palette_ui_config.rgb[2] = palette_color[new_start_idx + 2]
-                ArrowAPI.palette_ui_config.rgb[3] = palette_color[new_start_idx + 3]
+                set_new_ui_palette(set, idx, ArrowAPI.palette_ui_config.open_palette.grad_idx)
 
                 -- for the sake of UI which determines drawing depending on if palette_color[4] (alpha) is greater than 0
                 -- when you only have a single color, palette_color[4] is set to a dummy 1
@@ -932,7 +978,13 @@ function G.FUNCS.arrow_grad_pointers(e)
 
         local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
         local idx = ArrowAPI.palette_ui_config.open_palette.idx
-        local palette_color = palette.current_palette[idx]
+        local palette_color
+        if ArrowAPI.palette_ui_config.open_palette.current_override then
+            palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+            palette.current_palette[idx].overrides.changed_flag = true
+        else
+            palette_color = palette.current_palette[idx]
+        end
 
         palette_color.grad_pos[grad_points.selected] = cursor_x
 
@@ -1008,12 +1060,6 @@ function G.FUNCS.arrow_angle_widget(e)
             ArrowAPI.palette_ui_config.angle_widget_config.value = angle
             ArrowAPI.palette_ui_config.angle_widget_config.display_val = degree_angle
 
-            release_text_input()
-            local text = e.parent.parent.parent.children[4].children[2].children[1].children[2].config.ref_table.text
-            for i=1, 4 do
-                text.letters[i] = i <= #degree_angle and degree_angle:sub(i, i) or ''
-            end
-
             config.point.x = math.cos(angle)
             config.point.y = math.sin(angle)
         else
@@ -1023,6 +1069,11 @@ function G.FUNCS.arrow_angle_widget(e)
             config.point.y = math.floor(math.min(1, math.max(-1, adjusted_y)) * 100) / 100
 
             -- don't set the value here because it's handled separately
+        end
+
+        if ArrowAPI.palette_ui_config.open_palette.current_override then
+            local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
+            palette.current_palette[ArrowAPI.palette_ui_config.open_palette.idx].overrides.changed_flag = true
         end
     else
         e.config.ref_table.dragging = nil
@@ -1180,6 +1231,7 @@ end
 function G.FUNCS.arrow_palette_button(e)
     -- grad idx is assumed to be 1 for non-gradient colors
     set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, e.config.palette_idx, 1)
+    G.FUNCS.arrow_palette_page()
 end
 
 function G.FUNCS.arrow_palette_reset(e)
@@ -1188,7 +1240,13 @@ function G.FUNCS.arrow_palette_reset(e)
 
     -- reset the default color
     local default_color = palette.default_palette[idx]
-    local palette_color = palette.current_palette[idx]
+    local palette_color
+    if ArrowAPI.palette_ui_config.open_palette.current_override then
+        palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+        palette.current_palette[idx].overrides.changed_flag = true
+    else
+        palette_color = palette.current_palette[idx]
+    end
 
     for i = 1, math.max(#default_color, #palette_color) do
         palette_color[i] = default_color[i] or nil
@@ -1213,7 +1271,6 @@ function G.FUNCS.arrow_palette_reset(e)
         angle_config.point.x = math.cos(angle)
         angle_config.point.y = math.sin(angle)
     else
-        -- TODO // this loses information from the save, so the first point wont accurately reflect the radius
         angle_config.display_val = tostring(angle_config.value)
         angle_config.point.x = palette_color.grad_config.pos[1]
         angle_config.point.y = palette_color.grad_config.pos[2]
@@ -1239,14 +1296,20 @@ function G.FUNCS.arrow_update_selected_colour(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
     local palette = ArrowAPI.colors.palettes[set]
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
-    local current_color = palette.current_palette[idx]
+    local palette_color
+    if ArrowAPI.palette_ui_config.open_palette.current_override then
+        palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+        palette.current_palette[idx].overrides.changed_flag = true
+    else
+        palette_color = palette.current_palette[idx]
+    end
 
     local start_idx = (grad_idx - 1) * 3
-    current_color[start_idx + 1] = rgb[1]
-    current_color[start_idx + 2] = rgb[2]
-    current_color[start_idx + 3] = rgb[3]
+    palette_color[start_idx + 1] = rgb[1]
+    palette_color[start_idx + 2] = rgb[2]
+    palette_color[start_idx + 3] = rgb[3]
 
-    update_hex_input(current_color)
+    update_hex_input(palette_color)
 
     ArrowAPI.palette_changed_flag = nil
     local tab_contents = G.OVERLAY_MENU:get_UIE_by_ID('tab_contents')
@@ -1255,24 +1318,30 @@ end
 
 function G.FUNCS.arrow_apply_palette(e)
     local palette_color = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette[ArrowAPI.palette_ui_config.open_palette.idx]
+    local edit_color
+    if ArrowAPI.palette_ui_config.open_palette.current_override then
+        edit_color = palette_color.overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+    else
+        edit_color = palette_color
+    end
 
     local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
     local grad_pos = {}
     for k = 1, #grad_points do
         grad_pos[k] = grad_points[k].pos
     end
-    palette_color.grad_pos = grad_pos
+    edit_color.grad_pos = grad_pos
 
     local angle_config = ArrowAPI.palette_ui_config.angle_widget_config
-    palette_color.grad_config.mode = angle_config.mode
-    palette_color.grad_config.val = angle_config.value
+    edit_color.grad_config.mode = angle_config.mode
+    edit_color.grad_config.val = angle_config.value
 
     if angle_config.mode == 'linear' then
-        palette_color.grad_config.pos[1] = 0
-        palette_color.grad_config.pos[2] = 0
+        edit_color.grad_config.pos[1] = 0
+        edit_color.grad_config.pos[2] = 0
     else
-        palette_color.grad_config.pos[1] = angle_config.point.x
-        palette_color.grad_config.pos[2] = angle_config.point.y
+        edit_color.grad_config.pos[1] = angle_config.point.x
+        edit_color.grad_config.pos[2] = angle_config.point.y
     end
 
     ArrowAPI.colors.use_custom_palette(ArrowAPI.palette_ui_config.open_palette.set)
@@ -1345,7 +1414,12 @@ function G.FUNCS.arrow_save_palette(e)
 
     for i = 1, #palette.current_palette do
         local current_color = palette.current_palette[i]
-        local palette_table = {key = current_color.key, grad_pos = copy_table(current_color.grad_pos), grad_config = copy_table(current_color.grad_config)}
+        local palette_table = {
+            key = current_color.key,
+            grad_pos = copy_table(current_color.grad_pos),
+            grad_config = copy_table(current_color.grad_config),
+            overrides = copy_table(current_color.overrides)
+        }
         for j = 1, #current_color do
             palette_table[j] = current_color[j]
         end
@@ -1419,6 +1493,43 @@ function G.FUNCS.arrow_load_palette_preset(args)
     tab_contents.UIBox:recalculate()
 end
 
+G.FUNCS.arrow_toggle_palette_override = function(key)
+    local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette
+    local idx = ArrowAPI.palette_ui_config.open_palette.idx
+    local palette_color = palette[idx]
+    if palette_color.overrides[key] then
+        palette_color.overrides[key] = nil
+        palette_color.overrides.changed_flag = true
+        if ArrowAPI.palette_ui_config.open_palette.current_override == key then
+            -- set the button back to the non override color to display that this is now the default color selection
+            G.OVERLAY_MENU:get_UIE_by_ID('arrow_palette_button_'..idx).parent.config.colour = G.C.FILTER
+        end
+        ArrowAPI.palette_ui_config.open_palette.current_override = nil
+
+        -- update the palette set for the card that's just been toggled
+        ArrowAPI.colors.use_custom_palette(ArrowAPI.palette_ui_config.open_palette.set)
+        return false
+    else
+        local override_table = {grad_pos = copy_table(palette_color.grad_pos), grad_config = copy_table(palette_color.grad_config)}
+        for i=1, #palette_color do
+            override_table[i] = palette_color[i]
+        end
+        palette_color.overrides[key] = override_table
+        palette_color.overrides.changed_flag = true
+        ArrowAPI.palette_ui_config.open_palette.current_override = key
+        return true
+    end
+end
+
+G.FUNCS.arrow_select_palette_override = function(key, selected)
+    ArrowAPI.palette_ui_config.open_palette.current_override = selected and key or nil
+    set_new_ui_palette(
+        ArrowAPI.palette_ui_config.open_palette.set,
+        ArrowAPI.palette_ui_config.open_palette.idx,
+        ArrowAPI.palette_ui_config.open_palette.grad_idx
+    )
+end
+
 -- evil overwrite
 G.FUNCS.change_tab = function(e)
     if not e then return end
@@ -1439,4 +1550,14 @@ G.FUNCS.change_tab = function(e)
         config = {offset = {x=0,y=0}, parent = tab_contents, type = 'cm'}
         }
     tab_contents.UIBox:recalculate()
+end
+
+-- Override so that this only affects cards with custom centers instead, since the refresh contrast mode
+-- toggle is kinda useless now
+G.FUNCS.refresh_contrast_mode = function()
+    for _, v in pairs(G.I.CARD) do
+        if v.config and v.config.center then
+            v:set_sprites(v.config.center)
+        end
+    end
 end

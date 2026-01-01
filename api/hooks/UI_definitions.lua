@@ -730,15 +730,16 @@ function create_UIBox_credit_tooltip(contributor_data)
 
     for _, row_card in ipairs(row_cards) do
         local credit_area = CardArea(
-        0,0,
-        7.7,
-        6/n_rows,
-        {card_limit = nil, type = 'title_2', view_deck = true, highlight_limit = 0, card_w = G.CARD_W*card_size})
-        table.insert(credit_cards,
-        {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
-        {n=G.UIT.O, config={object = credit_area}}
-        }}
+            0,0,
+            7.7,
+            6/n_rows,
+            {card_limit = nil, type = 'title_2', view_deck = true, highlight_limit = 0, card_w = G.CARD_W*card_size}
         )
+
+        table.insert(credit_cards, {n=G.UIT.R, config={align = "cm", padding = 0}, nodes={
+            {n=G.UIT.O, config={object = credit_area}}
+        }})
+
         for k, v in ipairs(row_card) do
             local card = Card(0,0, G.CARD_W*card_size, G.CARD_H*card_size, nil, G.P_CENTERS[v])
             credit_area:emplace(card)
@@ -1078,59 +1079,13 @@ function arrow_text_input(args)
     }
 end
 
-function replace_text_input(ref_table, ref_value, new_str, hook)
-    local hook = hook or G.CONTROLLER.text_input_hook
-    if hook then G.CONTROLLER.text_input_id = hook.config.id end
-    local text = hook.config.ref_table.text
-    for i=1, hook.config.ref_table.max_length do
-        text.letters[i] = i <= #new_str and new_str:sub(i, i) or ''
-    end
-
-    local position_child = nil
-    for i = 1, #hook.children do
-        if (hook.children[i].config or {}).id == G.CONTROLLER.text_input_id..'_position'then
-            position_child = i
-            break
-        end
-    end
-
-    if position_child ~= #new_str + 1 then
-        local position = table.remove(hook.children, position_child)
-        table.insert(hook.children, #new_str+1, position)
-    end
-
-    text.current_position = #new_str
-    ref_table[ref_value] = new_str
-end
-
-function release_text_input()
-    if not G.CONTROLLER.text_input_hook then return end
-    local hook = G.CONTROLLER.text_input_hook
-    local hook_config = hook.config.ref_table
-
-    if hook.config.ref_table.callback then
-        local callback_args = hook.config.ref_table.callback_args or {}
-        hook.config.ref_table.callback(unpack(callback_args))
-    end
-
-    if not hook.config.ref_table.manual_colour then
-        hook.parent.parent.config.colour = hook_config.colour
-        local temp_colour = copy_table(hook_config.orig_colour)
-        hook_config.colour[1] = G.C.WHITE[1]
-        hook_config.colour[2] = G.C.WHITE[2]
-        hook_config.colour[3] = G.C.WHITE[3]
-        ease_colour(hook_config.colour, temp_colour)
-    end
-    G.CONTROLLER.text_input_hook = nil
-end
-
 function arrow_create_rgb_slider(args)
     args.w = args.w or 1.2
     args.h = args.h or 0.8
     args.text_scale = args.text_scale or 0.3
     args.min = args.min or 0
     args.max = args.max or 255
-    local startval = args.w * (args.ref_table[args.ref_value] - args.min)/(args.max - args.min)
+    local startval = args.w * (tonumber(args.ref_table[args.ref_value]) - args.min)/(args.max - args.min)
 
     return {n=G.UIT.C, config={align = "cm", minw = args.w, focus_args = {type = 'slider'}}, nodes={
         {n=G.UIT.C, config={align = "cm", minh = args.h}, nodes={
@@ -1152,17 +1107,12 @@ function arrow_create_rgb_slider(args)
             colour = G.C.UI.BACKGROUND_DARK,
             hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
             prompt_text = '0',
-            ref_table = args.ref_table,
+            ref_table = args.display_table,
             ref_value = args.ref_value,
-            callback = function(ref_table, ref_value, min, max, slider_id)
-                local new_val = math.max(min, math.min(max, ref_table[ref_value]))
-                ref_table[ref_value] = new_val
-                G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID(slider_id), true)
+            callback = function(ref_table, true_table, ref_value, min, max, slider_id)
 
-                replace_text_input(ref_table, ref_value, string.format("%.3u", tostring(new_val)))
-                G.CONTROLLER.text_input_hook.UIBox:recalculate()
             end,
-            callback_args = {args.ref_table, args.ref_value, args.min, args.max, args.id}
+            callback_args = {args.display_table, args.ref_table, args.ref_value, args.min, args.max, args.id}
         }),
     }}
 end
@@ -1298,40 +1248,47 @@ function G.UIDEF.arrow_palette_tab(tab)
     local items_per_page = 0
     local items = {}
 
-    local options = {}
+    ArrowAPI.palette_ui_config.item_page_config = {
+        options = {'Page 1'},
+        w = 6.5,
+        h = 0.6,
+        opt_callback = 'arrow_palette_page',
+        current_option = 1,
+        colour = G.C.RED,
+        no_pips = true,
+        focus_args = {snap_to = true, nav = 'wide'}
+    }
+
     if tab ~= 'Background' then
         local w_mod = 0.85
         local h_mod = 0.85
         items = palette.items
 
-        G.arrow_palette_collection = {}
-        local rows = {5, 5}
-        local row_totals = {}
-        for i = 1, #rows do
-            if items_per_page >= #items then
-                rows[i] = nil
-            else
-                row_totals[i] = items_per_page
-                items_per_page = items_per_page + rows[i]
-                G.arrow_palette_collection[i] = CardArea(
-                    0,
-                    0,
-                    (w_mod*rows[i]+0.15)*G.CARD_W,
-                    h_mod*G.CARD_H,
-                    {card_limit = rows[i], type = 'title', highlight_limit = 0, collection = true}
-                )
-                table.insert(deck_tables,
-                {n=G.UIT.R, config={align = "cm", padding = 0.07, no_fill = true}, nodes={
-                    {n=G.UIT.O, config={object = G.arrow_palette_collection[i]}}
-                }})
+        G.arrow_palette_collection = {current_page_option = 1}
+        local num_rows = 2
+        local num_columns = 5
+        items_per_page = num_rows * num_columns
+        for i = 1, num_rows do
+            G.arrow_palette_collection[i] = CardArea(
+                0,
+                0,
+                (w_mod*num_columns+0.15)*G.CARD_W,
+                h_mod*G.CARD_H,
+                {card_limit = num_columns, type = 'title', highlight_limit = 99, collection = true}
+            )
+            G.arrow_palette_collection[i].can_highlight = function()
+                return true
             end
-        end
-
-        for i = 1, math.ceil(#items/items_per_page) do
-            table.insert(options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#items/items_per_page)))
+            table.insert(deck_tables,
+            {n=G.UIT.R, config={align = "cm", padding = 0.07, no_fill = true}, nodes={
+                {n=G.UIT.O, config={object = G.arrow_palette_collection[i]}}
+            }})
         end
 
         G.FUNCS.arrow_palette_page = function(e)
+            -- this is specifically for making sure the current option value is updated
+            -- if this is updated without using G.FUNCS.option_cycle
+
             for j = 1, #G.arrow_palette_collection do
                 for i = #G.arrow_palette_collection[j].cards, 1, -1 do
                 local c = G.arrow_palette_collection[j]:remove_card(G.arrow_palette_collection[j].cards[i])
@@ -1339,30 +1296,76 @@ function G.UIDEF.arrow_palette_tab(tab)
                 c = nil
                 end
             end
-            for j = 1, #rows do
-                for i = 1, rows[j] do
-                    local item = items[i+row_totals[j] + (items_per_page*(e.cycle_config.current_option - 1))]
-                    if not item then break end
 
-                    local use_base = item.table == 'SEALS' or item.table == 'CARDS'
-                    local disp_card = Card(
-                        G.arrow_palette_collection[j].T.x + G.arrow_palette_collection[j].T.w/2,
-                        G.arrow_palette_collection[j].T.y,
-                        G.CARD_W * 0.85,
-                        G.CARD_H * 0.85,
-                        G.P_CARDS[item.table == 'CARDS' and item.key or 'empty'],
-                        (G.P_CENTERS[use_base and 'c_base' or item.key])
-                    )
+            local current_page = e and e.cycle_config.current_option or G.arrow_palette_collection.current_page_option
 
-                    if item.front_atlas then
-                        disp_card.children.front.atlas = G.ASSET_ATLAS[item.front_atlas]
-                        disp_card.children.front:set_sprite_pos(item.front_pos)
+            local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
+            local palette_color = palette.current_palette[ArrowAPI.palette_ui_config.open_palette.idx]
+
+            local display_items = {}
+            for i = 1, #items do
+                local item = items[i]
+                for _, atlas_data in pairs(palette.image_data.pixel_map) do
+                    if atlas_data[item.key] and atlas_data[item.key][palette_color.key] then
+                        display_items[#display_items+1] = item
                     end
+                end
+            end
 
-                    if item.table == 'SEALS' then disp_card:set_seal(item.key, true) end
+            local num_pages = math.max(1, math.ceil(#display_items / items_per_page))
+            current_page = math.min(current_page, num_pages)
+            G.arrow_palette_collection.current_page_option = current_page
 
-                    --disp_card:start_materialize(nil, i>1 or j>1)
-                    G.arrow_palette_collection[j]:emplace(disp_card)
+            local config_args = ArrowAPI.palette_ui_config.item_page_config
+            for i = 1, math.max(num_pages, #config_args.options) do
+                config_args.options[i] = i <= num_pages and (localize('k_page')..' '..tostring(i)..'/'..tostring(num_pages)) or nil
+            end
+
+            config_args.current_option = current_page
+            config_args.current_option_val = config_args.options[config_args.current_option]
+
+            local start_idx = (current_page - 1) * items_per_page
+
+            local row_idx = 1
+            local col_idx = 0
+
+            local num_iterations = math.min(items_per_page, #display_items - start_idx)
+            for i = 1, num_iterations do
+                col_idx = col_idx + 1
+
+                local item = display_items[start_idx + i]
+                local key = item.item_key or item.key
+                local use_base = item.table == 'SEALS' or item.table == 'CARDS'
+                local center = G.P_CENTERS[use_base and 'c_base' or key]
+                local disp_card = Card(
+                    G.arrow_palette_collection[row_idx].T.x + G.arrow_palette_collection[row_idx].T.w/2,
+                    G.arrow_palette_collection[row_idx].T.y,
+                    G.CARD_W * 0.85,
+                    G.CARD_H * 0.85,
+                    G.P_CARDS[item.table == 'CARDS' and key or 'empty'],
+                    {key = key, name = "Sound Pack", atlas = center.atlas, pos = center.pos, set = center.set, label = 'Palette Card', config = {}, generate_ui = function() end},
+                    {arrow_palette_card = key, bypass_discovery_center = true}
+                )
+
+                disp_card.no_ui = true
+
+                if palette_color.overrides[key] then
+                    disp_card.children.palette_override_background = G.UIDEF.palette_override_background(disp_card)
+                end
+
+                if item.front_atlas then
+                    disp_card.children.front.atlas = G.ASSET_ATLAS[item.front_atlas]
+                    disp_card.children.front:set_sprite_pos(item.front_pos)
+                end
+
+                if item.table == 'SEALS' then disp_card:set_seal(item.key, true) end
+
+                --disp_card:start_materialize(nil, i>1 or j>1)
+                G.arrow_palette_collection[row_idx]:emplace(disp_card)
+
+                if col_idx == num_columns then
+                    col_idx = 0
+                    row_idx = row_idx + 1
                 end
             end
         end
@@ -1384,7 +1387,7 @@ function G.UIDEF.arrow_palette_tab(tab)
             amount = 0,
             real = 0,
             eased = 0,
-            current_config_option = 1
+            current_page_option = 1
         }
 
         G.E_MANAGER:add_event(Event({
@@ -1423,16 +1426,13 @@ function G.UIDEF.arrow_palette_tab(tab)
             {n=G.UIT.O, config={object = G.arrow_background_palette}}
         }}
 
+        local config_args = ArrowAPI.palette_ui_config.item_page_config
         for i = 1, #items do
-            table.insert(options, localize(items[i].key)..' ('..i..'/'..#items..')')
+            config_args.options[i] = localize(items[i].key)..' ('..i..'/'..#items..')'
         end
 
         G.FUNCS.arrow_palette_page = function(e)
-            if not e then
-                e = {cycle_config = { current_option = G.ARROW_DUMMY_BACKGROUND.current_config_option }}
-            end
-
-            G.ARROW_DUMMY_BACKGROUND.current_config_option = e.cycle_config.current_option
+            G.ARROW_DUMMY_BACKGROUND.current_page_option = e and e.cycle_config.current_option or  G.ARROW_DUMMY_BACKGROUND.current_page_option
             local args = items[e.cycle_config.current_option].args
 
             local color_c = args.special_colour or args.new_colour
@@ -1467,7 +1467,6 @@ function G.UIDEF.arrow_palette_tab(tab)
 
         G.FUNCS.arrow_palette_page{cycle_config = { current_option = 1 }}
     end
-
 
     ----------------- palette buttons
     local width = 6
@@ -1563,6 +1562,10 @@ function G.UIDEF.arrow_palette_tab(tab)
             ArrowAPI.palette_ui_config.rgb[1] = math.min(255, math.max(0, tonumber(hex:sub(1, 2), 16) or 0))
             ArrowAPI.palette_ui_config.rgb[2] = math.min(255, math.max(0, tonumber(hex:sub(3, 4), 16) or 0))
             ArrowAPI.palette_ui_config.rgb[3] = math.min(255, math.max(0, tonumber(hex:sub(5, 6), 16) or 0))
+
+            ArrowAPI.palette_ui_config.display_rgb[1] = tostring(ArrowAPI.palette_ui_config.rgb[1])
+            ArrowAPI.palette_ui_config.display_rgb[2] = tostring(ArrowAPI.palette_ui_config.rgb[2])
+            ArrowAPI.palette_ui_config.display_rgb[3] = tostring(ArrowAPI.palette_ui_config.rgb[3])
 
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
@@ -1664,7 +1667,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                     }} or nil,
                     {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables} or nil,
                     items_per_page < #items and {n=G.UIT.R, config={align = "cm"}, nodes={
-                        create_option_cycle({options = options, w = 6.5, h = 0.6, cycle_shoulders = true, opt_callback = 'arrow_palette_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true, nav = 'wide'}})
+                        create_option_cycle(ArrowAPI.palette_ui_config.item_page_config)
                     }} or nil,
                 }}
             }},
@@ -1801,13 +1804,43 @@ function G.UIDEF.arrow_palette_tab(tab)
                         }},
                         {n = G.UIT.C, config={align = "cm", padding = 0.05}, nodes = {
                             {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                                arrow_create_rgb_slider({id = 'r_slider', w = 4.4, h = 0.4, text_scale = 0.32, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 1, min = 0, max = 255}),
+                                arrow_create_rgb_slider({
+                                    id = 'r_slider',
+                                    w = 4.4,
+                                    h = 0.4,
+                                    text_scale = 0.32,
+                                    ref_table = ArrowAPI.palette_ui_config.rgb,
+                                    display_table =  ArrowAPI.palette_ui_config.display_rgb,
+                                    ref_value = 1,
+                                    min = 0,
+                                    max = 255
+                                }),
                             }},
                             {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                                arrow_create_rgb_slider({id = 'g_slider', w = 4.4, h = 0.4, text_scale = 0.32, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 2, min = 0, max = 255}),
+                                arrow_create_rgb_slider({
+                                    id = 'g_slider',
+                                    w = 4.4,
+                                    h = 0.4,
+                                    text_scale = 0.32,
+                                    ref_table = ArrowAPI.palette_ui_config.rgb,
+                                    display_table =  ArrowAPI.palette_ui_config.display_rgb,
+                                    ref_value = 2,
+                                    min = 0,
+                                    max = 255
+                                }),
                             }},
                             {n = G.UIT.R, config = {align = "cm"}, nodes = {
-                                arrow_create_rgb_slider({id = 'b_slider', w = 4.4, h = 0.4, text_scale = 0.32, ref_table = ArrowAPI.palette_ui_config.rgb, ref_value = 3, min = 0, max = 255}),
+                                arrow_create_rgb_slider({
+                                    id = 'b_slider',
+                                    w = 4.4,
+                                    h = 0.4,
+                                    text_scale = 0.32,
+                                    ref_table = ArrowAPI.palette_ui_config.rgb,
+                                    display_table =  ArrowAPI.palette_ui_config.display_rgb,
+                                    ref_value = 3,
+                                    min = 0,
+                                    max = 255
+                                })
                             }},
                         }},
                     }},
@@ -1816,16 +1849,48 @@ function G.UIDEF.arrow_palette_tab(tab)
                 {n=G.UIT.R, config={align = "cm", padding = 0.1}, nodes={
                     {n=G.UIT.C, config={align = "cm"}, nodes={
                         {n=G.UIT.C, config={align = "cm", minw = 3.5, padding = 0.1, r = 0.1, hover = true, colour = G.C.ORANGE, button = 'arrow_apply_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
-                            {n=G.UIT.T, config={align = 'cm', text = localize('b_apply_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                            {n=G.UIT.T, config={align = 'cm', text = localize('b_apply_palette'), scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
                         }},
                     }},
                     {n=G.UIT.C, config={align = "cm"}, nodes={
                         {n=G.UIT.C, config={align = "cm", minw = 1.5, padding = 0.1, r = 0.1, hover = true, colour = G.C.GREEN, button = 'arrow_copy_palette', shadow = true, focus_args = {button = 'b'}}, nodes={
-                            {n=G.UIT.T, config={align = 'cm', text = localize('b_copy_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
+                            {n=G.UIT.T, config={align = 'cm', text = localize('b_copy_palette'), scale = 0.4, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
                         }},
                     }},
                 }}
             }}
         }}
     }}
+end
+
+function G.UIDEF.palette_override_background(card, flash)
+    local flash_colour = G.C.CLEAR
+    if flash then
+        flash_colour = copy_table(G.C.WHITE)
+        flash_colour[4] = 1.5
+        ease_value(flash_colour, 4, -1.5, nil, 'REAL', nil, 0.2, 'quad')
+    end
+
+    local tcnx, tcny = card.T.x + card.T.w/2 - G.ROOM.T.w/2, card.T.y + card.T.h/2 - G.ROOM.T.h/2
+    local width, height = card.T.w * 1.05, card.T.h * 1.05
+
+    local base_background = UIBox{
+        T = {card.VT.x, card.VT.y, 0, 0},
+        definition =
+            {n=G.UIT.ROOT, config = {align = 'cm', minw = width, minh = height, r = 0.1, emboss = 0.05, colour = lighten(G.C.PURPLE, 0.1)}, nodes={
+                {n=G.UIT.R, config={id = 'ATTACH_TO_ME', minw = width, minh = height, r = 0.1, emboss = 0.05, colour = flash_colour}, nodes={}}
+            }},
+        config = {
+            align = 'cm',
+            offset = {x= 0.007*tcnx*card.T.w, y = 0.007*tcny*card.T.h},
+            parent = card,
+            r_bond = 'Strong'
+        }
+    }
+
+    base_background.set_alignment = function()
+        local cnx, cny = card.T.x + card.T.w/2 - G.ROOM.T.w/2, card.T.y + card.T.h/2 - G.ROOM.T.h/2
+        Moveable.set_alignment(card.children.palette_override_background, {offset = {x= 0.007*cnx*card.T.w, y = 0.007*cny*card.T.h}})
+    end
+    return base_background
 end

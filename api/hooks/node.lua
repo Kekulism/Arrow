@@ -350,3 +350,22 @@ function grad_point(x, y, scale)
         x + 1.1*scale, y-3.5*scale - y_off,
     }
 end
+
+function Node:r_click() end
+
+local ref_node_remove = Node.remove
+function Node:remove()
+    local ret = ref_node_remove(self)
+
+    if G.CONTROLLER.r_clicked.target == self then
+        G.CONTROLLER.r_clicked.target = nil
+    end
+    if G.CONTROLLER.r_cursor_down.target == self then
+        G.CONTROLLER.r_cursor_down.target = nil
+    end
+    if G.CONTROLLER.r_cursor_up.target == self then
+        G.CONTROLLER.r_cursor_up.target = nil
+    end
+
+    return ret
+end
