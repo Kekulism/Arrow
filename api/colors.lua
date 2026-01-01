@@ -242,7 +242,7 @@ ArrowAPI.colors = {
                             end
 
                             atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..collab_key, pos = pos}
-                            items[#items+1] = {key = k..'_'..collab_key, item_key = k, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
+                            items[#items+1] = {key = k..'_'..collab_key, collab_key = collab_key, item_key = k, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
                         end
                     end
                 end
@@ -277,18 +277,16 @@ ArrowAPI.colors = {
                 end
 
                 local a_item = G['P_'..a.table][a.item_key or a.key]
-                local b_item = G['P_'..b.table][a.item_key or b.key]
+                local b_item = G['P_'..b.table][b.item_key or b.key]
 
                 if a.table == 'CARDS' and b.table == 'CARDS' then
                     if a.collab_key ~= b.collab_key then
                         return a.collab_key < b.collab_key
                     end
                     local a_rank = SMODS.Ranks[a_item.value]
-                    local a_suit = SMODS.Suits[a_item.suit]
                     local b_rank = SMODS.Ranks[b_item.value]
-                    local b_suit = SMODS.Suits[b_item.suit]
-                    local a_nominal = 10*(a_rank.nominal or 0) + (a_suit.suit_nominal or 0) + 10*(a_rank.face_nominal or 0)
-                    local b_nominal = 10*(b_rank.nominal or 0) + (b_suit.suit_nominal or 0) + 10*(b_rank.face_nominal or 0)
+                    local a_nominal = 10*(a_rank.nominal or 0) + 10*(a_rank.face_nominal or 0)
+                    local b_nominal = 10*(b_rank.nominal or 0) + 10*(b_rank.face_nominal or 0)
 
                     return a_nominal < b_nominal
                 end

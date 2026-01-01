@@ -1282,7 +1282,7 @@ function G.UIDEF.arrow_palette_tab(tab)
             G.arrow_palette_collection[i].align_cards = function(self)
                 for k, card in ipairs(self.cards) do
                     if not card.states.drag.is then
-                        card.T.r = 0.1*(-#self.cards/2 - 0.5 + k)/(#self.cards)+ (G.SETTINGS.reduced_motion and 0 or 1)*0.02*math.sin(2*G.TIMERS.REAL+card.T.x)
+                        card.T.r = 0.03*(-#self.cards/2 - 0.5 + k)/(#self.cards)+ (G.SETTINGS.reduced_motion and 0 or 1)*0.02*math.sin(2*G.TIMERS.REAL+card.T.x)
                         local max_cards = math.max(#self.cards, self.config.temp_limit)
                         card.T.x = self.T.x + (self.T.w-self.card_w)*((k-1)/math.max(max_cards-1, 1) - 0.5*(#self.cards-max_cards)/math.max(max_cards-1, 1)) + 0.5*(self.card_w - card.T.w) + card.shadow_parrallax.x/30
                         local highlight_height = card.highlighted and G.HIGHLIGHT_H * 0.5 or 0
