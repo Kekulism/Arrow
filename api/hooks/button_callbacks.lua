@@ -1361,11 +1361,13 @@ end
 
 function G.FUNCS.arrow_can_save_palette(e)
     local set = ArrowAPI.palette_ui_config.open_palette.set
-    local palette = ArrowAPI.colors.palettes[set]
-    local valid_save = ArrowAPI.palette_ui_config.name_input ~= palette.current_palette.name and #ArrowAPI.config.saved_palettes[set] <= 15
+    local is_default = ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index].default
+    local valid_save = (not is_default or ArrowAPI.palette_ui_config.name_input ~= ArrowAPI.colors.palettes[set].current_palette.name)
+    and #ArrowAPI.config.saved_palettes[set] <= 15
     if valid_save then
         for i=1, #ArrowAPI.config.saved_palettes[set] do
-            if ArrowAPI.palette_ui_config.name_input == ArrowAPI.config.saved_palettes[set][i].name then
+            if i ~= ArrowAPI.config.saved_palettes[set].saved_index
+            and ArrowAPI.palette_ui_config.name_input == ArrowAPI.config.saved_palettes[set][i].name then
                 valid_save = false
                 break
             end
@@ -1393,7 +1395,12 @@ function G.FUNCS.arrow_save_palette(e)
             if v.name == palette.current_palette.name then
                 for j, color in ipairs(palette.current_palette) do
                     local default = palette.default_palette[j]
-                    local palette_table = {key = default.key, grad_pos = copy_table(color.grad_pos), grad_config = copy_table(color.grad_config)}
+                    local palette_table = {
+                        key = default.key,
+                        grad_pos = copy_table(color.grad_pos),
+                        grad_config = copy_table(color.grad_config),
+                        overrides = copy_table(color.overrides)
+                    }
                     for k, channel in ipairs(color) do
                         palette_table[k] = channel
                     end
@@ -1446,7 +1453,7 @@ end
 function G.FUNCS.arrow_delete_palette(e)
     -- enable this palette first
     local set = ArrowAPI.palette_ui_config.open_palette.set
-    local idx = ArrowAPI.config.saved_palettes[set].saved_index
+    local idx = ArrowAPI.palette_ui_config.open_palette.idx
     table.remove(ArrowAPI.config.saved_palettes[set], idx)
 
     ArrowAPI.colors.use_custom_palette(set, idx - 1)
