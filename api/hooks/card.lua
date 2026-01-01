@@ -246,29 +246,82 @@ end
 ---------------------------
 
 local ref_card_highlight = Card.highlight
-function Card:highlight(is_higlighted)
-    if not self.params or not self.params.tnsmi_soundpack then
-        return ref_card_highlight(self, is_higlighted)
-    end
+function Card:highlight(is_highlighted)
+    local params = self.params or {}
 
-    self.highlighted = is_higlighted
-    if self.highlighted and self.area then
-        -- unhighlight all other cards even in different cardareas
-        -- so you can only highlight one "available" card at once
-        for _, pack_area in ipairs(TNSMI.cardareas) do
-            for _, v in ipairs(pack_area.highlighted) do
-                if v ~= self then
-                    pack_area:remove_from_highlighted(v)
+    if params.tnsmi_soundpack then
+        self.highlighted = is_highlighted
+        if self.highlighted and self.area then
+            -- unhighlight all other cards even in different cardareas
+            -- so you can only highlight one "available" card at once
+            for _, pack_area in ipairs(TNSMI.cardareas) do
+                for i = #pack_area.highlighted, 1, -1 do
+                    if pack_area.highlighted ~= self then
+                        table.remove(pack_area.highlighted, i)
+                        pack_area.highlighted[i]:highlight(false)
+                    end
+                end
+            end
+
+            self.children.use_button = UIBox{
+                definition = G.UIDEF.tnsmi_soundpack_button(self),
+                config = {align = "bmi", offset = {x=0,y=0.5}, parent = self}
+            }
+        elseif self.children.use_button then
+            self.children.use_button:remove()
+            self.children.use_button = nil
+        end
+    elseif params.arrow_palette_card then
+        local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette
+        local palette_color = palette[ArrowAPI.palette_ui_config.open_palette.idx]
+        if not palette_color.overrides[params.arrow_palette_card] then
+            if self.highlighted then
+                for i = #self.area.highlighted, 1, -1 do
+                    if self.area[i] == self then
+                        table.remove(self.highlighted, i)
+
+                    end
+                end
+            end
+            self.highlighted = false
+            return
+        end
+
+        self.highlighted = is_highlighted
+        if is_highlighted then
+            for _, palette_area in ipairs(G.arrow_palette_collection) do
+                for i = #palette_area.highlighted, 1, -1 do
+                    if palette_area.highlighted[i] ~= self then
+                        local card = table.remove(palette_area.highlighted, i)
+                        card.highlighted = false
+                    end
                 end
             end
         end
 
-        self.children.use_button = UIBox{
-            definition = G.UIDEF.tnsmi_soundpack_button(self),
-            config = {align = "bmi", offset = {x=0,y=0.5}, parent = self}
-        }
-    elseif self.children.use_button then
-        self.children.use_button:remove()
-        self.children.use_button = nil
+        G.FUNCS.arrow_select_palette_override(params.arrow_palette_card, is_highlighted)
+    else
+        return ref_card_highlight(self, is_highlighted)
     end
 end
+
+function Card:r_click()
+    if self.params and self.params.arrow_palette_card then
+        local override = G.FUNCS.arrow_toggle_palette_override(self.params.arrow_palette_card)
+
+        if self.children.palette_override_background then
+            self.children.palette_override_background:remove()
+            self.children.palette_override_background = nil
+        end
+
+        -- toggle highlighting automatically when you create an override
+        if override then
+            self.area:add_to_highlighted(self)
+            self.children.palette_override_background = G.UIDEF.palette_override_background(self, true)
+        else
+            self.area:remove_from_highlighted(self)
+            play_sound('cardSlide2', nil, 0.3)
+        end
+    end
+end
+

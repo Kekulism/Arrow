@@ -248,3 +248,16 @@ SMODS.DrawStep:take_ownership('stickers', {
         end
     end,
 }, true)
+
+SMODS.draw_ignore_keys.palette_override_background = true
+
+--- for palette override backgrounds
+SMODS.DrawStep {
+    key = 'arrow_palette_override_background',
+    prefix_config = {key = {mod = false}},
+    order = -101,
+    func = function(self, layer)
+        if self.children.palette_override_background then self.children.palette_override_background:draw() end
+    end,
+    conditions = { vortex = false, facing = 'front' },
+}

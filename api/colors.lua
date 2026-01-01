@@ -13,7 +13,7 @@ local function collect_image_data(set, atlases)
     local color_width
     local width_per_unit
     local colors_per_unit
-    local obj
+    local pos
 
     local color_key
     local prior_pixel_rows
@@ -21,6 +21,7 @@ local function collect_image_data(set, atlases)
 
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
+        sendDebugMessage('getting atlas '..k)
         atlas = SMODS.Atlases[k]
         file_data = NFS.newFileData(atlas.full_path)
         local image_data = love.image.newImageData(file_data)
@@ -32,37 +33,31 @@ local function collect_image_data(set, atlases)
         colors_per_unit = math.min(image_data:getSize(), width_per_unit * atlas.py)
 
         for _, item in ipairs(v) do
-            obj = G['P_'..item.table][item.key]
-
-            local positions = {[item.key] = obj.pos, [item.key..'_soul'] = obj.soul_pos or nil }
-            for key, pos in pairs(positions) do
-
-                local item_table = {pos_x = pos.x, pos_y = pos.y}
-                for _, color in ipairs(ArrowAPI.colors.palettes[set].default_palette) do
-                    item_table[color.key] = {}
-                end
-
-                prior_pixel_rows = atlas.py * pos.y
-                start_idx = prior_pixel_rows * color_width + pos.x * width_per_unit
-
-                for j = 0, (colors_per_unit - 1), 4 do
-                    local true_idx = start_idx + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
-                    if ref_pointer[true_idx + 3] > 0 then
-                        color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
-                        if item_table[color_key] then
-                            item_table[color_key][#item_table[color_key]+1] = true_idx
-                        end
-                    end
-                end
-
-                for kk, vv in pairs(item_table) do
-                    if type(vv) == 'table' and not next(vv) then
-                        item_table[kk] = nil
-                    end
-                end
-
-                pixel_map[k][key] = item_table
+            local item_table = {pos_x = item.pos.x, pos_y = item.pos.y}
+            for _, color in ipairs(ArrowAPI.colors.palettes[set].default_palette) do
+                item_table[color.key] = {}
             end
+
+            prior_pixel_rows = atlas.py * item.pos.y
+            start_idx = prior_pixel_rows * color_width + item.pos.x * width_per_unit
+
+            for j = 0, (colors_per_unit - 1), 4 do
+                local true_idx = start_idx + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
+                if ref_pointer[true_idx + 3] > 0 then
+                    color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
+                    if item_table[color_key] then
+                        item_table[color_key][#item_table[color_key]+1] = true_idx
+                    end
+                end
+            end
+
+            for kk, vv in pairs(item_table) do
+                if type(vv) == 'table' and not next(vv) then
+                    item_table[kk] = nil
+                end
+            end
+
+            pixel_map[k][item.key] = item_table
         end
     end
     collectgarbage('collect')
@@ -127,6 +122,8 @@ ArrowAPI.colors = {
             return
         end
 
+        -- this is intended to clean settings between the embedded cardsauce arrow installation
+        -- and an independent installation when switching between them
         local edited_config = false
         local default_palettes = default_config.saved_palettes
         local saved_palettes = ArrowAPI.config.saved_palettes
@@ -148,6 +145,7 @@ ArrowAPI.colors = {
         end
 
         -- background palette handled differently
+        -- so we don't have to collect card and atlas data
         local bkg_palette = ArrowAPI.colors.palettes.Background
         local saved_bkg_palettes = ArrowAPI.config.saved_palettes['Background']
         bkg_palette.default_palette = saved_bkg_palettes[1]
@@ -155,6 +153,7 @@ ArrowAPI.colors = {
         bkg_palette.last_palette = copy_table(bkg_palette.current_palette)
         ArrowAPI.colors.use_custom_palette('Background')
 
+        -- TODO // create a way to edit this list or add to it via compatible mods
         set_list = set_list or {"Tarot", "Planet", "Spectral", "Hearts", "Spades", "Diamonds", "Clubs"}
         for i = 1, #set_list do
             local set = set_list[i]
@@ -166,78 +165,155 @@ ArrowAPI.colors = {
             -- some weird stuff with the soul atlas
             -- since it uses this shared thing
             if set == 'Spectral' then
-                G.P_ARROW_SOUL_DUMMY = {shared_soul = {pos = {x = 9, y = 2}}}
                 if not atlases['arrow_spectrals'] then
                     atlases['arrow_spectrals'] = {}
                 end
-                atlases['arrow_spectrals'][#atlases['arrow_spectrals']+1] = {key = 'shared_soul', table = 'ARROW_SOUL_DUMMY'}
+                atlases['arrow_spectrals'][#atlases['arrow_spectrals']+1] = {key = 'shared_soul', pos = {x = 9, y = 2}}
             end
 
-            for k, v in pairs(G.P_CENTERS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    if not atlases[v.atlas] then
-                        atlases[v.atlas] = {}
+            for k, center in pairs(G.P_CENTERS) do
+                if not center.no_collection and (center.set == set or center.palette_set == set)
+                and (not center.original_mod or (center.original_mod.optional_features or {}).arrow_palettes) then
+
+                    local center_key = center.key
+                    local positions = {[center_key] = center.pos, [center_key..'_soul'] = center.soul_pos}
+
+                    -- this captures any additional draw layers you might use in modded cards
+                    -- but it expects that you use the same atlas (and generally you should tbh)
+                    for _, pos in ipairs(center.palette_register or {}) do
+                        positions[#positions+1] = pos
                     end
 
-                    atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, table = 'CENTERS'}
-                    items[#items+1] = {key = k, table = 'CENTERS', set = (v.set or v.palette_set)}
+                    for key, pos in pairs(positions) do
+                        if not atlases[center.atlas] then
+                            atlases[center.atlas] = {}
+                        end
+
+                        atlases[center.atlas][#atlases[center.atlas]+1] = {key = center_key, pos = pos}
+                        items[#items+1] = {key = key, order = center.order, item_key = center_key, table = 'CENTERS', set = (center.set or center.palette_set)}
+                    end
+
                 end
             end
 
-            for k, v in pairs(G.P_CARDS) do
-                if not v.no_collection and v.suit == set and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    local atlas = "arrow_"..string.lower(set)
-                    if not atlases[atlas] then
-                        atlases[atlas] = {}
-                    end
+            -- playing card collection uses a pared down version of
+            -- get_front_spriteinfo for this, but I don't like it
+            local card_map = {}
+            for k, card in pairs(G.P_CARDS) do
+                if not card.no_collection and card.suit == set
+                and (not card.original_mod or (card.original_mod.optional_features or {}).arrow_palettes) then
+                    card_map[k] = {}
+                    for collab_key, info in ipairs(G.COLLABS.options[card.suit]) do
+                        local deckSkin = SMODS.DeckSkins[info]
 
-                    atlases[atlas][#atlases[atlas]+1] = {key = k, table = 'CARDS'}
-                    items[#items+1] = {key = k, table = 'CARDS', set = 'Card'}
+                        local atlas, pos
+                        local pal_map = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[card.suit] or ''] or (deckSkin.palettes or {})[1]
+                        local rank_type = false
+                        for j = 1, #pal_map.ranks do
+                            if pal_map.ranks[j] == card.value then rank_type = true break end
+                        end
+
+                        if rank_type then
+                            atlas = pal_map.atlas
+                            if type(pal_map.pos_style) == "table" then
+                                if pal_map.pos_style[card.value] then
+                                    if pal_map.pos_style[card.value].atlas then
+                                        atlas = pal_map.pos_style[card.value].atlas
+                                    end
+                                    if pal_map.pos_style[card.value].pos then
+                                        pos = pal_map.pos_style[card.value].pos
+                                    end
+                                elseif pal_map.pos_style.fallback_style then
+                                    if pal_map.pos_style.fallback_style == 'collab' then
+                                        pos = G.COLLABS.pos[card.value]
+                                    elseif pal_map.pos_style.fallback_style == 'suit' then
+                                        pos = { x = card.pos.x, y = 0}
+                                    elseif pal_map.pos_style.fallback_style == 'deck' then
+                                        pos = card.pos
+                                    end
+                                end
+                            elseif pal_map.pos_style == 'collab' then
+                                pos = G.COLLABS.pos[card.value]
+                            elseif pal_map.pos_style == 'suit' then
+                                pos = { x = card.pos.x, y = 0}
+                            elseif pal_map.pos_style == 'deck' then
+                                pos = card.pos
+                            elseif pal_map.pos_style == 'ranks' or nil then
+                                for j, rank in ipairs(pal_map.ranks) do
+                                    if rank == card.value then
+                                        pos = { x = j - 1, y = 0}
+                                    end
+                                end
+                            end
+                        else
+                            atlas = "arrow_"..string.lower(card.suit)
+                            pos = card.pos
+                        end
+
+                        if not card_map[k][atlas] then
+                            card_map[k] = {[atlas] = true}
+
+                            if not atlases[atlas] then
+                                atlases[atlas] = {}
+                            end
+
+                            atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..collab_key, pos = pos}
+                            items[#items+1] = {key = k..'_'..collab_key, collab_key = collab_key, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
+                        end
+                    end
                 end
             end
 
-            for k, v in pairs(G.P_TAGS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    if not atlases[v.atlas] then
-                        atlases[v.atlas] = {}
+            -- TODO // Tags are not currently displayed at all in the palette editor due to
+            -- distinct rendering, would want to fix that eventually
+            for _, tag in ipairs(G.P_CENTER_POOLS['Tag']) do
+                if not tag.no_collection and (tag.set == set or tag.palette_set == set)
+                and (not tag.original_mod or (tag.original_mod.optional_features or {}).arrow_palettes) then
+                    if not atlases[tag.atlas] then
+                        atlases[tag.atlas] = {}
                     end
 
-                    atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, table = 'TAGS', set = 'Tag'}
+                    atlases[tag.atlas][#atlases[tag.atlas]+1] = {key = tag.key, pos = tag.pos}
                 end
             end
 
-            for k, v in pairs(G.P_SEALS) do
-                if not v.no_collection and (v.set == set or v.palette_set == set) and (not v.original_mod or (v.original_mod.optional_features or {}).arrow_palettes) then
-                    if not atlases[v.atlas] then
-                        atlases[v.atlas] = {}
+            for _, seal in ipairs(G.P_CENTER_POOLS['Seal']) do
+                if not seal.no_collection and (seal.set == set or seal.palette_set == set)
+                and (not seal.original_mod or (seal.original_mod.optional_features or {}).arrow_palettes) then
+                    if not atlases[seal.atlas] then
+                        atlases[seal.atlas] = {}
                     end
 
-                    atlases[v.atlas][#atlases[v.atlas]+1] = {key = k, table = 'SEALS'}
-                    items[#items+1] = {key = k, table = 'SEALS', set = 'Seal'}
+                    atlases[seal.atlas][#atlases[seal.atlas]+1] = {key = seal.key, pos = seal.pos}
+                    items[#items+1] = {key = seal.key, table = 'SEALS', order = seal.order, set = 'Seal'}
                 end
             end
 
+
+            -- result of this sort function is prioritizing set order, however
+            -- centers don't have a built in order value, just the object buffers
+            -- and the center pools
+            -- TODO // add sorting properly for centers
             table.sort(items, function(a, b)
                 local a_order = set_order[a.set] or 0
                 local b_order = set_order[b.set] or 0
-                if a_order ~= b_order then
+                if a.set ~= b.set  and a_order ~= b_order then
                     return a_order < b_order
                 end
 
-                local a_item = G['P_'..a.table][a.key]
-                local b_item = G['P_'..b.table][b.key]
-
                 if a.table == 'CARDS' and b.table == 'CARDS' then
-                    local a_rank = SMODS.Ranks[a_item.value]
-                    local a_suit = SMODS.Suits[a_item.suit]
-                    local b_rank = SMODS.Ranks[b_item.value]
-                    local b_suit = SMODS.Suits[b_item.suit]
-                    local a_nominal = 10*(a_rank.nominal or 0) + (a_suit.suit_nominal or 0) + 10*(a_rank.face_nominal or 0)
-                    local b_nominal = 10*(b_rank.nominal or 0) + (b_suit.suit_nominal or 0) + 10*(b_rank.face_nominal or 0)
+                    if a.collab_key ~= b.collab_key then
+                        return a.collab_key < b.collab_key
+                    end
+                    local a_rank = SMODS.Ranks[a.rank]
+                    local b_rank = SMODS.Ranks[b.rank]
+                    local a_nominal = 10*(a_rank.nominal or 0) + 10*(a_rank.face_nominal or 0)
+                    local b_nominal = 10*(b_rank.nominal or 0) + 10*(b_rank.face_nominal or 0)
+
                     return a_nominal < b_nominal
                 end
 
-                return (a_item.order or 0) < (a_item.order or 0)
+                return (a.order or 0) < (b.order or 0)
             end)
 
             palette.items = items
@@ -250,10 +326,9 @@ ArrowAPI.colors = {
             palette.last_palette = copy_table(palette.current_palette)
             ArrowAPI.colors.use_custom_palette(set, nil, true)
         end
-        G.P_ARROW_SOUL_DUMMY = nil
     end,
 
-    set_background_color = function(args)
+    set_background_color = function(background_table, args)
         local color_c = args.special_colour or args.new_colour
         local color_l = args.new_colour
         local color_d = args.tertiary_colour or args.new_colour
@@ -266,19 +341,19 @@ ArrowAPI.colors = {
             bright_d = 1
         end
 
-        G.C.BACKGROUND.C[1] = color_c[1]*bright_c - G.C.BACKGROUND.C[1]
-        G.C.BACKGROUND.C[2] = color_c[2]*bright_c - G.C.BACKGROUND.C[2]
-        G.C.BACKGROUND.C[3] = color_c[3]*bright_c - G.C.BACKGROUND.C[3]
+        background_table.C[1] = color_c[1]*bright_c - background_table.C[1]
+        background_table.C[2] = color_c[2]*bright_c - background_table.C[2]
+        background_table.C[3] = color_c[3]*bright_c - background_table.C[3]
 
-        G.C.BACKGROUND.L[1] = color_l[1]*bright_l - G.C.BACKGROUND.L[1]
-        G.C.BACKGROUND.L[2] = color_l[2]*bright_l - G.C.BACKGROUND.L[2]
-        G.C.BACKGROUND.L[3] = color_l[3]*bright_l - G.C.BACKGROUND.L[3]
+        background_table.L[1] = color_l[1]*bright_l - background_table.L[1]
+        background_table.L[2] = color_l[2]*bright_l - background_table.L[2]
+        background_table.L[3] = color_l[3]*bright_l - background_table.L[3]
 
-        G.C.BACKGROUND.D[1] = color_d[1]*bright_d - G.C.BACKGROUND.D[1]
-        G.C.BACKGROUND.D[2] = color_d[2]*bright_d - G.C.BACKGROUND.D[2]
-        G.C.BACKGROUND.D[3] = color_d[3]*bright_d - G.C.BACKGROUND.D[3]
+        background_table.D[1] = color_d[1]*bright_d - background_table.D[1]
+        background_table.D[2] = color_d[2]*bright_d - background_table.D[2]
+        background_table.D[3] = color_d[3]*bright_d - background_table.D[3]
 
-        G.C.BACKGROUND.contrast = args.contrast - G.C.BACKGROUND.contrast
+        background_table.contrast = args.contrast - background_table.contrast
     end,
 
     use_custom_palette = function(set, saved_index, bypass_last)
@@ -293,23 +368,17 @@ ArrowAPI.colors = {
                 local new_palette = {name = saved.name}
                 for i = 1, #palette.default_palette do
                     local default = palette.default_palette[i]
-                    local palette_table = {key = default.key, default = true, default.grad_pos, grad_config = copy_table(default.grad_config)}
+                    local cust_color = saved[i]
+                    local palette_table = {
+                        key = default.key,
+                        grad_pos = copy_table(cust_color.grad_pos),
+                        grad_config = copy_table(cust_color.grad_config),
+                        overrides = copy_table(cust_color.overrides)
+                    }
                     for k = 1, #default do
-                        palette_table[k] = default[k]
+                        palette_table[k] = cust_color[k]
                     end
                     new_palette[i] = palette_table
-                end
-
-                for i = 1, #saved do
-                    local cust_color = saved[i]
-                    local default_color = new_palette[i]
-                    if cust_color.key == default_color.key then
-                        local palette_table = {key = default_color.key, default = true, grad_pos = copy_table(cust_color.grad_pos), grad_config = copy_table(cust_color.grad_config)}
-                        for k = 1, #cust_color do
-                            palette_table[k] = cust_color[k]
-                        end
-                        new_palette[i] = palette_table
-                    end
                 end
 
                 palette.current_palette = new_palette
@@ -324,22 +393,26 @@ ArrowAPI.colors = {
             end
 
             -- updating
+            local background_args = nil
             if G.GAME then
                 if G.GAME.won then
-                    ArrowAPI.colors.set_background_color({new_colour = G.C.BLIND.won, contrast = 1})
+                    background_args = {new_colour = G.C.BLIND.won, contrast = 1}
                 else
                     local current_blind = G.GAME.blind and G.GAME.blind.config.blind
                     if G.STAGE == G.STAGES.MAIN_MENU or (current_blind and current_blind.boss and current_blind.boss.showdown) then
-                        ArrowAPI.colors.set_background_color({new_colour = G.C.BLIND.SHOWDOWN_COL_2, special_colour = G.C.BLIND.SHOWDOWN_COL_1, tertiary_colour = darken(G.C.BLACK, 0.4), contrast = 3})
+                        background_args = {new_colour = G.C.BLIND.SHOWDOWN_COL_2, special_colour = G.C.BLIND.SHOWDOWN_COL_1, tertiary_colour = darken(G.C.BLACK, 0.4), contrast = 3}
                     elseif not ignore_states[G.STATE] then
-                        ArrowAPI.colors.set_background_color({new_colour = G.C.BLIND.Small, contrast = 1})
+                        background_args = {new_colour = G.C.BLIND.Small, contrast = 1}
                     end
                 end
             end
 
+            if background_args then
+                ArrowAPI.colors.set_background_color(G.C.BACKGROUND, background_args)
+            end
+
             return
         end
-
 
         local custom_palette = {}
         if not saved_index then
@@ -367,17 +440,19 @@ ArrowAPI.colors = {
                 local default = palette.default_palette[i]
                 local changed = false
 
-                local grad_pos = {}
                 for j = 1, #current.grad_pos do
-                    if last.grad_pos[j] ~= current.grad_pos[j] then changed = true end
-                    grad_pos[j] = current.grad_pos[j]
+                    if last.grad_pos[j] ~= current.grad_pos[j] then
+                        changed = true
+                        break
+                    end
                 end
 
-                local grad_config = {pos = copy_table(current.grad_config.pos), mode = current.grad_config.mode, val = current.grad_config.val }
-                if bypass_last or grad_config.pos[1] ~= last.grad_config.pos[1] or grad_config.pos[2] ~= last.grad_config.pos[2]
-                or grad_config.mode ~= last.grad_config.mode or grad_config.val ~= last.grad_config.val then
+                if bypass_last or current.grad_config.pos[1] ~= last.grad_config.pos[1] or current.grad_config.pos[2] ~= last.grad_config.pos[2]
+                or current.grad_config.mode ~= last.grad_config.mode or current.grad_config.val ~= last.grad_config.val then
                     changed = true
                 end
+
+                if current.overrides.changed_flag then changed = true end
 
                 local palette_table = {key = default.key}
 
@@ -387,8 +462,9 @@ ArrowAPI.colors = {
                 end
 
                 if changed then
-                    palette_table.grad_pos = grad_pos
-                    palette_table.grad_config = grad_config
+                    palette_table.grad_pos = copy_table(current.grad_pos)
+                    palette_table.grad_config = copy_table(current.grad_config)
+                    palette_table.overrides = copy_table(current.overrides)
                     custom_palette[#custom_palette+1] = palette_table
                     palette.last_palette[i] = copy_table(palette_table)
                 end
@@ -403,24 +479,19 @@ ArrowAPI.colors = {
 
             for i = 1, #palette.default_palette do
                 local default = palette.default_palette[i]
-                local palette_table = {key = default.key, grad_pos = copy_table(default.grad_pos), grad_config = copy_table(default.grad_config)}
-                for j = 1, #default do
-                    palette_table[j] = default[j]
-                end
-                new_palette[i] = palette_table
-            end
-
-            for i = 1, #custom_palette do
                 local cust_color = custom_palette[i]
-                local default_color = new_palette[i]
-                if cust_color.key == default_color.key then
-                    local palette_table = {key = default_color.key, grad_pos = copy_table(cust_color.grad_pos), grad_config = copy_table(cust_color.grad_config)}
-                    for k = 1, #cust_color do
-                        palette_table[k] = cust_color[k]
-                    end
+                local palette_table = {
+                    key = default.key,
+                    grad_pos = copy_table(cust_color.grad_pos),
+                    grad_config = copy_table(cust_color.grad_config),
+                    overrides = copy_table(cust_color.overrides)
+                }
 
-                    new_palette[i] = palette_table
+                for j = 1, #cust_color do
+                    palette_table[j] = cust_color[j]
                 end
+
+                new_palette[i] = palette_table
             end
 
             -- TODO // fix with grad pos
@@ -485,7 +556,7 @@ ArrowAPI.colors = {
                     -- todo add item filtering
                     color_list = colors[custom_palette[i].key]
                     if color_list then
-                        palette_color = custom_palette[i]
+                        palette_color = custom_palette[i].overrides[item] or custom_palette[i]
                         for j = 1, #color_list do
                             idx = color_list[j]
                             replace_color[1] = palette_color[1]
