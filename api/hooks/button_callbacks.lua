@@ -487,7 +487,6 @@ end
 
 local function update_hex_input(color)
     local new_hex_string = string.upper(tostring(string.format("%02x", color[1])..string.format("%02x", color[2])..string.format("%02x", color[3])))
-    ArrowAPI.palette_ui_config.last_hex_input = ArrowAPI.palette_ui_config.hex_input
     ArrowAPI.palette_ui_config.hex_input = new_hex_string
     local args = ArrowAPI.palette_ui_config.hex_input_config
 

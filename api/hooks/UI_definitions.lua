@@ -1538,7 +1538,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                 align = "cm",
                 res = 0.3,
                 colour = i == ArrowAPI.palette_ui_config.open_palette.idx and G.C.FILTER or G.C.UI.TEXT_LIGHT,
-                padding = 0.025,
+                padding = 0.037,
                 r = 0.02,
                 shadow = true,
             },
@@ -1602,11 +1602,24 @@ function G.UIDEF.arrow_palette_tab(tab)
         ref_table = ArrowAPI.palette_ui_config,
         ref_value = 'hex_input',
         callback = function()
-            ArrowAPI.palette_ui_config.hex_input = string.format("%06s", ArrowAPI.palette_ui_config.hex_input)
-            local hex = ArrowAPI.palette_ui_config.hex_input
-            ArrowAPI.palette_ui_config.rgb[1] = math.min(255, math.max(0, tonumber(hex:sub(1, 2), 16) or 0))
-            ArrowAPI.palette_ui_config.rgb[2] = math.min(255, math.max(0, tonumber(hex:sub(3, 4), 16) or 0))
-            ArrowAPI.palette_ui_config.rgb[3] = math.min(255, math.max(0, tonumber(hex:sub(5, 6), 16) or 0))
+            local hex_str = ArrowAPI.palette_ui_config.hex_input
+            while #hex_str < 6 do
+                -- Concatenate a zero to the beginning of the string.
+                hex_str = hex_str..'0'
+            end
+
+            ArrowAPI.palette_ui_config.hex_input = hex_str
+            local args = ArrowAPI.palette_ui_config.hex_input_config
+            local old_pos = args.text.current_position
+            for i = 1, args.max_length do
+                local new_letter = hex_str:sub(i, i)
+                args.text.letters[i] = new_letter
+            end
+            TRANSPOSE_TEXT_INPUT(args.max_length - old_pos)
+
+            ArrowAPI.palette_ui_config.rgb[1] = math.min(255, math.max(0, tonumber(hex_str:sub(1, 2), 16) or 0))
+            ArrowAPI.palette_ui_config.rgb[2] = math.min(255, math.max(0, tonumber(hex_str:sub(3, 4), 16) or 0))
+            ArrowAPI.palette_ui_config.rgb[3] = math.min(255, math.max(0, tonumber(hex_str:sub(5, 6), 16) or 0))
 
             ArrowAPI.palette_ui_config.display_rgb[1] = tostring(ArrowAPI.palette_ui_config.rgb[1])
             ArrowAPI.palette_ui_config.display_rgb[2] = tostring(ArrowAPI.palette_ui_config.rgb[2])
@@ -1616,7 +1629,29 @@ function G.UIDEF.arrow_palette_tab(tab)
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
             G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('b_slider'), true)
 
-            ArrowAPI.palette_changed_flag = true
+            local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
+            local grad_idx = ArrowAPI.palette_ui_config.open_palette.grad_idx
+            grad_points[grad_idx].color = {
+                ArrowAPI.palette_ui_config.rgb[1],
+                ArrowAPI.palette_ui_config.rgb[2],
+                ArrowAPI.palette_ui_config.rgb[3]
+            }
+
+            local palette_color
+            if ArrowAPI.palette_ui_config.open_palette.current_override then
+                palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+                palette.current_palette[idx].overrides.changed_flag = true
+            else
+                palette_color = palette.current_palette[idx]
+            end
+
+            local start_idx = (grad_idx - 1) * 3
+            palette_color[start_idx + 1] = ArrowAPI.palette_ui_config.rgb[1]
+            palette_color[start_idx + 2] = ArrowAPI.palette_ui_config.rgb[2]
+            palette_color[start_idx + 3] = ArrowAPI.palette_ui_config.rgb[3]
+
+            local tab_contents = G.OVERLAY_MENU:get_UIE_by_ID('tab_contents')
+            tab_contents.UIBox:recalculate()
         end
     }
 

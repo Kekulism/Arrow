@@ -1337,6 +1337,7 @@ SMODS.Atlas({key = 'collab_XR_1', custom_path = path, path = 'collab_XR_1.png', 
 SMODS.Joker:take_ownership('8_ball', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 3, y = 2}}, true)
 SMODS.Joker:take_ownership('fortune_teller', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 4, y = 2}}, true)
 SMODS.Joker:take_ownership('cartomancer', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 5, y = 2}}, true)
+SMODS.Joker:take_ownership('superposition', {atlas = 'arrow_tarots', prefix_config = {atlas = false}, palette_set = 'Tarot', pos = {x = 13, y = 0}}, true)
 SMODS.Joker:take_ownership('supernova', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 4, y = 0}}, true)
 SMODS.Joker:take_ownership('constellation', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 5, y = 0}, soul_pos = {x = 6, y = 0}, no_soul_shadow = true}, true)
 SMODS.Joker:take_ownership('astronomer', {atlas = 'arrow_planets', prefix_config = {atlas = false}, palette_set = 'Planet', pos = {x = 7, y = 0}}, true)
