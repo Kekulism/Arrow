@@ -21,7 +21,6 @@ local function collect_image_data(set, atlases)
 
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
-        sendDebugMessage('getting atlas '..k)
         atlas = SMODS.Atlases[k]
         file_data = NFS.newFileData(atlas.full_path)
         local image_data = love.image.newImageData(file_data)
@@ -33,6 +32,7 @@ local function collect_image_data(set, atlases)
         colors_per_unit = math.min(image_data:getSize(), width_per_unit * atlas.py)
 
         for _, item in ipairs(v) do
+            sendDebugMessage('getting item key '..item.key)
             local item_table = {pos_x = item.pos.x, pos_y = item.pos.y}
             for _, color in ipairs(ArrowAPI.colors.palettes[set].default_palette) do
                 item_table[color.key] = {}
@@ -189,6 +189,7 @@ ArrowAPI.colors = {
                             atlases[center.atlas] = {}
                         end
 
+                        sendDebugMessage('adding item atlas '..center_key..' with pos {'..pos.x..', '..pos.y..'}')
                         atlases[center.atlas][#atlases[center.atlas]+1] = {key = center_key, pos = pos}
                         items[#items+1] = {key = key, order = center.order, item_key = center_key, table = 'CENTERS', set = (center.set or center.palette_set)}
                     end

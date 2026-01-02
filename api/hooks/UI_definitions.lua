@@ -1358,7 +1358,18 @@ function G.UIDEF.arrow_palette_tab(tab)
                     G.CARD_W * 0.85,
                     G.CARD_H * 0.85,
                     G.P_CARDS[item.table == 'CARDS' and key or 'empty'],
-                    {key = key, name = "Sound Pack", atlas = center.atlas, pos = center.pos, set = center.set, label = 'Palette Card', config = {}, generate_ui = function() end},
+                    {
+                        key = key,
+                        name = "Palette Card",
+                        atlas = center.atlas,
+                        pos = center.pos,
+                        soul_pos = key == 'c_soul' and {x = 9, y = 2} or center.soul_pos,
+                        no_soul_shadow = center.no_soul_shadow,
+                        set = center.set,
+                        label = 'Palette Card',
+                        config = {},
+                        generate_ui = function() end
+                    },
                     {arrow_palette_card = key, bypass_discovery_center = true}
                 )
 
@@ -1483,6 +1494,23 @@ function G.UIDEF.arrow_palette_tab(tab)
         G.FUNCS.arrow_palette_page{cycle_config = { current_option = 1 }}
     end
 
+    -- fix the option cycle to always allow page cycling
+    local item_page_cycle = create_option_cycle(ArrowAPI.palette_ui_config.item_page_config)
+    local left_shoulder = item_page_cycle.nodes[1].nodes[1]
+    left_shoulder.config.hover = true
+    left_shoulder.config.colour = G.C.RED
+    left_shoulder.config.shadow = true
+    left_shoulder.config.button = 'option_cycle'
+    left_shoulder.nodes[1].config.colour = G.C.UI.TEXT_LIGHT
+
+    local right_shoulder = item_page_cycle.nodes[1].nodes[3]
+    right_shoulder.config.hover = true
+    right_shoulder.config.colour = G.C.RED
+    right_shoulder.config.shadow = true
+    right_shoulder.config.button = 'option_cycle'
+    right_shoulder.nodes[1].config.colour = G.C.UI.TEXT_LIGHT
+
+
     ----------------- palette buttons
     local width = 6
     local color_nodes = {}
@@ -1549,7 +1577,9 @@ function G.UIDEF.arrow_palette_tab(tab)
                         emboss = 0.025
 
                     },
-                    nodes = {}
+                    nodes = {
+                        custom_color.key == 'badge' and {n = G.UIT.T, config = {text = localize('arrow_pal_badge_text'), colour = G.C.UI.TEXT_LIGHT, shadow = true, scale = button_size * 0.3}} or nil
+                    }
                 }
             }
         }
@@ -1679,11 +1709,11 @@ function G.UIDEF.arrow_palette_tab(tab)
                                 {n=G.UIT.T, config={align = 'tm', text = localize('b_delete_palette'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = 'none'}}}
                             }},
                         }},
-                    }} or nil,
-                    {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables} or nil,
-                    items_per_page < #items and {n=G.UIT.R, config={align = "cm"}, nodes={
-                        create_option_cycle(ArrowAPI.palette_ui_config.item_page_config)
-                    }} or nil,
+                    }},
+                    {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables},
+                    {n=G.UIT.R, config={align = "cm"}, nodes={
+                        item_page_cycle
+                    }},
                 }}
             }},
             {n=G.UIT.C, config={align = "cm", minw = 0.4}, nodes = {}},
