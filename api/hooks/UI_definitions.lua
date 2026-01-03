@@ -1250,7 +1250,7 @@ function G.UIDEF.arrow_palette_tab(tab)
 
     ArrowAPI.palette_ui_config.item_page_config = {
         options = {'Page 1'},
-        w = 6.5,
+        w = 5,
         h = 0.6,
         opt_callback = 'arrow_palette_page',
         current_option = 1,
@@ -1279,6 +1279,7 @@ function G.UIDEF.arrow_palette_tab(tab)
             G.arrow_palette_collection[i].can_highlight = function()
                 return true
             end
+
             G.arrow_palette_collection[i].align_cards = function(self)
                 for k, card in ipairs(self.cards) do
                     if not card.states.drag.is then
@@ -1294,6 +1295,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                     card.rank = k
                 end
             end
+
             table.insert(deck_tables,
             {n=G.UIT.R, config={align = "cm", padding = 0.07, no_fill = true}, nodes={
                 {n=G.UIT.O, config={object = G.arrow_palette_collection[i]}}
@@ -1306,9 +1308,9 @@ function G.UIDEF.arrow_palette_tab(tab)
 
             for j = 1, #G.arrow_palette_collection do
                 for i = #G.arrow_palette_collection[j].cards, 1, -1 do
-                local c = G.arrow_palette_collection[j]:remove_card(G.arrow_palette_collection[j].cards[i])
-                c:remove()
-                c = nil
+                    local c = G.arrow_palette_collection[j]:remove_card(G.arrow_palette_collection[j].cards[i])
+                    c:remove()
+                    c = nil
                 end
             end
 
@@ -1322,7 +1324,15 @@ function G.UIDEF.arrow_palette_tab(tab)
                 local item = items[i]
                 for _, atlas_data in pairs(palette.image_data.pixel_map) do
                     if atlas_data[item.key] and atlas_data[item.key][palette_color.key] then
-                        display_items[#display_items+1] = item
+                        display_items[#display_items+1] = {
+                            item = item,
+                            override_status = palette_color.overrides[item.key] and 'active' or 'inactive'
+                        }
+                    elseif atlas_data[item.key] and not ArrowAPI.palette_ui_config.color_specific then
+                        display_items[#display_items+1] = {
+                            item = item,
+                            override_status = 'disabled'
+                        }
                     end
                 end
             end
@@ -1348,35 +1358,39 @@ function G.UIDEF.arrow_palette_tab(tab)
             for i = 1, num_iterations do
                 col_idx = col_idx + 1
 
-                local item = display_items[start_idx + i]
-                local key = item.item_key or item.key
-                local use_base = item.table == 'SEALS' or item.table == 'CARDS'
-                local center = G.P_CENTERS[use_base and 'c_base' or key]
+                local item = display_items[start_idx + i].item
+                local center_key = item.item_key or item.key
+                local center = G.P_CENTERS[(item.table == 'SEALS' or item.table == 'CARDS') and 'c_base' or center_key]
                 local disp_card = Card(
                     G.arrow_palette_collection[row_idx].T.x + G.arrow_palette_collection[row_idx].T.w/2,
                     G.arrow_palette_collection[row_idx].T.y,
                     G.CARD_W * 0.85,
                     G.CARD_H * 0.85,
-                    G.P_CARDS[item.table == 'CARDS' and key or 'empty'],
+                    G.P_CARDS[item.table == 'CARDS' and center_key or 'empty'],
                     {
-                        key = key,
+                        key = center_key,
                         name = "Palette Card",
                         atlas = center.atlas,
                         pos = center.pos,
-                        soul_pos = key == 'c_soul' and {x = 9, y = 2} or center.soul_pos,
+                        soul_pos = center_key == 'c_soul' and {x = 9, y = 2} or center.soul_pos,
                         no_soul_shadow = center.no_soul_shadow,
                         set = center.set,
                         label = 'Palette Card',
                         config = {},
                         generate_ui = function() end
                     },
-                    {arrow_palette_card = item.key, bypass_discovery_center = true}
+                    {
+                        arrow_palette_card = display_items[start_idx + i].override_status ~= 'disabled' and item.key or nil,
+                        bypass_discovery_center = true
+                    }
                 )
 
                 disp_card.no_ui = true
 
-                if palette_color.overrides[key] then
-                    disp_card.children.palette_override_background = G.UIDEF.palette_override_background(disp_card)
+                if display_items[start_idx + i].override_status == 'active' then
+                    disp_card.arrow_palette_outline = true
+                elseif display_items[start_idx + i].override_status == 'disabled' then
+                    disp_card.greyed = true
                 end
 
                 if item.front_atlas then
@@ -1747,7 +1761,24 @@ function G.UIDEF.arrow_palette_tab(tab)
                     }},
                     {n=G.UIT.R, config={align = "cm", r = 0.1, padding = 0.2, colour = G.C.BLACK, emboss = 0.05}, nodes=deck_tables},
                     {n=G.UIT.R, config={align = "cm"}, nodes={
-                        item_page_cycle
+                        {n=G.UIT.C, config={align = "cm"}, nodes={
+                            create_toggle({
+                                label = localize('arrow_pal_color_specific'),
+                                ref_table = ArrowAPI.palette_ui_config,
+                                ref_value = 'color_specific',
+                                label_scale = 0.2,
+                                w = 0.4,
+                                h = 0.4,
+                                scale = 0.55,
+                                callback = function()
+                                    G.FUNCS.arrow_palette_page()
+                                end
+                            }),
+                        }},
+                        {n=G.UIT.C, config={align = "cm", minw = 0.35}, nodes={}},
+                        {n=G.UIT.C, config={align = "cm"}, nodes={
+                            item_page_cycle
+                        }}
                     }},
                 }}
             }},
@@ -1941,36 +1972,4 @@ function G.UIDEF.arrow_palette_tab(tab)
             }}
         }}
     }}
-end
-
-function G.UIDEF.palette_override_background(card, flash)
-    local flash_colour = G.C.CLEAR
-    if flash then
-        flash_colour = copy_table(G.C.WHITE)
-        flash_colour[4] = 1.5
-        ease_value(flash_colour, 4, -1.5, nil, 'REAL', nil, 0.2, 'quad')
-    end
-
-    local tcnx, tcny = card.T.x + card.T.w/2 - G.ROOM.T.w/2, card.T.y + card.T.h/2 - G.ROOM.T.h/2
-    local width, height = card.T.w * 1.05, card.T.h * 1.05
-
-    local base_background = UIBox{
-        T = {card.VT.x, card.VT.y, 0, 0},
-        definition =
-            {n=G.UIT.ROOT, config = {align = 'cm', minw = width, minh = height, r = 0.1, emboss = 0.05, colour = lighten(G.C.PURPLE, 0.1)}, nodes={
-                {n=G.UIT.R, config={id = 'ATTACH_TO_ME', minw = width, minh = height, r = 0.1, emboss = 0.05, colour = flash_colour}, nodes={}}
-            }},
-        config = {
-            align = 'cm',
-            offset = {x= 0.007*tcnx*card.T.w, y = 0.007*tcny*card.T.h},
-            parent = card,
-            r_bond = 'Strong'
-        }
-    }
-
-    base_background.set_alignment = function()
-        local cnx, cny = card.T.x + card.T.w/2 - G.ROOM.T.w/2, card.T.y + card.T.h/2 - G.ROOM.T.h/2
-        Moveable.set_alignment(card.children.palette_override_background, {offset = {x= 0.007*cnx*card.T.w, y = 0.007*cny*card.T.h}})
-    end
-    return base_background
 end

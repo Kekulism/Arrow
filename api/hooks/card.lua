@@ -308,16 +308,12 @@ end
 function Card:r_click()
     if self.params and self.params.arrow_palette_card then
         local override = G.FUNCS.arrow_toggle_palette_override(self.params.arrow_palette_card)
-
-        if self.children.palette_override_background then
-            self.children.palette_override_background:remove()
-            self.children.palette_override_background = nil
-        end
+        self.arrow_palette_outline = nil
 
         -- toggle highlighting automatically when you create an override
         if override then
             self.area:add_to_highlighted(self)
-            self.children.palette_override_background = G.UIDEF.palette_override_background(self, true)
+            self.arrow_palette_outline = true
         else
             self.area:remove_from_highlighted(self)
             play_sound('cardSlide2', nil, 0.3)

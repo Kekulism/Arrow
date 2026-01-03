@@ -15,7 +15,8 @@ ArrowAPI.palette_ui_config = {
 		grad_idx = ''
 	},
 	hex_input = '',
-	name_input = ''
+	name_input = '',
+	color_specific = true,
 }
 
 ArrowAPI.optional_featues = {

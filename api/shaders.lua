@@ -3,6 +3,7 @@ SMODS.Shader({ key = 'arrow_stand_mask', custom_path = ArrowAPI.path..(ArrowAPI.
 SMODS.Shader({key = 'arrow_ui_poly', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'ui_poly.fs', prefix_config = false})
 SMODS.Shader({key = 'arrow_rgb_slider', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'rgb_slider.fs', prefix_config = false})
 SMODS.Shader({key = 'arrow_button_grad', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'button_grad.fs', prefix_config = false})
+SMODS.Shader({key = 'arrow_palette_outline', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'palette_outline.fs', prefix_config = false})
 SMODS.Atlas({ key = 'arrow_stand_noise', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'noise.png',  px = 128, py = 128, prefix_config = false})
 SMODS.Atlas({ key = 'arrow_stand_gradient', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'gradient.png', px = 64, py = 64, prefix_config = false})
 
@@ -249,15 +250,31 @@ SMODS.DrawStep:take_ownership('stickers', {
     end,
 }, true)
 
-SMODS.draw_ignore_keys.palette_override_background = true
-
 --- for palette override backgrounds
-SMODS.DrawStep {
-    key = 'arrow_palette_override_background',
+SMODS.DrawStep ({
+    key = 'arrow_palette_override',
     prefix_config = {key = {mod = false}},
-    order = -101,
+    order = 91,
     func = function(self, layer)
-        if self.children.palette_override_background then self.children.palette_override_background:draw() end
+        if self.arrow_palette_outline then
+            local cursor_pos = {}
+            cursor_pos[1] = self.tilt_var and self.tilt_var.mx*G.CANV_SCALE or G.CONTROLLER.cursor_position.x*G.CANV_SCALE
+            cursor_pos[2] = self.tilt_var and self.tilt_var.my*G.CANV_SCALE or G.CONTROLLER.cursor_position.y*G.CANV_SCALE
+            local screen_scale = G.TILESCALE*G.TILESIZE*(self.children.center.mouse_damping or 1)*G.CANV_SCALE
+            local hovering = (self.hover_tilt or 0)
+
+            G.SHADERS['arrow_palette_outline']:send('step_size', {3, 3})
+            G.SHADERS['arrow_palette_outline']:send('time', G.TIMERS.REAL)
+            G.SHADERS['arrow_palette_outline']:send("texture_details", self.children.center:get_pos_pixel())
+            G.SHADERS['arrow_palette_outline']:send("image_details", self.children.center:get_image_dims())
+            G.SHADERS['arrow_palette_outline']:send('outline_color', {0.7, 0.36, 1, 1})
+            G.SHADERS['arrow_palette_outline']:send('mouse_screen_pos', cursor_pos)
+            G.SHADERS['arrow_palette_outline']:send('screen_scale', screen_scale)
+            G.SHADERS['arrow_palette_outline']:send('hovering', hovering)
+            love.graphics.setShader(G.SHADERS['arrow_palette_outline'], G.SHADERS['arrow_palette_outline'])
+            self.children.center:draw_self()
+            love.graphics.setShader()
+        end
     end,
     conditions = { vortex = false, facing = 'front' },
-}
+})
