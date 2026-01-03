@@ -531,7 +531,7 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
     if ArrowAPI.palette_ui_config.open_palette.current_override then
         -- set the palette override
         color = current_palette[color_idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
-        palette_button.parent.config.colour = lighten(G.C.PURPLE, 0.1)
+        palette_button.parent.config.colour = {0.7, 0.36, 1, 1}
         palette_button.config.grad_colour = color
     else
         color = current_palette[color_idx]
