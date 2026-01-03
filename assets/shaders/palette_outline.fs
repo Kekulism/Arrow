@@ -30,6 +30,8 @@ vec4 effect(vec4 color, Image tex, vec2 tex_coords, vec2 screen_coords) {
 
     float norm_x = ((tex_coords.x - local_x_origin)/x_scale - 0.5) * 2;
     float norm_y = ((tex_coords.y - local_y_origin)/y_scale - 0.5) * -2;
+    float max_x = local_x_origin + x_scale;
+    float max_y = local_y_origin + y_scale;
 
     float comp_angle = mod(time * 0.75, 1) * PI * 2;
     float theta = atan2(norm_y, norm_x);
@@ -38,20 +40,20 @@ vec4 effect(vec4 color, Image tex, vec2 tex_coords, vec2 screen_coords) {
     float outer_alpha = 4 * ret.a;
     float x_step = step_size.x / image_details.x;
     float y_step = step_size.y / image_details.y;
-    outer_alpha -= Texel(tex, tex_coords + vec2(x_step, 0.0)).a;
-    outer_alpha -= Texel(tex, tex_coords + vec2(-x_step, 0.0)).a;
-    outer_alpha -= Texel(tex, tex_coords + vec2(0.0, y_step)).a;
-    outer_alpha -= Texel(tex, tex_coords + vec2(0.0, -y_step)).a;
+    outer_alpha -= Texel(tex, vec2(max(local_x_origin, min(max_x, tex_coords.x + x_step)), tex_coords.y)).a;
+    outer_alpha -= Texel(tex, vec2(max(local_x_origin, min(max_x, tex_coords.x - x_step)), tex_coords.y)).a;
+    outer_alpha -= Texel(tex, vec2(tex_coords.x, max(local_y_origin, min(max_y, tex_coords.y + y_step)))).a;
+    outer_alpha -= Texel(tex, vec2(tex_coords.x, max(local_y_origin, min(max_y, tex_coords.y - y_step)))).a;
 
     vec4 ret_color = vec4(outline_color.rgb, min(outer_alpha, ret.a));
     if (ret_color.a == 0 && ret.a > 0) {
         float inner_alpha = 4 * ret.a;
         float x_step = (step_size.x + 2) / image_details.x;
         float y_step = (step_size.y + 2) / image_details.y;
-        inner_alpha -= Texel(tex, tex_coords + vec2(x_step, 0.0)).a;
-        inner_alpha -= Texel(tex, tex_coords + vec2(-x_step, 0.0)).a;
-        inner_alpha -= Texel(tex, tex_coords + vec2(0.0, y_step)).a;
-        inner_alpha -= Texel(tex, tex_coords + vec2(0.0, -y_step)).a;
+        inner_alpha -= Texel(tex, vec2(max(local_x_origin, min(max_x, tex_coords.x + x_step)), tex_coords.y)).a;
+        inner_alpha -= Texel(tex, vec2(max(local_x_origin, min(max_x, tex_coords.x - x_step)), tex_coords.y)).a;
+        inner_alpha -= Texel(tex, vec2(tex_coords.x, max(local_y_origin, min(max_y, tex_coords.y + y_step)))).a;
+        inner_alpha -= Texel(tex, vec2(tex_coords.x, max(local_y_origin, min(max_y, tex_coords.y - y_step)))).a;
 
         if (inner_alpha > 0) {
             ret_color = vec4(1.0);
