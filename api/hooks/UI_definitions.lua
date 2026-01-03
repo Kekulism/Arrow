@@ -1370,7 +1370,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                         config = {},
                         generate_ui = function() end
                     },
-                    {arrow_palette_card = key, bypass_discovery_center = true}
+                    {arrow_palette_card = item.key, bypass_discovery_center = true}
                 )
 
                 disp_card.no_ui = true
