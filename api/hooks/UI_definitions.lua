@@ -1370,8 +1370,8 @@ function G.UIDEF.arrow_palette_tab(tab)
             for i = 1, #items do
                 local item = items[i]
                 for _, atlas_data in pairs(palette.image_data.pixel_map) do
-                    local main_data = atlas_data[item.item_key or item.key]
-                    local soul_data = atlas_data[(item.item_key or item.key)..'_soul']
+                    local main_data = atlas_data[item.key]
+                    local soul_data = atlas_data[item.key..'_soul']
                     if (main_data and main_data[palette_color.key]) or (soul_data and soul_data[palette_color.key]) then
                         display_items[#display_items+1] = {
                             item = item,
@@ -1699,7 +1699,9 @@ function G.UIDEF.arrow_palette_tab(tab)
                 ArrowAPI.palette_ui_config.rgb[3]
             }
 
+            local idx = ArrowAPI.palette_ui_config.open_palette.idx
             local palette_color
+
             if ArrowAPI.palette_ui_config.open_palette.current_override then
                 palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
                 palette.current_palette[idx].overrides.changed_flag = true
