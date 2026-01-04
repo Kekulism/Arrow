@@ -478,14 +478,232 @@ G.FUNCS.tnsmi_toggle_soundpack = function(e)
 end
 
 
+---------------------------
+--------------------------- Text Input Callbacks
+---------------------------
 
+G.FUNCS.number_select_text_input = function(e)
+    if e.config.text_hook_disabled then return end
+
+    if G.CONTROLLER.text_input_hook then
+        local old_hook = G.CONTROLLER.text_input_hook
+        G.CONTROLLER.text_input_hook = nil
+        old_hook.UIBox:recalculate()
+    end
+    G.CONTROLLER.text_input_hook = e
+    G.CONTROLLER.text_input_id = e.config.id
+end
+
+G.FUNCS.number_text_input = function(e)
+    local args = e.config.ref_table
+    if G.CONTROLLER.text_input_hook == e then
+        e.config.colour = args.hooked_colour
+    else
+        e.config.colour = args.colour
+    end
+
+    -- copied from the original one
+    local OSkeyboard_e = e.parent.parent.parent
+    if G.CONTROLLER.text_input_hook == e and G.CONTROLLER.HID.controller then
+        if not OSkeyboard_e.children.controller_keyboard then
+            OSkeyboard_e.children.controller_keyboard = UIBox{
+            definition = create_keyboard_input{backspace_key = true, return_key = true, space_key = false},
+            config = {
+                align= 'cm',
+                offset = {x = 0, y = G.CONTROLLER.text_input_hook.config.ref_table.keyboard_offset or -4},
+                major = e.UIBox, parent = OSkeyboard_e}
+            }
+            G.CONTROLLER.screen_keyboard = OSkeyboard_e.children.controller_keyboard
+            G.CONTROLLER:mod_cursor_context_layer(1)
+        end
+    elseif OSkeyboard_e.children.controller_keyboard then
+        OSkeyboard_e.children.controller_keyboard:remove()
+        OSkeyboard_e.children.controller_keyboard = nil
+        G.CONTROLLER.screen_keyboard = nil
+        G.CONTROLLER:mod_cursor_context_layer(-1)
+    end
+end
+
+local ref_text_input_key = G.FUNCS.text_input_key
+G.FUNCS.text_input_key = function(args)
+    if G.CONTROLLER.text_input_hook.config.ref_table.number_text_input then
+        -- redirect to handle specific corpuses
+        return G.FUNCS.number_text_input_key(args)
+    end
+
+    return ref_text_input_key(args)
+end
+
+G.FUNCS.number_text_input_key = function(args)
+    args = args or {}
+
+    --shortcut to hook config
+    local hook_config = G.CONTROLLER.text_input_hook.config.ref_table
+    hook_config.orig_colour = hook_config.orig_colour or copy_table(hook_config.colour)
+
+    args.key = args.key or '%'
+    local text = hook_config.text
+
+    --Some special keys need to be mapped accordingly before passing through the corpus
+    local keymap = {
+      space = ' ',
+      backspace = 'BACKSPACE',
+      delete = 'DELETE',
+      ['return'] = 'RETURN',
+      right = 'RIGHT',
+      left = 'LEFT'
+    }
+
+    args.key = keymap[args.key] or string.upper(args.key)
+    local length = #text.ref_table[text.ref_value]
+
+    if length > 0 and args.key == 'BACKSPACE' then
+        NUMBER_MODIFY_TEXT({text_table = text, pos = text.current_position, delete = true})
+        NUMBER_TRANSPOSE(-1)
+    elseif length > 0 and args.key == 'DELETE' then --if not at end, remove following letter
+        NUMBER_MODIFY_TEXT({text_table = text, pos = text.current_position+1, delete = true})
+    elseif args.key == 'RETURN' then --Release the hook
+        -- clamp and return cursor to start
+        local val = tonumber(text.ref_table[text.ref_value], hook_config.corpus_type == 'numeric_base16' and 16 or nil) or 0
+        local clamped_val = math.min(hook_config.max, math.max(hook_config.min, val))
+        sendDebugMessage('clamped val: '..clamped_val)
+        local clamped_str = hook_config.corpus_type == 'numeric_base16' and string.upper(string.format("%x", clamped_val)) or tostring(clamped_val)
+        local clamped_length = #clamped_str
+        if clamped_val ~= val or (hook_config.left_padding and clamped_length < hook_config.max_length)
+        or (not hook_config.left_padding and #text.ref_table[text.ref_value] ~= clamped_length)  then
+            for i = 1, hook_config.max_length do
+                if hook_config.left_padding then
+                    if i <= (hook_config.max_length - clamped_length) then
+                        text.letters[i] = '0'
+                        clamped_str = '0'..clamped_str
+                    else
+                        text.letters[i] = string.sub(clamped_str, i, i)
+                    end
+                else
+                    text.letters[i] = (i <= #clamped_str) and string.sub(clamped_str, i, i) or ''
+                end
+            end
+        end
+
+        sendDebugMessage('clamped str: '..clamped_str)
+        text.ref_table[text.ref_value] = clamped_str
+
+        NUMBER_TRANSPOSE(0)
+
+        -- callback with args
+        if hook_config.callback then
+            local callback_args = hook_config.callback_args or {}
+            hook_config.callback(unpack(callback_args))
+        end
+        -- transpose to set cursor always back to the end
+
+        G.CONTROLLER.text_input_hook = nil
+    elseif args.key == 'LEFT' then --Move cursor position to the left
+        NUMBER_TRANSPOSE(-1)
+    elseif args.key == 'RIGHT' then --Move cursor position to the right
+        NUMBER_TRANSPOSE(1)
+    elseif hook_config.max_length > length and (string.len(args.key) == 1) and string.find(hook_config.corpus, args.key, 1, true) then --check to make sure the key is in the valid corpus, add it to the string
+        NUMBER_MODIFY_TEXT({letter = args.key, text_table = text, pos = text.current_position+1})
+        NUMBER_TRANSPOSE(1)
+    end
+
+    local debug_str = '[CONTENTS]: '
+    for i = 1, #text.letters do
+        debug_str = debug_str..text.letters[i]
+    end
+    sendDebugMessage(debug_str)
+
+    sendDebugMessage('current text position: '..text.current_position)
+end
+
+--Helper function for G.FUNCS.text_input_key
+--
+---@param args {letter: string, text_table: table, pos: number, delete: boolean}
+--**letter** the letter being pressed\
+--**text_table** the table full of letters from hook\
+--**pos** the current position of the iterator\
+--**delete** if the action is a deletion action
+function NUMBER_MODIFY_TEXT(args)
+    args = args or {}
+
+    if args.delete then
+        if args.pos >= #args.text_table.letters then
+            args.text_table.letters[args.pos] = ''
+        else
+            args.text_table.letters[args.pos] = args.text_table.letters[args.pos+1]
+            NUMBER_MODIFY_TEXT({
+                text_table = args.text_table,
+                pos = args.pos+1,
+                delete = true
+            })
+        end
+        return
+    end
+
+    local swapped_letter = args.text_table.letters[args.pos]
+    args.text_table.letters[args.pos] = args.letter
+
+    if swapped_letter ~= '' then
+        NUMBER_MODIFY_TEXT({
+            letter = swapped_letter,
+            text_table = args.text_table,
+            pos = args.pos+1
+        })
+    end
+end
+
+local ref_transpose = TRANSPOSE_TEXT_INPUT
+function TRANSPOSE_TEXT_INPUT(amount)
+    if G.CONTROLLER.text_input_hook.config.ref_table.number_text_input then
+        return NUMBER_TRANSPOSE(amount)
+    end
+
+    return ref_transpose(amount)
+end
+
+function NUMBER_TRANSPOSE(dir)
+    local hook = G.CONTROLLER.text_input_hook
+    local text = G.CONTROLLER.text_input_hook.config.ref_table.text
+    local cursor_pos = text.current_position
+    local cursor_index = cursor_pos + 1
+
+    text.ref_table[text.ref_value] = NUMBER_GET_TEXT()
+    local text_length = #text.ref_table[text.ref_value]
+    if dir ~= 0 and (cursor_pos + dir < 0 or cursor_pos + dir > text_length) then
+        return
+    end
+
+    if dir == 0 then
+        local cursor = table.remove(hook.children, cursor_index)
+        table.insert(hook.children, text_length+1, cursor)
+        text.current_position = text_length
+    else
+        sendDebugMessage('cursor child '..hook.children[cursor_index].config.id..' at index '..cursor_index)
+        sendDebugMessage('letter child '..hook.children[cursor_index + dir].config.id..' at index '..(cursor_index + dir))
+        dir = dir > 0 and 1 or -1
+        SWAP(hook.children, cursor_index, cursor_index + dir)
+        text.current_position = cursor_pos + dir
+    end
+
+    hook.UIBox:recalculate()
+end
+
+--Helper function for G.FUNCS.text_input_key
+function NUMBER_GET_TEXT()
+    local new_text = ''
+    local text = G.CONTROLLER.text_input_hook.config.ref_table.text
+    for i = 1, #text.letters do
+        new_text = new_text..text.letters[i]
+    end
+    return new_text
+end
 
 
 ---------------------------
 --------------------------- Palette widget callbacks
 ---------------------------
 
-local function update_hex_input(color)
+function update_hex_input(color)
     local new_hex_string = string.upper(tostring(string.format("%02x", color[1])..string.format("%02x", color[2])..string.format("%02x", color[3])))
     ArrowAPI.palette_ui_config.hex_input = new_hex_string
     local args = ArrowAPI.palette_ui_config.hex_input_config
@@ -559,7 +777,7 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
     ArrowAPI.palette_ui_config.display_rgb[1] = tostring(ArrowAPI.palette_ui_config.rgb[1])
     ArrowAPI.palette_ui_config.display_rgb[2] = tostring(ArrowAPI.palette_ui_config.rgb[2])
     ArrowAPI.palette_ui_config.display_rgb[3] = tostring(ArrowAPI.palette_ui_config.rgb[3])
-    update_hex_input(ArrowAPI.palette_ui_config.display_rgb)
+    update_hex_input(ArrowAPI.palette_ui_config.rgb)
 
     G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_widget_box').config.grad_colour = color
 
@@ -589,13 +807,20 @@ function G.FUNCS.arrow_rgb_slider(e, update_only)
         end
 
         if not update_only then
-            local old = rt.ref_table[rt.ref_value]
             local new = math.floor(math.min(rt.max,math.max(rt.min, rt.min + (rt.max - rt.min)*(G.CURSOR.T.x - e.parent.T.x - G.ROOM.T.x)/e.T.w)))
-            if new ==  rt.ref_table[rt.ref_value] then return end
-            rt.ref_table[rt.ref_value] = new
-            rt.display_table[rt.ref_value] = tostring(new)
+            if new == rt.ref_table[rt.ref_value] then return end
 
-            if old == rt.ref_table[rt.ref_value] then return end
+            rt.ref_table[rt.ref_value] = new
+            local display_str = tostring(new)
+            rt.display_table[rt.ref_value] = display_str
+
+            -- update text letters
+            local text_config = e.parent.parent.children[3].config.ref_table
+
+            for i = 1, text_config.max_length do
+                text_config.text.letters[i] = (i <= #display_str) and string.sub(display_str, i, i) or ''
+            end
+
             ArrowAPI.palette_changed_flag = true
         end
 
@@ -606,178 +831,6 @@ function G.FUNCS.arrow_rgb_slider(e, update_only)
         e.children[1].config.ref_table.last_dragged = nil
     end
 end
-
-G.FUNCS.arrow_select_text_input = function(e)
-    G.CONTROLLER.text_input_hook = e
-    G.CONTROLLER.text_input_id = e.config.id
-
-    --Start by setting the cursor position to the correct location
-    TRANSPOSE_TEXT_INPUT(0)
-
-    e.UIBox:recalculate()
-end
-
-G.FUNCS.arrow_text_input = function(e)
-    local args = e.config.ref_table
-    if G.CONTROLLER.text_input_hook == e then
-        e.config.colour = args.hooked_colour
-    else
-        e.config.colour = args.colour
-    end
-
-    local OSkeyboard_e = e.parent.parent.parent
-    if G.CONTROLLER.text_input_hook == e and G.CONTROLLER.HID.controller then
-        if not OSkeyboard_e.children.controller_keyboard then
-            OSkeyboard_e.children.controller_keyboard = UIBox{
-            definition = create_keyboard_input{backspace_key = true, return_key = true, space_key = false},
-            config = {
-                align= 'cm',
-                offset = {x = 0, y = G.CONTROLLER.text_input_hook.config.ref_table.keyboard_offset or -4},
-                major = e.UIBox, parent = OSkeyboard_e}
-            }
-            G.CONTROLLER.screen_keyboard = OSkeyboard_e.children.controller_keyboard
-            G.CONTROLLER:mod_cursor_context_layer(1)
-        end
-    elseif OSkeyboard_e.children.controller_keyboard then
-        OSkeyboard_e.children.controller_keyboard:remove()
-        OSkeyboard_e.children.controller_keyboard = nil
-        G.CONTROLLER.screen_keyboard = nil
-        G.CONTROLLER:mod_cursor_context_layer(-1)
-    end
-end
-
--- Redone text input due to a littany of changes
-G.FUNCS.text_input_key = function(args)
-    args = args or {}
-
-    --shortcut to hook config
-    local hook_config = G.CONTROLLER.text_input_hook.config.ref_table
-    hook_config.orig_colour = hook_config.orig_colour or copy_table(hook_config.colour)
-
-    args.key = args.key or '%'
-    local hook = G.CONTROLLER.text_input_hook
-
-    local corpus = hook_config.corpus or '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-    local corpus_type = hook_config.corpus_type or 'alphanumeric'
-
-    if corpus_type == 'alphanumeric' then
-        if args.key == '[' or args.key == ']' then return end
-        if args.key == '0' then args.key = 'o' end
-    end
-
-    if corpus_type == 'alphanumeric' and hook.config.ref_table.extended_corpus then
-        corpus = corpus.." 0!$&()<>?:{}+-=,.[]_"
-        local lower_ext = '1234567890-=;\',./'
-        local upper_ext = '!@#$%^&*()_+:"<>?'
-        if string.find(lower_ext, args.key) and args.caps then
-            args.key = string.sub(string.sub(upper_ext, string.find(lower_ext, args.key)), 0, 1)
-        end
-    end
-
-    local text = hook_config.text
-
-    --Some special keys need to be mapped accordingly before passing through the corpus
-    local keymap = {
-      space = ' ',
-      backspace = 'BACKSPACE',
-      delete = 'DELETE',
-      ['return'] = 'RETURN',
-      right = 'RIGHT',
-      left = 'LEFT'
-    }
-
-    args.caps = args.caps or G.CONTROLLER.capslock or hook_config.all_caps
-    args.key = keymap[args.key] or (args.caps and string.upper(args.key) or args.key)
-
-    local length = string.len(text.ref_table[text.ref_value])
-
-    TRANSPOSE_TEXT_INPUT(0)
-    if length > 0 and args.key == 'BACKSPACE' then
-        MODIFY_TEXT_INPUT({letter = '', text_table = text, pos = text.current_position, delete = true})
-        TRANSPOSE_TEXT_INPUT(-1)
-        sendDebugMessage('current position: '..text.current_position)
-    elseif length > 0 and args.key == 'DELETE' then --if not at end, remove following letter
-        MODIFY_TEXT_INPUT({letter = '', text_table = text, pos = text.current_position+1,delete = true})
-        TRANSPOSE_TEXT_INPUT(0)
-        sendDebugMessage('current position: '..text.current_position)
-    elseif args.key == 'RETURN' then --Release the hook
-        if not G.CONTROLLER.text_input_hook then return end
-
-        if hook.config.ref_table.callback then
-            local callback_args = hook.config.ref_table.callback_args or {}
-            hook.config.ref_table.callback(unpack(callback_args))
-        end
-
-        if not hook.config.ref_table.manual_colour then
-            hook.parent.parent.config.colour = hook_config.colour
-            local temp_colour = copy_table(hook_config.orig_colour)
-            hook_config.colour[1] = G.C.WHITE[1]
-            hook_config.colour[2] = G.C.WHITE[2]
-            hook_config.colour[3] = G.C.WHITE[3]
-            ease_colour(hook_config.colour, temp_colour)
-        end
-        G.CONTROLLER.text_input_hook = nil
-        return
-    elseif args.key == 'LEFT' then --Move cursor position to the left
-        TRANSPOSE_TEXT_INPUT(-1)
-        sendDebugMessage('current position: '..text.current_position)
-    elseif args.key == 'RIGHT' then --Move cursor position to the right
-        TRANSPOSE_TEXT_INPUT(1)
-        sendDebugMessage('current position: '..text.current_position)
-    elseif hook_config.max_length > length and (string.len(args.key) == 1) and string.find(corpus, args.key, 1, true) then --check to make sure the key is in the valid corpus, add it to the string
-        MODIFY_TEXT_INPUT({letter = args.key, text_table = text, pos = text.current_position+1})
-        TRANSPOSE_TEXT_INPUT(1)
-        sendDebugMessage('current position: '..text.current_position)
-    end
-end
-
-local ref_text_from_input = GET_TEXT_FROM_INPUT
-function GET_TEXT_FROM_INPUT()
-    local ret = ref_text_from_input()
-    local hook_config = G.CONTROLLER.text_input_hook.config.ref_table
-    if hook_config.corpus_type and hook_config.corpus_type ~= 'alphanumeric' then
-        ret = tonumber(ret) or 0
-    end
-    return ret
-end
-
---Helper function for G.FUNCS.text_input_key\
---Moves the cursor left or right. Typing a key, deleting or backspacing also counts\
---as a cursor move, since empty strings are used to fill the hook
---
----@param amount number
-function TRANSPOSE_TEXT_INPUT(amount)
-    local position_child = nil
-    local hook = G.CONTROLLER.text_input_hook
-    local text = G.CONTROLLER.text_input_hook.config.ref_table.text
-    for i = 1, #hook.children do
-        if hook.children[i].config then
-            if hook.children[i].config.id == G.CONTROLLER.text_input_id..'_position' then
-                position_child = i; break
-            end
-        end
-    end
-
-    local dir = (amount/math.abs(amount)) or 0
-
-    while amount ~= 0 do
-        if position_child + dir < 1 or position_child + dir >= #hook.children then break end
-        local real_letter = hook.children[position_child+dir].config.id:sub(1, 8+string.len(G.CONTROLLER.text_input_id)) == G.CONTROLLER.text_input_id..'_letter_' and hook.children[position_child+dir].config.text ~= ''
-        SWAP(hook.children, position_child, position_child + dir)
-        if real_letter then amount = amount - dir end
-        position_child = position_child + dir
-    end
-
-    local text_length = string.len(text.ref_table[text.ref_value])
-    if hook.config.ref_table.min_length then
-        sendDebugMessage('clamping min')
-        text_length = math.min(text_length, hook.config.ref_table.min_length)
-    end
-
-    text.current_position = math.min(position_child-1, text_length)
-    hook.UIBox:recalculate(true)
-    text.ref_table[text.ref_value] = GET_TEXT_FROM_INPUT()
-  end
 
 --- Callback for the main visual display of a gradient  widget, including interacting to create/remove gradient pips
 function G.FUNCS.arrow_grad_box(e)
@@ -1051,6 +1104,10 @@ function G.FUNCS.arrow_angle_widget(e)
             end
         end
 
+        if not ArrowAPI.palette_ui_config.angle_widget_config.text_input_ref then
+            ArrowAPI.palette_ui_config.angle_widget_config.text_input_ref = G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_text_input')
+        end
+
         if mode == 'linear' then
             local adjusted_x = (cursor_x - 0.5) * 2
             local adjusted_y = (cursor_y - 0.5) * -2
@@ -1059,6 +1116,11 @@ function G.FUNCS.arrow_angle_widget(e)
             ArrowAPI.palette_ui_config.angle_widget_config.value = angle
             ArrowAPI.palette_ui_config.angle_widget_config.display_val = degree_angle
 
+            local text_config = ArrowAPI.palette_ui_config.angle_widget_config.text_input_ref.config.ref_table
+            for i = 1, text_config.max_length do
+                text_config.text.letters[i] = (i <= #degree_angle) and string.sub(degree_angle, i, i) or ''
+            end
+
             config.point.x = math.cos(angle)
             config.point.y = math.sin(angle)
         else
@@ -1066,7 +1128,6 @@ function G.FUNCS.arrow_angle_widget(e)
             local adjusted_y = (cursor_y - 0.5) * -2
             config.point.x = math.floor(math.min(1, math.max(-1, adjusted_x)) * 100) / 100
             config.point.y = math.floor(math.min(1, math.max(-1, adjusted_y)) * 100) / 100
-
             -- don't set the value here because it's handled separately
         end
 
@@ -1116,6 +1177,7 @@ G.FUNCS.arrow_can_edit_gradients = function(e)
 
             local value_node = e.children[2].children[1]
             value_node.config.colour = G.C.UI.TEXT_LIGHT
+            value_node.children[2].config.text_hook_disabled = nil
             value_node.children[1].children[1].config.colour = G.C.UI.TEXT_INACTIVE
 
             -- this needs to change the
@@ -1196,6 +1258,7 @@ G.FUNCS.arrow_can_edit_gradients = function(e)
 
         local value_node = e.children[2].children[1]
         value_node.config.colour = G.C.UI.TEXT_INACTIVE
+        value_node.children[2].config.text_hook_disabled = true
         value_node.children[1].children[1].config.colour = darken(G.C.UI.TEXT_INACTIVE, 0.3)
 
         local new_colour = darken(G.C.UI.TEXT_INACTIVE, 0.5)

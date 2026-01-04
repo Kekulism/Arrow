@@ -1019,44 +1019,67 @@ end
 --------------------------- Palette editor
 ---------------------------
 
-function arrow_text_input(args)
+function number_text_input(args)
     args = args or {}
+
     args.colour = copy_table(args.colour) or copy_table(G.C.BLUE)
     args.hooked_colour = copy_table(args.hooked_colour) or darken(copy_table(G.C.BLUE), 0.3)
     args.text_colour = copy_table(args.text_colour) or copy_table(G.C.UI.TEXT_LIGHT)
+
     args.w = args.w or 2.5
     args.h = args.h or 0.7
     args.text_scale = args.text_scale or 0.4
-    args.max_length = args.max_length or 16
-    args.all_caps = args.all_caps or false
-    args.id = args.id or "text_input"
-    args.manual_colour = true
 
+
+    args.max_length = args.max_length or 16
+    args.id = args.id or "number_text_input"
+    args.number_text_input = true
+
+    local last_digit = '9'
     if args.corpus_type == 'numeric_base10' then
         args.corpus = "1234567890"
     elseif args.corpus_type == 'numeric_base10_dec' then
         args.corpus = "1234567890."
     elseif args.corpus_type == 'numeric_base16' then
-        args.corpus = "1234567890ABCDEFabcdef"
+        args.corpus = "1234567890ABCDEF"
+        last_digit = 'F'
     else
-        args.corpus_type = 'alphanumeric'
-        args.corpus = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        args.corpus_type = 'numeric_base10'
+        args.corpus = "1234567890"
     end
+
+    args.min = args.min or 0
+    if not args.max then
+        local max_val = ''
+        while #max_val < args.max_length do
+            max_val = max_val..last_digit
+        end
+
+        args.max = tonumber(max_val, last_digit == 'F' and 16 or nil)
+    end
+
+    local string_val = tostring(args.ref_table[args.ref_value])
+    if args.left_padding then
+        while #string_val < args.max_length do
+            string_val = '0'..string_val
+        end
+    end
+    args.ref_table[args.ref_value] = string_val
 
     local text = {
         ref_table = args.ref_table,
         ref_value = args.ref_value,
         letters = {},
-        current_position = string.len(args.ref_table[args.ref_value])
+        current_position = string.len(string_val)
     }
-    local ui_letters = {
-        {n=G.UIT.B, config={r = 0.03, w=0, h=args.h*0.7, colour = lighten(copy_table(G.C.BLUE), 0.4), id = args.id..'_position', func = 'flash'}},
-        {n=G.UIT.T, config={text = '', colour = G.C.CLEAR, scale = args.text_scale, id = 'arrow_dummy_prompt'}}
-    }
-    for i = args.max_length, 1, -1 do
-      text.letters[i] = (args.ref_table[args.ref_value] and (string.sub(args.ref_table[args.ref_value], i, i) or '')) or ''
-      table.insert(ui_letters, 1, {n=G.UIT.T, config={ref_table = text.letters, ref_value = i, scale = args.text_scale, colour = args.text_colour, id = args.id..'_letter_'..i}})
+
+    local ui_letters = {}
+    for i = 1, args.max_length do
+        text.letters[i] = string.sub(string_val, i, i) or ''
+        ui_letters[#ui_letters+1] = {n=G.UIT.T, config={ref_table = text.letters, ref_value = i, scale = args.text_scale, colour = args.text_colour, id = args.id..'_letter_'..i}}
     end
+
+    table.insert(ui_letters, text.current_position+1, {n=G.UIT.B, config={r = 0.03, w=0, h=args.h*0.7, colour = lighten(copy_table(G.C.BLUE), 0.4), id = args.id..'_position', func = 'flash'}})
     args.text = text
 
     return {
@@ -1070,8 +1093,8 @@ function arrow_text_input(args)
             colour = args.colour,
             minw = args.w,
             minh = args.h,
-            button = 'arrow_select_text_input',
-            func = 'arrow_text_input',
+            button = 'number_select_text_input',
+            func = 'number_text_input',
             emboss = 0.05,
             ref_table = args
         },
@@ -1096,23 +1119,42 @@ function arrow_create_rgb_slider(args)
             }}
         }},
         {n=G.UIT.B, config={align = 'cm', w = 0.1, h = 0.1}},
-        arrow_text_input({
+        number_text_input({
             id = args.id and args.id..'_text_input' or 'arrow_rgb_text_input',
             max_length = 3,
-            min_length = 3,
             text_scale = args.text_scale,
             h = args.h*1.2,
             w = args.w * 0.3,
             corpus_type = 'numeric_base10',
             colour = G.C.UI.BACKGROUND_DARK,
             hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
-            prompt_text = '0',
+            min = args.min,
+            max = args.max,
+            true_table = args.ref_table,
             ref_table = args.display_table,
             ref_value = args.ref_value,
-            callback = function(ref_table, true_table, ref_value, min, max, slider_id)
+            callback = function(display_table, true_table, ref_value, slider_id)
+                true_table[ref_value] = tonumber(display_table[ref_value])
 
+                -- update palette color
+                local current_palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette
+                local color
+                if ArrowAPI.palette_ui_config.open_palette.current_override then
+                    -- set the palette override
+                    color = current_palette[ArrowAPI.palette_ui_config.open_palette.idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
+                    color.changed_flag = true
+                else
+                    color = current_palette[ArrowAPI.palette_ui_config.open_palette.idx]
+                end
+
+                local start_idx = (ArrowAPI.palette_ui_config.open_palette.grad_idx - 1) * 3
+                color[start_idx + ref_value] = true_table[ref_value]
+
+                -- update other visuals
+                update_hex_input(ArrowAPI.palette_ui_config.display_rgb)
+                G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID(slider_id), true)
             end,
-            callback_args = {args.display_table, args.ref_table, args.ref_value, args.min, args.max, args.id}
+            callback_args = {args.display_table, args.ref_table, args.ref_value, args.id}
         }),
     }}
 end
@@ -1242,6 +1284,11 @@ function G.UIDEF.arrow_palette_tab(tab)
     local start_idx = (ArrowAPI.palette_ui_config.open_palette.grad_idx - 1) * 3
 
     ArrowAPI.palette_ui_config.rgb = {button_color[start_idx + 1], button_color[start_idx + 2], button_color[start_idx + 3]}
+    ArrowAPI.palette_ui_config.display_rgb = {
+        tostring(ArrowAPI.palette_ui_config.rgb[1]),
+        tostring(ArrowAPI.palette_ui_config.rgb[2]),
+        tostring(ArrowAPI.palette_ui_config.rgb[3]),
+    }
 
     ----------------- palette_items
     local deck_tables = {}
@@ -1603,33 +1650,21 @@ function G.UIDEF.arrow_palette_tab(tab)
 
     ----------------- hex input
     local new_hex_string = string.upper(tostring(string.format("%02x", button_color[1])..string.format("%02x", button_color[2])..string.format("%02x", button_color[3])))
-    ArrowAPI.palette_ui_config.last_hex_input = new_hex_string
     ArrowAPI.palette_ui_config.hex_input = new_hex_string
+    sendDebugMessage("first hex input: "..tostring(new_hex_string))
 
     ArrowAPI.palette_ui_config.hex_input_config = {
         id = 'arrow_hex_input',
         max_length = 6,
-        all_caps = true,
+        left_padding = true,
         w = 1.4,
         colour = G.C.UI.BACKGROUND_DARK,
+        corpus_type = 'numeric_base16',
         hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
         ref_table = ArrowAPI.palette_ui_config,
         ref_value = 'hex_input',
         callback = function()
-            local hex_str = ArrowAPI.palette_ui_config.hex_input
-            while #hex_str < 6 do
-                -- Concatenate a zero to the beginning of the string.
-                hex_str = hex_str..'0'
-            end
-
-            ArrowAPI.palette_ui_config.hex_input = hex_str
-            local args = ArrowAPI.palette_ui_config.hex_input_config
-            local old_pos = args.text.current_position
-            for i = 1, args.max_length do
-                local new_letter = hex_str:sub(i, i)
-                args.text.letters[i] = new_letter
-            end
-            TRANSPOSE_TEXT_INPUT(args.max_length - old_pos)
+            local hex_str = tostring(ArrowAPI.palette_ui_config.hex_input)
 
             ArrowAPI.palette_ui_config.rgb[1] = math.min(255, math.max(0, tonumber(hex_str:sub(1, 2), 16) or 0))
             ArrowAPI.palette_ui_config.rgb[2] = math.min(255, math.max(0, tonumber(hex_str:sub(3, 4), 16) or 0))
@@ -1639,9 +1674,21 @@ function G.UIDEF.arrow_palette_tab(tab)
             ArrowAPI.palette_ui_config.display_rgb[2] = tostring(ArrowAPI.palette_ui_config.rgb[2])
             ArrowAPI.palette_ui_config.display_rgb[3] = tostring(ArrowAPI.palette_ui_config.rgb[3])
 
-            G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('r_slider'), true)
-            G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('g_slider'), true)
-            G.FUNCS.arrow_rgb_slider(G.OVERLAY_MENU:get_UIE_by_ID('b_slider'), true)
+            -- fix the sliders
+            local sliders = {
+                G.OVERLAY_MENU:get_UIE_by_ID('r_slider'),
+                G.OVERLAY_MENU:get_UIE_by_ID('g_slider'),
+                G.OVERLAY_MENU:get_UIE_by_ID('b_slider')
+            }
+            for i = 1, #sliders do
+                G.FUNCS.arrow_rgb_slider(sliders[i], true)
+                -- update text letters
+                local display_str = ArrowAPI.palette_ui_config.display_rgb[i]
+                local text_config = sliders[i].parent.parent.children[3].config.ref_table
+                for i = 1, text_config.max_length do
+                    text_config.text.letters[i] = (i <= #display_str) and string.sub(display_str, i, i) or ''
+                end
+            end
 
             local grad_points = ArrowAPI.palette_ui_config.grad_widget_config.grad_points
             local grad_idx = ArrowAPI.palette_ui_config.open_palette.grad_idx
@@ -1812,11 +1859,19 @@ function G.UIDEF.arrow_palette_tab(tab)
                                         config.mode = 'linear'
                                         config.value = 0
                                         config.display_val = '0'
-                                        config.point.x = 0
+                                        local text_config = G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_text_input').config.ref_table
+                                        for i = 1, text_config.max_length do
+                                            text_config.text.letters[i] = (i <= #config.display_val) and string.sub(config.display_val, i, i) or ''
+                                        end
+
+                                        config.point.x = 1
                                         config.point.y = 0
                                         config.linear_toggle = true
                                         config.radial_toggle = false
                                         config.label_1 = localize('k_label_linear')
+
+                                        G.CONTROLLER.text_input_hook = nil
+                                        G.CONTROLLER.text_input_id = nil
                                         return true
                                     end
                                 }),
@@ -1834,11 +1889,19 @@ function G.UIDEF.arrow_palette_tab(tab)
                                         config.mode = 'radial'
                                         config.value = 1
                                         config.display_val = '1'
+                                        local text_config = G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_text_input').config.ref_table
+                                        for i = 1, text_config.max_length do
+                                            text_config.text.letters[i] = (i <= #config.display_val) and string.sub(config.display_val, i, i) or ''
+                                        end
+
                                         config.point.x = 0
                                         config.point.y = 0
                                         config.linear_toggle = false
                                         config.radial_toggle = true
                                         config.label_1 = localize('k_label_radial')
+
+                                        G.CONTROLLER.text_input_hook = nil
+                                        G.CONTROLLER.text_input_id = nil
                                         return true
                                     end
                                 }),
@@ -1848,7 +1911,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                                     {n = G.UIT.R, config = {align = "cm", minw = 0.6}, nodes = {
                                         {n = G.UIT.T, config = {align = "cm", ref_table = ArrowAPI.palette_ui_config.angle_widget_config, ref_value = 'label_1', colour = G.C.UI.TEXT_INACTIVE, scale = 0.25}},
                                     }},
-                                    arrow_text_input({
+                                    number_text_input({
                                         id = 'arrow_grad_text_input',
                                         row = true,
                                         min = 0,
@@ -1865,15 +1928,17 @@ function G.UIDEF.arrow_palette_tab(tab)
                                         ref_value = 'display_val',
                                         callback = function()
                                             local angle_config = ArrowAPI.palette_ui_config.angle_widget_config
+                                            local num_val = tonumber(angle_config.display_val)
                                             if angle_config.mode == 'linear' then
-                                                local rad = math.rad(tonumber(angle_config.display_val))
-                                                angle_config.value = math.rad(tonumber(angle_config.display_val))
+                                                local rad = math.rad(num_val)
+                                                angle_config.value = rad
                                                 angle_config.point.x = math.cos(rad)
                                                 angle_config.point.y = math.sin(rad)
                                             else
-                                                angle_config.value = tonumber(angle_config.display_val)
+                                                angle_config.value = num_val
                                             end
                                         end,
+                                        callback_args = {'value', }
                                     }),
                                 }},
                                 {n = G.UIT.B, config = {align = "cm", w = 0.05, h = 0.1}},
@@ -1910,7 +1975,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                                 }},
                             }},
                             {n = G.UIT.R, config={align = "cm"}, nodes ={
-                                create_text_input(ArrowAPI.palette_ui_config.hex_input_config),
+                                number_text_input(ArrowAPI.palette_ui_config.hex_input_config),
                             }},
                         }},
                         {n = G.UIT.C, config={align = "cm", padding = 0.05}, nodes = {
