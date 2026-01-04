@@ -188,10 +188,10 @@ ArrowAPI.colors = {
                             atlases[center.atlas] = {}
                         end
 
-                        atlases[center.atlas][#atlases[center.atlas]+1] = {key = center_key, pos = pos}
-                        items[#items+1] = {key = key, order = center.order, item_key = center_key, table = 'CENTERS', set = (center.set or center.palette_set)}
-                    end
 
+                        atlases[center.atlas][#atlases[center.atlas]+1] = {key = key, pos = pos}
+                    end
+                    items[#items+1] = {key = center_key, order = center.order, table = 'CENTERS', set = (center.set or center.palette_set)}
                 end
             end
 

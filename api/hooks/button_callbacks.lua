@@ -566,7 +566,6 @@ G.FUNCS.number_text_input_key = function(args)
         -- clamp and return cursor to start
         local val = tonumber(text.ref_table[text.ref_value], hook_config.corpus_type == 'numeric_base16' and 16 or nil) or 0
         local clamped_val = math.min(hook_config.max, math.max(hook_config.min, val))
-        sendDebugMessage('clamped val: '..clamped_val)
         local clamped_str = hook_config.corpus_type == 'numeric_base16' and string.upper(string.format("%x", clamped_val)) or tostring(clamped_val)
         local clamped_length = #clamped_str
         if clamped_val ~= val or (hook_config.left_padding and clamped_length < hook_config.max_length)
@@ -585,7 +584,6 @@ G.FUNCS.number_text_input_key = function(args)
             end
         end
 
-        sendDebugMessage('clamped str: '..clamped_str)
         text.ref_table[text.ref_value] = clamped_str
 
         NUMBER_TRANSPOSE(0)
@@ -606,14 +604,6 @@ G.FUNCS.number_text_input_key = function(args)
         NUMBER_MODIFY_TEXT({letter = args.key, text_table = text, pos = text.current_position+1})
         NUMBER_TRANSPOSE(1)
     end
-
-    local debug_str = '[CONTENTS]: '
-    for i = 1, #text.letters do
-        debug_str = debug_str..text.letters[i]
-    end
-    sendDebugMessage(debug_str)
-
-    sendDebugMessage('current text position: '..text.current_position)
 end
 
 --Helper function for G.FUNCS.text_input_key
@@ -678,8 +668,6 @@ function NUMBER_TRANSPOSE(dir)
         table.insert(hook.children, text_length+1, cursor)
         text.current_position = text_length
     else
-        sendDebugMessage('cursor child '..hook.children[cursor_index].config.id..' at index '..cursor_index)
-        sendDebugMessage('letter child '..hook.children[cursor_index + dir].config.id..' at index '..(cursor_index + dir))
         dir = dir > 0 and 1 or -1
         SWAP(hook.children, cursor_index, cursor_index + dir)
         text.current_position = cursor_pos + dir
@@ -777,6 +765,23 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
     ArrowAPI.palette_ui_config.display_rgb[1] = tostring(ArrowAPI.palette_ui_config.rgb[1])
     ArrowAPI.palette_ui_config.display_rgb[2] = tostring(ArrowAPI.palette_ui_config.rgb[2])
     ArrowAPI.palette_ui_config.display_rgb[3] = tostring(ArrowAPI.palette_ui_config.rgb[3])
+
+    local display_val = tostring(color.grad_config.mode == 'linear' and math.deg(color.grad_config.val) or color.grad_config.val)
+    local angle_config = ArrowAPI.palette_ui_config.angle_widget_config
+    angle_config.display_val = tostring(display_val)
+    local text_config = G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_text_input').config.ref_table
+    for i = 1, text_config.max_length do
+        text_config.text.letters[i] = (i <= #display_val) and string.sub(display_val, i, i) or ''
+    end
+
+    if color.grad_config.mode == 'linear' then
+        angle_config.point.x = math.cos(color.grad_config.val)
+        angle_config.point.y = math.sin(color.grad_config.val)
+    else
+        angle_config.point.x = color.grad_config.pos[1]
+        angle_config.point.y = color.grad_config.pos[2]
+    end
+
     update_hex_input(ArrowAPI.palette_ui_config.rgb)
 
     G.OVERLAY_MENU:get_UIE_by_ID('arrow_grad_widget_box').config.grad_colour = color
@@ -1399,7 +1404,7 @@ function G.FUNCS.arrow_apply_palette(e)
     edit_color.grad_config.val = angle_config.value
 
     if angle_config.mode == 'linear' then
-        edit_color.grad_config.pos[1] = 0
+        edit_color.grad_config.pos[1] = 1
         edit_color.grad_config.pos[2] = 0
     else
         edit_color.grad_config.pos[1] = angle_config.point.x

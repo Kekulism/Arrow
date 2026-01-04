@@ -176,34 +176,34 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 	{key = 'saved_palettes', default_value = {
 		["Hearts"] = {
 			{
-				{174,27,67,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="174-27-67"},
-				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{255,99,136,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-99-136"},
-				{253,160,182,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="253-160-182"},
-				{253,189,207,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="253-189-207"},
-				{253,211,223,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="253-211-223"},
-				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="55-70-73"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
-				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{174,27,67,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="174-27-67"},
+				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{255,99,136,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-99-136"},
+				{253,160,182,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="253-160-182"},
+				{253,189,207,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="253-189-207"},
+				{253,211,223,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="253-211-223"},
+				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="55-70-73"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
+				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "Default",
 			},
 			{
-				{150,27,29,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="174-27-67"},
-				{248,59,47,248,59,47,208,29,17,208,29,17,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{255,99,103,255,99,103,220,77,81,220,77,81,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="255-99-136"},
-				{237,131,131,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="253-160-182"},
-				{255,159,162,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="253-189-207"},
-				{255,196,196,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="253-211-223"},
+				{150,27,29,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="174-27-67"},
+				{248,59,47,248,59,47,208,29,17,208,29,17,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{255,99,103,255,99,103,220,77,81,220,77,81,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="255-99-136"},
+				{237,131,131,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="253-160-182"},
+				{255,159,162,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="253-189-207"},
+				{255,196,196,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="253-211-223"},
 
-				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{41,173,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="55-70-73"},
-				{255,255,255, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
+				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{41,173,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="55-70-73"},
+				{255,255,255, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
 
-				{248,59,47,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{248,59,47,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "High Contrast",
 			},
@@ -211,38 +211,38 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		},
 		["Spades"] = {
 			{
-				{64,72,111,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="64-72-111"},
-				{84,78,138,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="84-78-138"},
-				{104,99,156,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="104-99-156"},
+				{64,72,111,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="64-72-111"},
+				{84,78,138,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="84-78-138"},
+				{104,99,156,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="104-99-156"},
 
-				{158,155,205,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="158-155-205"},
-				{189,186,231,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="189-186-231"},
-				{230,229,246,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="230-229-246"},
+				{158,155,205,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="158-155-205"},
+				{189,186,231,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="189-186-231"},
+				{230,229,246,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="230-229-246"},
 
-				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
+				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
 
-				{64,72,111,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{64,72,111,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "Default",
 			},
 			{
-				{79,99,103,79,99,103,55,70,73,55,70,73,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="64-72-111"},
-				{91,108,110,91,108,110,62,71,73,62,71,73,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="84-78-138"},
-				{105,123,127,105,123,127,69,83,87,69,83,87,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="104-99-156"},
+				{79,99,103,79,99,103,55,70,73,55,70,73,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="64-72-111"},
+				{91,108,110,91,108,110,62,71,73,62,71,73,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="84-78-138"},
+				{105,123,127,105,123,127,69,83,87,69,83,87,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="104-99-156"},
 
-				{133,146,149,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="158-155-205"},
-				{153,167,171,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="189-186-231"},
-				{185,200,202,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="230-229-246"},
+				{133,146,149,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="158-155-205"},
+				{153,167,171,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="189-186-231"},
+				{185,200,202,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="230-229-246"},
 
-				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{107,97,139,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{138,113,225, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
+				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{107,97,139,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{138,113,225, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
 
-				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "High Contrast",
 			},
@@ -250,40 +250,40 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		},
 		["Diamonds"] = {
 			{
-				{141,79,29,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="141-79-29"},
-				{204,87,27,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="207-84-27"},
-				{240,107,63,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="240-107-63"},
-				{246,142,84,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="246-142-84"},
-				{251,165,133,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="251-165-133"},
-				{225,179,131,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="225-179-131"},
-				{246,207,177,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="246-207-177"},
-				{255,222,194,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-222-194"},
+				{141,79,29,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="141-79-29"},
+				{204,87,27,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="207-84-27"},
+				{240,107,63,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="240-107-63"},
+				{246,142,84,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="246-142-84"},
+				{251,165,133,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="251-165-133"},
+				{225,179,131,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="225-179-131"},
+				{246,207,177,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="246-207-177"},
+				{255,222,194,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-222-194"},
 
-				{240,107,63,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="55-70-73"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
+				{240,107,63,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="55-70-73"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
 
-				{240,107,63,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{240,107,63,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "Default",
 			},
 			{
-				{141,79,29,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="141-79-29"},
-				{232,131,6,232,131,6,186,104,4,186,104,4,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="207-84-27"},
-				{255,163,0,255,163,0,199,127,0,199,127,0,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="240-107-63"},
-				{246,142,84,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="246-142-84"},
-				{251,165,133,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="251-165-133"},
-				{251,210,111,251,210,111,207,181,99,207,181,99,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="225-179-131"},
-				{255,227,159,255,227,159,251,210,111,251,210,111,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="246-207-177"},
-				{255,232,166,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-222-194"},
-				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{209,55,45,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{255,163,0,255,163,0,199,127,0,199,127,0 ,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="55-70-73"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
-				{232,131,6,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{141,79,29,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="141-79-29"},
+				{232,131,6,232,131,6,186,104,4,186,104,4,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="207-84-27"},
+				{255,163,0,255,163,0,199,127,0,199,127,0,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="240-107-63"},
+				{246,142,84,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="246-142-84"},
+				{251,165,133,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="251-165-133"},
+				{251,210,111,251,210,111,207,181,99,207,181,99,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="225-179-131"},
+				{255,227,159,255,227,159,251,210,111,251,210,111,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="246-207-177"},
+				{255,232,166,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-222-194"},
+				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{209,55,45,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{255,163,0,255,163,0,199,127,0,199,127,0 ,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="55-70-73"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
+				{232,131,6,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "High Contrast",
 			},
@@ -291,42 +291,42 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		},
 		["Clubs"] = {
 			{
-				{37,93,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="37-93-89"},
-				{28,112,106,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="28-112-106"},
-				{58,143,135,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="58-143-135"},
-				{72,147,141,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="72-147-141"},
-				{137,179,180,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="137-179-180"},
-				{184,210,212,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="184-210-212"},
-				{82,121,132,82,121,132,110,165,179,110,165,179,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="96-143-155"},
-				{109,149,160,109,149,160,155,202,214,155,202,214,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="131-175-187"},
-				{144,189,201,144,189,201,215,234,250,215,234,250,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="207-233-231"},
-				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{37,93,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="55-70-73"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
-				{37,93,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{37,93,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="37-93-89"},
+				{28,112,106,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="28-112-106"},
+				{58,143,135,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="58-143-135"},
+				{72,147,141,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="72-147-141"},
+				{137,179,180,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="137-179-180"},
+				{184,210,212,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="184-210-212"},
+				{82,121,132,82,121,132,110,165,179,110,165,179,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="96-143-155"},
+				{109,149,160,109,149,160,155,202,214,155,202,214,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="131-175-187"},
+				{144,189,201,144,189,201,215,234,250,215,234,250,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="207-233-231"},
+				{255,181,51,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{240,52,100,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{37,93,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="55-70-73"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
+				{37,93,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "Default",
 			},
 			{
-				{0,156,253,0,156,253,0,123,199,0,123,199,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="37-93-89"},
-				{61,200,255, 61,200,255, 38,161,237, 38,161,237,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="28-112-106"},
-				{125,208,255, 125,208,255, 51,173,244, 51,173,244,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="58-143-135"},
-				{51,148,209,1,["grad_pos" ]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="72-147-141"},
-				{120,198,242,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="137-179-180"},
-				{177,227,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="184-210-212"},
-				{82,121,132,82,121,132,110,165,179,110,165,179,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="96-143-155"},
-				{109,149,160,109,149,160,155,202,214,155,202,214,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="131-175-187"},
-				{202,237,255,202,237,255,165,201,220,165,201,220,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="207-233-231"},
+				{0,156,253,0,156,253,0,123,199,0,123,199,["grad_pos"]={0,0.2,0.8,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="37-93-89"},
+				{61,200,255, 61,200,255, 38,161,237, 38,161,237,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="28-112-106"},
+				{125,208,255, 125,208,255, 51,173,244, 51,173,244,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="58-143-135"},
+				{51,148,209,1,["grad_pos" ]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="72-147-141"},
+				{120,198,242,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="137-179-180"},
+				{177,227,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="184-210-212"},
+				{82,121,132,82,121,132,110,165,179,110,165,179,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="96-143-155"},
+				{109,149,160,109,149,160,155,202,214,155,202,214,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="131-175-187"},
+				{202,237,255,202,237,255,165,201,220,165,201,220,["grad_pos"]={0,0.1,0.9,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="207-233-231"},
 
-				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-163-0"},
-				{254,95,85,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="0-156-253"},
-				{0,156,253,0,123,199 ,["grad_pos"]={0,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}},["overrides"]={},["key"]="240-52-100"},
-				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="55-70-73"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
+				{255,163,0,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-163-0"},
+				{254,95,85,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="0-156-253"},
+				{0,156,253,0,123,199 ,["grad_pos"]={0,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}},["overrides"]={},["key"]="240-52-100"},
+				{55,70,73,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="55-70-73"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
 
-				{0,156,253 ,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{0,156,253 ,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "High Contrast",
 			},
@@ -335,72 +335,72 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		["Spectral"] = {
 			{
 				-- blues
-				{61,68,96,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="61-68-96"},
-				{78,87,121,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_sixth_sense"] = {156,102,163,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{61,68,96,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="61-68-96"},
+				{78,87,121,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_sixth_sense"] = {156,102,163,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="78-87-121"},
-				{94,114,151,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_seance"] = {83,93,127, 94,114,151, 83,93,127,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}}},
-					["j_sixth_sense"] = {138,102,149,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{94,114,151,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_seance"] = {83,93,127, 94,114,151, 83,93,127,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}}},
+					["j_sixth_sense"] = {138,102,149,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="94-114-151"},
-				{82,100,162,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="82-100-162"},
-				{91,127,193,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_sixth_sense"] = {228,152,238,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{82,100,162,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="82-100-162"},
+				{91,127,193,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_sixth_sense"] = {228,152,238,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="91-127-193"},
-				{99,143,225,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="99-143-225"},
-				{122,164,242,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_sixth_sense"] = {205,108,217,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{99,143,225,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="99-143-225"},
+				{122,164,242,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_sixth_sense"] = {205,108,217,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="122-164-242"},
 
 				-- pack highlight blues
-				{114,151,217,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="114-151-217"},
-				{137,198,234,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="137-198-234"},
-				{144,226,249,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="144-226-249"},
-				{169,226,242,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="169-226-242"},
+				{114,151,217,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="114-151-217"},
+				{137,198,234,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="137-198-234"},
+				{144,226,249,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="144-226-249"},
+				{169,226,242,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="169-226-242"},
 
 				-- golds
-				{106,101,81,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="106-101-81"},
-				{139,131,97,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_sixth_sense"] = {139,124,99,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{106,101,81,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="106-101-81"},
+				{139,131,97,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_sixth_sense"] = {139,124,99,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="139-131-97"},
-				{167,156,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_sixth_sense"] = {182,151,102,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{167,156,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_sixth_sense"] = {182,151,102,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="167-156-103"},
-				{199,178,74,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_sixth_sense"] = {214,177,120,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{199,178,74,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_sixth_sense"] = {214,177,120,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="199-178-74"},
-				{232,214,127,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="232-214-127"},
+				{232,214,127,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="232-214-127"},
 
 				-- pack highlight golds
-				{192,223,174,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="192-223-174"},
-				{207,229,185,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="207-229-185"},
-				{225,235,133,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="225-235-133"},
-				{239,241,156,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="239-241-156"},
+				{192,223,174,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="192-223-174"},
+				{207,229,185,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="207-229-185"},
+				{225,235,133,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="225-235-133"},
+				{239,241,156,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="239-241-156"},
 
 				-- grays
-				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="79-99-103"},
-				{92,120,125,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="92-120-125"},
+				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="79-99-103"},
+				{92,120,125,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="92-120-125"},
 
-				{150,170,203,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_seance"] = {121,138,169,150,170,203,121,138,169,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}}}
+				{150,170,203,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_seance"] = {121,138,169,150,170,203,121,138,169,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}}}
 				},["key"]="150-170-203"},
 
-				{191,204,227,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_seance"] = {136,154,185,191,204,227,136,154,185,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}}},
-					["j_sixth_sense"] = {191,199,213,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{191,204,227,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_seance"] = {136,154,185,191,204,227,136,154,185,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}}},
+					["j_sixth_sense"] = {191,199,213,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="191-204-227"},
 
-				{226,235,249,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_seance"] = {159,175,201,226,235,249,159,175,201,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={0,0}}},
-					["j_sixth_sense"] = {220,200,200,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{226,235,249,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_seance"] = {159,175,201,226,235,249,159,175,201,["grad_pos"]={0,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.571,["pos"]={1,0}}},
+					["j_sixth_sense"] = {220,200,200,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="226-235-249"},
 
 				-- whites
-				{239,250,254,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="239-250-254"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
+				{239,250,254,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="239-250-254"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
 
 				-- badge
-				{69,132,250,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{69,132,250,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "Default",
 			},
@@ -408,40 +408,40 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		},
 		["Tarot"] = {
 			{
-				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="79-99-103"},
-				{255,229,180,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {255,144,137,255,144,137,141,165,205,141,165,205,["grad_pos"]={0,0.35,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="79-99-103"},
+				{255,229,180,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {255,144,137,255,144,137,141,165,205,141,165,205,["grad_pos"]={0,0.35,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="255-229-180"},
-				{218,183,114,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {228,57,46,228,57,46,0,132,216,0,132,216,["grad_pos"]={0,0.4,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{218,183,114,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {228,57,46,228,57,46,0,132,216,0,132,216,["grad_pos"]={0,0.4,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="218-183-114"},
-				{243,198,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {253,95,85,253,95,85,0,156,253,0,156,253,["grad_pos"]={0,0.4,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{243,198,89,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {253,95,85,253,95,85,0,156,253,0,156,253,["grad_pos"]={0,0.4,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="243-198-89"},
-				{165,133,71,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {195,49,39,195,49,39,0,107,175,0,107,175,["grad_pos"]={0,0.4,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{165,133,71,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {195,49,39,195,49,39,0,107,175,0,107,175,["grad_pos"]={0,0.4,0.6,1},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="165-133-71"},
-				{233,216,254,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {60,180,255,60,180,255,255,150,144,["grad_pos"]={0,0.2,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={0,0}}}
+				{233,216,254,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {60,180,255,60,180,255,255,150,144,["grad_pos"]={0,0.2,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={1,0}}}
 				},["key"]="233-216-254"},
-				{214,186,249,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="214-186-249"},
-				{183,162,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {64,155,210,64,155,210,251,96,87,["grad_pos"]={0,0.2,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={0,0}}}
+				{214,186,249,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="214-186-249"},
+				{183,162,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {64,155,210,64,155,210,251,96,87,["grad_pos"]={0,0.2,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={1,0}}}
 				},["key"]="183-162-253"},
-				{167,145,243,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{167,145,243,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {0,156,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="167-145-243"},
-				{153,129,234,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {253,95,85,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{153,129,234,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {253,95,85,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="153-129-234"},
-				{138,113,225,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {0,139,227,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{138,113,225,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {0,139,227,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="138-113-225"},
-				{107,97,139,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_superposition"] = {221,70,60,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}}}
+				{107,97,139,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_superposition"] = {221,70,60,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}}}
 				},["key"]="107-97-139"},
-				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255"},
-				{167,130,209,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{255,255,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255"},
+				{167,130,209,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"]="Default"
 			},
@@ -449,10 +449,10 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		},
 		["Background"] = {
 			{
-				{80,132,110,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="Small"},
-				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="won"},
-				{254,95,85,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="SHOWDOWN_COL_1"},
-				{0,157,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="SHOWDOWN_COL_2"},
+				{80,132,110,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="Small"},
+				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="won"},
+				{254,95,85,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="SHOWDOWN_COL_1"},
+				{0,157,255,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="SHOWDOWN_COL_2"},
 				["default"] = true,
 				["name"]="Default"
 			},
@@ -460,53 +460,53 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		},
 		["Planet"] = {
 			{
-				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="79-99-103"},
+				{79,99,103,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="79-99-103"},
 				-- blues
-				{79,108,116,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_supernova"] = {79,108,116, 79,108,116, 84,99,123, 79,108,116,["grad_pos"]={0,0.45,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={0,0}}}
+				{79,108,116,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_supernova"] = {79,108,116, 79,108,116, 84,99,123, 79,108,116,["grad_pos"]={0,0.45,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={1,0}}}
 				},["key"]="79-108-116"},
-				{87,125,136,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_supernova"] = {87,125,136, 87,125,136, 93,112,142, 87,125,136,["grad_pos"]={0,0.45,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={0,0}}}
+				{87,125,136,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_supernova"] = {87,125,136, 87,125,136, 93,112,142, 87,125,136,["grad_pos"]={0,0.45,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={1,0}}}
 				},["key"]="87-125-136"},
-				{91,155,170,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_supernova"] = {91,155,170, 91,155,170, 106,142,172, 91,155,170,["grad_pos"]={0,0.45,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.13, ["pos"]={0,0}}}
+				{91,155,170,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_supernova"] = {91,155,170, 91,155,170, 106,142,172, 91,155,170,["grad_pos"]={0,0.45,0.5,1},["grad_config"]={["mode"]="linear",["val"]=1.13, ["pos"]={1,0}}}
 				},["key"]="91-155-170"},
-				{103,176,209,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="103-176-209"},
-				{132,197,210,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="132-197-210"},
-				{116,198,208,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="116-198-208"},
-				{113,206,233,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="113-206-233"},
-				{137,232,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="137-232-253"},
+				{103,176,209,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="103-176-209"},
+				{132,197,210,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="132-197-210"},
+				{116,198,208,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="116-198-208"},
+				{113,206,233,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="113-206-233"},
+				{137,232,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="137-232-253"},
 
 
 				-- purples
-				{88,96,127,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_supernova"] = {88,96,127 ,84,99,123, 88,96,127, 88,96,127,["grad_pos"]={0,0.5,0.55,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={0,0}}}
+				{88,96,127,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_supernova"] = {88,96,127 ,84,99,123, 88,96,127, 88,96,127,["grad_pos"]={0,0.5,0.55,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={1,0}}}
 				},["key"]="88-96-127",},
-				{102,99,149,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_supernova"] = {102,99,149, 93,112,142, 102,99,149, 102,99,149,["grad_pos"]={0,0.5,0.55,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={0,0}}}
+				{102,99,149,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_supernova"] = {102,99,149, 93,112,142, 102,99,149, 102,99,149,["grad_pos"]={0,0.5,0.55,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={1,0}}}
 				},["key"]="102-99-149"},
-				{135,119,176,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={
-					["j_supernova"] = {135,119,176 ,106,142,172, 135,119,176, 135,119,176,["grad_pos"]={0,0.5,0.55,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={0,0}}}
+				{135,119,176,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={
+					["j_supernova"] = {135,119,176 ,106,142,172, 135,119,176, 135,119,176,["grad_pos"]={0,0.5,0.55,1},["grad_config"]={["mode"]="linear",["val"]=1.13,["pos"]={1,0}}}
 				},["key"]="135-119-176"},
-				{183,162,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="183-162-253"},
+				{183,162,253,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="183-162-253"},
 
 				-- earth colors
-				{59,102,131,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="59-102-131"},
-				{72,94,137,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="72-94-137"},
-				{54,116,157,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="54-116-157"},
-				{66,86,186,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="66-86-186"},
-				{77,138,223,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="77-138-223"},
+				{59,102,131,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="59-102-131"},
+				{72,94,137,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="72-94-137"},
+				{54,116,157,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="54-116-157"},
+				{66,86,186,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="66-86-186"},
+				{77,138,223,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="77-138-223"},
 
 				-- gold
-				{253,220,160,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="253-220-160"},
+				{253,220,160,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="253-220-160"},
 
 				-- whites/grays
-				{140,157,199,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="140-157-199"},
-				{176,189,214,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="176-189-214"},
-				{223,245,252, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="223-245-252", ["default"] = true,},
-				{255,255,255, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="255-255-255", ["default"] = true},
+				{140,157,199,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="140-157-199"},
+				{176,189,214,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="176-189-214"},
+				{223,245,252, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="223-245-252", ["default"] = true,},
+				{255,255,255, 1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="255-255-255", ["default"] = true},
 
-				{19,175,206,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={0,0}},["overrides"]={},["key"]="badge"},
+				{19,175,206,1,["grad_pos"]={0},["grad_config"]={["mode"]="linear",["val"]=0,["pos"]={1,0}},["overrides"]={},["key"]="badge"},
 				["default"] = true,
 				["name"] = "Default",
 			},

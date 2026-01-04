@@ -80,7 +80,9 @@ function TNSMI.save_soundpacks()
     local replace_map = TNSMI.config.loaded_packs.replace_map or {}
     for k, v in pairs (replace_map) do
         if type(v) == 'table' then
-            SMODS.Sounds[v.key].replace = nil
+            if SMODS.Sounds[v.key] then
+                SMODS.Sounds[v.key].replace = nil
+            end
             SMODS.Sound.replace_sounds[k] = nil
         end
     end

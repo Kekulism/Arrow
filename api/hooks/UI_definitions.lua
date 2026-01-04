@@ -1370,12 +1370,14 @@ function G.UIDEF.arrow_palette_tab(tab)
             for i = 1, #items do
                 local item = items[i]
                 for _, atlas_data in pairs(palette.image_data.pixel_map) do
-                    if atlas_data[item.key] and atlas_data[item.key][palette_color.key] then
+                    local main_data = atlas_data[item.item_key or item.key]
+                    local soul_data = atlas_data[(item.item_key or item.key)..'_soul']
+                    if (main_data and main_data[palette_color.key]) or (soul_data and soul_data[palette_color.key]) then
                         display_items[#display_items+1] = {
                             item = item,
-                            override_status = palette_color.overrides[item.key] and 'active' or 'inactive'
+                            override_status = palette_color.overrides[item.item_key] and 'active' or 'inactive'
                         }
-                    elseif atlas_data[item.key] and not ArrowAPI.palette_ui_config.color_specific then
+                    elseif (main_data or soul_data) and not ArrowAPI.palette_ui_config.color_specific then
                         display_items[#display_items+1] = {
                             item = item,
                             override_status = 'disabled'
@@ -1651,7 +1653,6 @@ function G.UIDEF.arrow_palette_tab(tab)
     ----------------- hex input
     local new_hex_string = string.upper(tostring(string.format("%02x", button_color[1])..string.format("%02x", button_color[2])..string.format("%02x", button_color[3])))
     ArrowAPI.palette_ui_config.hex_input = new_hex_string
-    sendDebugMessage("first hex input: "..tostring(new_hex_string))
 
     ArrowAPI.palette_ui_config.hex_input_config = {
         id = 'arrow_hex_input',
@@ -1769,16 +1770,26 @@ function G.UIDEF.arrow_palette_tab(tab)
         grad_points = grad_points
     }
 
+    local radial = button_color.grad_config.mode == 'radial'
+    local start_point = {}
+    if not radial then
+        start_point.x = math.cos(button_color.grad_config.val)
+        start_point.y = math.sin(button_color.grad_config.val)
+    else
+        start_point.x = button_color.grad_config.pos[1]
+        start_point.y = button_color.grad_config.pos[2]
+    end
+
     ArrowAPI.palette_ui_config.angle_widget_config = {
         w = 1,
         h = 1,
-        value = 0,
-        display_val = '0',
-        point = {x = 1, y = 0},
-        mode = 'linear',
-        linear_toggle = true,
-        radial_toggle = false,
-        label_1 = localize('k_label_linear'),
+        value = button_color.grad_config.val,
+        display_val = tostring(radial and button_color.grad_config.val or math.deg(button_color.grad_config.val)),
+        point = start_point,
+        mode = button_color.grad_config.mode,
+        linear_toggle = not radial,
+        radial_toggle = radial,
+        label_1 = localize('k_label_'..button_color.grad_config.mode),
     }
 
     ----------------- put it all together
