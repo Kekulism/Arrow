@@ -94,6 +94,7 @@ ArrowAPI.loc.add_loc_text_func(ArrowAPI, function()
     SMODS.process_loc_text(G.localization.misc.dictionary, 'b_arrow_pal_diamonds', {['en-us'] = 'Diamonds'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_pal_badge_text', {['en-us'] = 'Badge'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'arrow_pal_color_specific', {['en-us'] = 'Filter By Color'})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'b_arrow_palette_paste_hex', {['en-us'] = 'Paste'})
 
     SMODS.process_loc_text(G.localization.misc.dictionary, 'palette_bkg_standard', {['en-us'] = 'Standard'})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'palette_bkg_boss', {['en-us'] = 'Final Boss'})
