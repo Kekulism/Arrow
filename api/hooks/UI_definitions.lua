@@ -1664,8 +1664,9 @@ function G.UIDEF.arrow_palette_tab(tab)
         hooked_colour = darken(G.C.UI.BACKGROUND_DARK, 0.3),
         ref_table = ArrowAPI.palette_ui_config,
         ref_value = 'hex_input',
-        callback = function()
-            local hex_str = tostring(ArrowAPI.palette_ui_config.hex_input)
+        callback = function(i)
+            i = i or ArrowAPI.palette_ui_config.hex_input
+            local hex_str = tostring(i)
 
             ArrowAPI.palette_ui_config.rgb[1] = math.min(255, math.max(0, tonumber(hex_str:sub(1, 2), 16) or 0))
             ArrowAPI.palette_ui_config.rgb[2] = math.min(255, math.max(0, tonumber(hex_str:sub(3, 4), 16) or 0))
@@ -1718,6 +1719,27 @@ function G.UIDEF.arrow_palette_tab(tab)
             tab_contents.UIBox:recalculate()
         end
     }
+
+    function G.FUNCS.arrow_palette_paste_hex(e)
+        local raw_clipboard = (G.F_LOCAL_CLIPBOARD and G.CLIPBOARD or love.system.getClipboardText()) or ''
+        if not raw_clipboard then return end
+        local clean_hex = raw_clipboard:gsub("#", ""):gsub("[^%x]", ""):upper()
+        local clipboard = clean_hex
+
+        G.CONTROLLER.text_input_hook = e.UIBox:get_UIE_by_ID('arrow_hex_input')
+        G.CONTROLLER.text_input_id = 'arrow_hex_input'
+        for i = 1, 6 do G.FUNCS.text_input_key({key = 'right'}) end
+        for i = 1, 6 do G.FUNCS.text_input_key({key = 'backspace'}) end
+        for i = 1, #clipboard do
+            local c = clipboard:sub(i,i)
+            G.FUNCS.text_input_key({key = c})
+        end
+        G.FUNCS.text_input_key({key = 'return'})
+
+        local tab_contents = G.OVERLAY_MENU:get_UIE_by_ID('tab_contents')
+        tab_contents.UIBox:recalculate()
+        ArrowAPI.palette_ui_config.hex_input_config.callback(clipboard)
+    end
 
 
     ----------------- name input
@@ -1978,7 +2000,7 @@ function G.UIDEF.arrow_palette_tab(tab)
                                             id = 'arrow_selected_colour',
                                             align = "cm",
                                             minw = 1.3,
-                                            minh = 0.6,
+                                            minh = 0.5,
                                             func = 'arrow_update_selected_colour',
                                             r = 0.05,
                                             res = 0.45,
@@ -1989,6 +2011,9 @@ function G.UIDEF.arrow_palette_tab(tab)
                             }},
                             {n = G.UIT.R, config={align = "cm"}, nodes ={
                                 number_text_input(ArrowAPI.palette_ui_config.hex_input_config),
+                            }},
+                            {n = G.UIT.R, config={align = "cm"}, nodes ={
+                                UIBox_button({minw = 1.3, minh = 0.4, button = "arrow_palette_paste_hex", colour = G.C.BLUE, label = {localize('b_arrow_palette_paste_hex')}, scale = 0.35})
                             }},
                         }},
                         {n = G.UIT.C, config={align = "cm", padding = 0.05}, nodes = {
