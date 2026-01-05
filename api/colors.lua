@@ -13,7 +13,6 @@ local function collect_image_data(set, atlases)
     local color_width
     local width_per_unit
     local colors_per_unit
-    local pos
 
     local color_key
     local prior_pixel_rows
@@ -29,7 +28,7 @@ local function collect_image_data(set, atlases)
         ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
         color_width = image_data:getWidth() * 4
         width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
-        colors_per_unit = math.min(image_data:getSize(), width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling)
+        colors_per_unit = width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
 
         for _, item in ipairs(v) do
             local item_table = {pos_x = item.pos.x, pos_y = item.pos.y}
@@ -37,7 +36,7 @@ local function collect_image_data(set, atlases)
                 item_table[color.key] = {}
             end
 
-            prior_pixel_rows = atlas.py * item.pos.y
+            prior_pixel_rows = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling * item.pos.y
             start_idx = prior_pixel_rows * color_width + item.pos.x * width_per_unit
 
             for j = 0, (colors_per_unit - 1), 4 do

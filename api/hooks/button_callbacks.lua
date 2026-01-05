@@ -1635,3 +1635,10 @@ G.FUNCS.refresh_contrast_mode = function()
         end
     end
 end
+
+local ref_pixel_smoothing = G.FUNCS.change_pixel_smoothing
+G.FUNCS.change_pixel_smoothing = function(args)
+    local ret = ref_pixel_smoothing(args)
+    ArrowAPI.colors.setup_palettes()
+    return ret
+end
