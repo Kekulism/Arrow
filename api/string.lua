@@ -1,6 +1,6 @@
 
 -- string data helper functions
-ArrowAPI.string = { 
+ArrowAPI.string = {
     --- Checks if a string starts with a specified substring
     --- @param str string String to check
     --- @param start string Substring to search for within str
@@ -17,13 +17,13 @@ ArrowAPI.string = {
         return string.sub(str, -#ending) == ending
     end,
 
-    --- Finds a substring within a given string, not case sensitive
+    --- Finds a substring within a given string
     --- @param str string String to check
     --- @param substring string Substring to search for within str
     --- @return boolean # If the substring is found anywhere within str
-    contains = function(str, substring)
-        local lowerStr = string.lower(str)
-        local lowerSubstring = string.lower(substring)
+    contains = function(str, substring, case_sensitive)
+        local lowerStr = case_sensitive and str or string.lower(str)
+        local lowerSubstring = case_sensitive and substring or string.lower(substring)
         return string.find(lowerStr, lowerSubstring, 1, true) ~= nil
     end,
 
@@ -95,7 +95,7 @@ ArrowAPI.string = {
         elseif caps_style == 'upper' then
             ret = string.upper(ret)
         end
-        
+
         if value > 2 then
             local val = value
             if spell_numeral then
@@ -107,7 +107,7 @@ ArrowAPI.string = {
             end
             ret = val..' '..ret
         end
-        
+
         return ret
     end,
 }

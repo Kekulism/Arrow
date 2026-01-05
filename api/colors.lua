@@ -28,8 +28,8 @@ local function collect_image_data(set, atlases)
 
         ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
         color_width = image_data:getWidth() * 4
-        width_per_unit = atlas.px * 4
-        colors_per_unit = math.min(image_data:getSize(), width_per_unit * atlas.py)
+        width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
+        colors_per_unit = math.min(image_data:getSize(), width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling)
 
         for _, item in ipairs(v) do
             local item_table = {pos_x = item.pos.x, pos_y = item.pos.y}
