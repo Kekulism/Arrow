@@ -523,6 +523,7 @@ ArrowAPI.colors = {
         local replace_color = {1, 1, 1}
         local idx
         local palette_color
+        local palette_key
         local color_list
 
         local edit_pointer
@@ -552,7 +553,8 @@ ArrowAPI.colors = {
             for i = 1, #custom_palette do
                 for item, colors in pairs(pixel_map) do
                     -- todo add item filtering
-                    color_list = colors[custom_palette[i].key]
+                    palette_key = custom_palette[i].key
+                    color_list = colors[palette_key]
                     if color_list then
                         palette_color = custom_palette[i].overrides[item] or custom_palette[i]
                         for j = 1, #color_list do
@@ -584,7 +586,7 @@ ArrowAPI.colors = {
                                     -- depending on benchmark, might not need this approx
                                     -- local dist = math.sqrt((center[2] - color_list[j].y)^2 + (center[1] - color_list[j].x)^2)
                                     dist = amax_bmin(center[2] - y, center[1] - x)
-                                    lerp_val =  1 - math.min(1, math.max(0, (dist / palette_color.grad_config.val)))
+                                    lerp_val = 1 - math.min(1, math.max(0, (dist / palette_color.grad_config.val)))
                                 end
 
                                 for grad = 1, #grad_pos - 1 do
