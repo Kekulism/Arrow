@@ -39,11 +39,11 @@ function consumInfo.use(self, card, area, copier)
 end
 
 function consumInfo.can_use(self, card)
-    if G.consumeables.config.card_limit) <= #G.consumeables.cards - (card.area == G.consumeables and 1 or 0)) then
+    if G.consumeables.config.card_limit <= #G.consumeables.cards - (card.area == G.consumeables and 1 or 0) then
         return false
     end
 
-    return G.GAME.modifiers.unlimited_stands or ArrowAPI.stands.get_num_stands()) < G.GAME.modifiers.max_stands)
+    return G.GAME.modifiers.unlimited_stands or ArrowAPI.stands.get_num_stands() < G.GAME.modifiers.max_stands
 end
 
 return consumInfo
