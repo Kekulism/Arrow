@@ -118,7 +118,7 @@ ArrowAPI.stands = {
             end
         end
 
-        return to_big(count)
+        return count)
     end,
 
     --- Evolves a Stand. A Stand must have an 'evolve_key' field to evolve
