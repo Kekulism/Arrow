@@ -1,8 +1,3 @@
--- Talisman compat
-to_big = to_big or function(num)
-	return num
-end
-
 local has_pl = SMODS.find_mod('plantain')
 if next(has_pl) and has_pl[1].can_load then
 	local pl_ref = SMODS.Centers.j_pl_plantain.calculate
