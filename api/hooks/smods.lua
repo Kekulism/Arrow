@@ -101,7 +101,7 @@ function SMODS.update_context_flags(context, flags)
 
     if flags.prevent_downside ~= nil then context.prevent_downside = flags.prevent_downside end
     if flags.prevent_expire ~= nil then context.prevent_expire = flags.prevent_expire end
-    if flags.blind_hidden  ~= nil then context.blind_hidden = flags.blind_hidden end
+    if flags.blind_hidden ~= nil then context.blind_hidden = flags.blind_hidden end
 
     if flags.title_center then context.title_center = context.title_center end
     if flags.title_front then context.title_front = flags.title_front end
@@ -117,21 +117,21 @@ end
 function SMODS.spectral_downside(card, check)
     local downside = true
     local flags = SMODS.calculate_context({spectral_downside = true, card = card, downside = downside, check = check})
-    if flags.prevent_downside then downside = not flags.prevent_downside end
+    if flags and flags.prevent_downside then downside = not flags.prevent_downside end
 	return downside
 end
 
 function SMODS.food_expires(card, check)
     local expires = true
     local flags = SMODS.calculate_context({food_expires = true, card = card, expires = expires, check = check})
-    if flags.prevent_expire then expires = not flags.prevent_expire end
+    if flags and flags.prevent_expire then expires = not flags.prevent_expire end
 	return expires
 end
 
 function SMODS.blind_hidden(blind)
     local hidden = false
     local flags = SMODS.calculate_context({blind_hidden = true, blind_obj = blind, hidden = hidden})
-    if flags.blind_hidden then hidden = not flags.blind_hidden end
+    if flags and flags.blind_hidden then hidden = flags.blind_hidden end
 	return hidden
 end
 

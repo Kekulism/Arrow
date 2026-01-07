@@ -579,4 +579,11 @@ ArrowAPI.loc.add_loc_text_func(ArrowAPI, function()
             "{C:inactive}(#2#)",
         },
     }})
+
+    SMODS.process_loc_text(G.localization.descriptions.Blind, 'bl_arrow_mystery', {['en-us'] = {
+        name = 'Mystery?',
+        text = {
+            "{C:dark_edition}????????{}"
+        },
+    }})
 end)

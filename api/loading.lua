@@ -26,9 +26,12 @@ SMODS.Shader.inject = function(self)
     path_table.path = old_path
 end
 
-SMODS.Atlas({ key = 'arrow_undiscovered', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = "undiscovered.png", px = 71, py = 95, prefix_config = false })
-SMODS.Atlas({key = 'arrow_boosters', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'boosters/boosters.png', px = 71, py = 95, prefix_config = false})
-SMODS.Atlas({key = 'arrow_vouchers', custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = 'vouchers/vouchers.png', px = 71, py = 95, prefix_config = false})
+local arrow_path = ArrowAPI.path..(ArrowAPI.custom_path or '')
+SMODS.Atlas({ key = 'arrow_undiscovered', custom_path = arrow_path, path = "undiscovered.png", px = 71, py = 95, prefix_config = false })
+SMODS.Atlas({key = 'arrow_boosters', custom_path = arrow_path, path = 'boosters/boosters.png', px = 71, py = 95, prefix_config = false})
+SMODS.Atlas({key = 'arrow_vouchers', custom_path = arrow_path, path = 'vouchers/vouchers.png', px = 71, py = 95, prefix_config = false})
+SMODS.Atlas({key = 'arrow_mystery', custom_path = arrow_path, path = 'blinds/mystery.png', px = 34, py = 34, frames = 21, prefix_config = false})
+
 
 ArrowAPI.loading = {
     --- Load a batch of items from a formatted table
@@ -172,6 +175,14 @@ ArrowAPI.loading = {
                     function info.set_card_type_badge(self, card, badges)
                         badges[1] = create_badge(localize('k_evolved_stand'), get_type_colour(self or card.config, card), nil, 1.2)
                         return ref_card_type_badge(self, card)
+                    end
+                end
+            end
+
+            if item_type == 'VHS' then
+                function info.can_use(self, card)
+                    if card.area == G.consumeables or #G.consumeables.cards < G.consumeables.config.card_limit then
+                        return true
                     end
                 end
             end
@@ -521,4 +532,11 @@ ArrowAPI.loading.batch_load({
             'spirit',
         }
     },
+
+    Blind = {
+        order = 5,
+        items = {
+            'mystery'
+        }
+    }
 })

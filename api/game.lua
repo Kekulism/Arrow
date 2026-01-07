@@ -268,13 +268,14 @@ ArrowAPI.game = {
     --- @param source Card Balatro Card table indicating the source of the discount
     --- @param discount number discount percentage. 0 is 0%, 1 is 100%
     --- @param center_set string | nil Set to limit the discount to ('Booster', 'Tarot', 'Joker', etc)
-    set_center_discount = function(source, discount, juice, center_set)
+    set_center_discount = function(source, discount, juice, center_set, booster_kind)
         G.GAME.arrow_extra_discounts[source.unique_val] = {
             center_set = center_set,
             discount = discount
         }
         for _, v in pairs(G.I.CARD) do
-            if v.set_cost and (not center_set or (v.ability and v.ability.set == center_set)) then
+            if v.set_cost and (not center_set or (v.ability and v.ability.set == center_set
+            and (not booster_kind or (center_set == 'Booster' and v.config.center.kind == booster_kind)))) then
                 v:set_cost()
                 v:juice_up()
             end

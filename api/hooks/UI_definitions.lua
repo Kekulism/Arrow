@@ -120,26 +120,53 @@ function create_UIBox_blind_popup(...)
     return ret
 end
 
+local blind_opts = {'Small', 'Big', 'Boss'}
+
+SMODS.hidden_blinds = {}
+local ref_blind_select = create_UIBox_blind_select
+function create_UIBox_blind_select()
+    SMODS.hidden_blinds = {}
+    for i = 1, #blind_opts do
+        local choice = blind_opts[i]
+        local blind = G.GAME.round_resets.blind_choices[choice]
+        local obj = G.P_BLINDS[blind]
+        if obj.hide_blind or SMODS.blind_hidden(obj) then
+            G.GAME.round_resets.blind_choices[choice] = 'bl_arrow_mystery'
+            SMODS.hidden_blinds[choice] = blind
+        end
+    end
+
+    local ret = ref_blind_select()
+
+    for k, v in pairs(SMODS.hidden_blinds) do
+        G.GAME.round_resets.blind_choices[k] = v
+    end
+
+    return ret
+end
+
+local ref_blind_main_colour = get_blind_main_colour
+function get_blind_main_colour(blind)
+    if SMODS.hidden_blinds[blind] then
+        return G.P_BLINDS['bl_arrow_mystery'].boss_colour
+    end
+
+    return ref_blind_main_colour(blind)
+end
+
 local ref_blind_choice = create_UIBox_blind_choice
 function create_UIBox_blind_choice(...)
     local args = { ... }
     local type = args[1]
     local obj = G.P_BLINDS[G.GAME.round_resets.blind_choices[type]]
 
-
-    SMODS.hide_blind = obj.hide_blind or SMODS.blind_hidden(obj) or nil
-    local ret
-    if SMODS.hide_blind then
-        local atlas = obj.atlas or 'blind_chips'
-        local old_atlas = G.ANIMATION_ATLAS[atlas]
-        G.ANIMATION_ATLAS[atlas] = G.ANIMATION_ATLAS['arrow_mystery']
-        ret = ref_blind_choice(...)
-        G.ANIMATION_ATLAS[atlas] = old_atlas
-    else
-        ret = ref_blind_choice(...)
+    -- need to do this to set the proper config when blind is selected
+    local ret = ref_blind_choice(...)
+    if SMODS.hidden_blinds[type] then
+        ret.nodes[1].nodes[1].nodes[1].config.ref_table = G.P_BLINDS[SMODS.hidden_blinds[type]]
     end
 
-    if obj.score_invisible or SMODS.hide_blind then
+    if obj.score_invisible or SMODS.hidden_blinds[type] then
         local info_node = ret.nodes[1].nodes[3].nodes[1].nodes[2]
         info_node.config.colour = G.C.CLEAR
         info_node.nodes = {}
