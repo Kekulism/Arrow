@@ -1826,7 +1826,7 @@ SMODS.Joker:take_ownership('selzer', {
                     scalar_table = scale_table,
                     scalar_value = "extra_mod",
                     operation = "-",
-                    scale_message = {
+                    scaling_message = {
                         message = card.ability.extra..'',
                         colour = G.C.FILTER
                     }
