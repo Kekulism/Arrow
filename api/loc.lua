@@ -136,6 +136,7 @@ ArrowAPI.loc.add_loc_text_func(ArrowAPI, function()
     --- vhs loc
     SMODS.process_loc_text(G.localization.misc.dictionary, 'b_vhs_cards', {['en-us'] = "VHS Tapes"})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'k_vhs', {['en-us'] = "VHS Tape"})
+    SMODS.process_loc_text(G.localization.misc.dictionary, 'k_vhs_play', {['en-us'] = "Play!"})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'k_vhs_destroyed', {['en-us'] = "Fin!"})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'b_activate', {['en-us'] = "PLAY"})
     SMODS.process_loc_text(G.localization.misc.dictionary, 'b_deactivate', {['en-us'] = "PAUSE"})

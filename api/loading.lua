@@ -209,18 +209,21 @@ ArrowAPI.loading = {
                     end
                 end
 
-                local ret = ref_loc_vars(self, info_queue, card)
-
-                -- always supply runtime vars
-                if item_type == 'VHS' then
-                    ret = ret or {}
-                    ret.vars = ret.vars or {}
-                    table.insert(ret.vars, card.ability.runtime-card.ability.uses)
-                end
+                local ret = ref_loc_vars(self, info_queue, card) or {}
 
                 if ret and ret.key == self.key and ArrowAPI.config['enable_DetailedDescs'] then
                     ret.key = ret.key..'_detailed'
                 end
+
+
+                -- always supply runtime vars
+                if item_type == 'VHS' then
+                    ret.vars = ret.vars or {}
+                    local plural = card.ability.runtime-card.ability.uses ~= 1
+                    table.insert(ret.vars, card.ability.runtime-card.ability.uses)
+                    ret.key = (ret.key or self.key)..(plural and '_plural' or '')
+                end
+
                 return ret
             end
         end

@@ -6,8 +6,6 @@ local ref_create_card = create_card
 function create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append, ...)
     local ret = ref_create_card(_type, area, legendary, _rarity, skip_materialize, soulable, forced_key, key_append, ...)
 
-    SMODS.calculate_context({created_card = ret, area = area})
-
     if G.GAME.modifiers.consumable_selection_mod and G.GAME.modifiers.consumable_selection_mod ~= 0
     and ret.ability and ret.ability.consumeable and ret.ability.max_highlighted then
         ret.ability.max_highlighted = ret.ability.max_highlighted + G.GAME.modifiers.consumable_selection_mod

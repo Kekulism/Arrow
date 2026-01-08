@@ -1549,7 +1549,7 @@ function G.UIDEF.arrow_palette_tab(tab)
 
         G.FUNCS.arrow_palette_page = function(e)
             G.ARROW_DUMMY_BACKGROUND.current_page_option = e and e.cycle_config.current_option or  G.ARROW_DUMMY_BACKGROUND.current_page_option
-            local args = items[e.cycle_config.current_option].args
+            local args = items[G.ARROW_DUMMY_BACKGROUND.current_page_option].args
 
             local color_c = args.special_colour or args.new_colour
             local color_l = args.new_colour

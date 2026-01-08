@@ -136,6 +136,7 @@ function SMODS.blind_hidden(blind)
 end
 
 function SMODS.filter_draw(draw_num)
+    sendDebugMessage('calling filter draw')
     local calc_return = {}
     SMODS.calculate_context({
         filter_draw = true,
@@ -150,22 +151,27 @@ function SMODS.filter_draw(draw_num)
     local requirements = {}
     for _, eval in pairs(calc_return) do
         for key, eval2 in pairs(eval) do
-            if key == 'enhancements' or key == 'editions' or key == 'seals' then
-                requirements[key] = requirements[key] or {}
-                for key2, _ in pairs(eval2) do
-                    requirements[key][key2] = true
+            for k, v in pairs(eval2) do
+                sendDebugMessage('evaluating '..k)
+                if k == 'enhancements' or k == 'editions' or k == 'seals' then
+                    requirements[k] = requirements[k] or {}
+                    for k2, _ in pairs(v) do
+                        requirements[k][k2] = true
+                    end
+                elseif k == 'rank_min' then
+                    requirements.rank_min = math.max(requirements.rank_min or -100, v)
+                elseif k == 'rank_max' then
+                    requirements.rank_max = math.min(requirements.rank_max or 1000000, v)
+                elseif k == 'is_face' then
+                    requirements.is_face = requirements.is_face or v
                 end
-            elseif key == 'rank_min' then
-                requirements.rank_min = math.max(requirements.rank_min or -100, eval2)
-            elseif key == 'rank_max' then
-                requirements.rank_max = math.min(requirements.rank_max or 1000000, eval2)
-            elseif key == 'is_face' then
-                requirements.is_face = requirements.is_face or eval2
             end
         end
     end
 
     if not next(requirements) then return end
+
+    sendDebugMessage('requiremnets\n'..inspectDepth(requirements))
 
     local offset = 0
 
@@ -173,14 +179,13 @@ function SMODS.filter_draw(draw_num)
         local idx = #G.deck.cards - offset
 		local card = G.deck.cards[idx]
         local has_rank = not SMODS.has_no_rank(card)
-		local results = {
-            is_face = requirements.is_face and card:is_face() or true,
-            rank_min = requirements.rank_min and (has_rank and card.base.id >= requirements.rank_min or false) or true,
-            rank_max = requirements.rank_max and (has_rank and card.base.id <= requirements.rank_max or false) or true,
-            enhancement = requirements.enhancement and requirements.enhancement[card.config.center.key] or true,
-            edition = requirements.edition and requirements.edition[card.edition.key] or true,
-            seal = requirements.seal and requirements.seal[card.seal] or true
-        }
+		local results = {}
+        if requirements.is_face then results.is_face = card:is_face() end
+        if requirements.rank_min then results.rank_min = has_rank and card.base.id >= requirements.rank_min end
+        if requirements.rank_max then results.rank_max = has_rank and card.base.id <= requirements.rank_max end
+        if requirements.enhancement then results.enhancement = requirements.enhancement[card.config.center.key] or false end
+        if requirements.edition then results.edition = requirements.edition[card.edition.key] or false end
+        if requirements.seal then results.seal = requirements.seal[card.seal] or false end
 
 		local requirements_met = true
 		for _, met in pairs(results) do

@@ -765,6 +765,10 @@ SMODS.Joker:take_ownership('j_madness', {
 }, true)
 
 SMODS.Joker:take_ownership('j_chicot', {
+    atlas = 'csau_jokers',
+    prefix_config = {atlas = false},
+    pos = {x = 4, y = 15},
+    soul_pos = {x = 5, y = 15},
     calculate = function(self, card, context)
         if context.blueprint or card.getting_sliced then return end
 
