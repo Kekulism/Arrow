@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-SMODS.Gradient({key = 'arrow_spectrans', colours = {HEX('F98899'), HEX('5BA6DD')}, cycle = 3.5, prefix_config = false })
+
 
 local function collect_image_data(set, atlases)
     collectgarbage('stop')
@@ -111,6 +111,8 @@ local function amax_bmin(a, b)
 end
 
 ArrowAPI.colors = {
+    badge_colours = {},
+
     palettes = {
         Background = {},
         Spectral = {},
@@ -336,6 +338,21 @@ ArrowAPI.colors = {
 
             palette.current_palette = copy_table(ArrowAPI.config.saved_palettes[set][ArrowAPI.config.saved_palettes[set].saved_index])
             palette.last_palette = copy_table(palette.current_palette)
+
+            local badge = palette.current_palette[#palette.current_palette]
+            local grad_table = {badge[1]/255, badge[2]/255, badge[3]/255, 1, colours = {}}
+            for j = 1, #badge.grad_pos do
+                local start_idx = (j-1)*3
+                grad_table.colours[j] = {badge[start_idx+1]/255, badge[start_idx+2]/255, badge[start_idx+3]/255, 1}
+            end
+            ArrowAPI.colors.badge_colours[set] = grad_table
+            if G.C.SUITS[set] then
+                G.C.SUITS[set] = ArrowAPI.colors.badge_colours[set]
+                G.C.SO_1[set] = ArrowAPI.colors.badge_colours[set]
+            else
+                G.C.SECONDARY_SET[set] = ArrowAPI.colors.badge_colours[set]
+            end
+
             ArrowAPI.colors.use_custom_palette(set, nil, true)
         end
     end,
@@ -430,20 +447,25 @@ ArrowAPI.colors = {
         if not saved_index then
             -- updating current palette
             local badge = palette.current_palette[#palette.current_palette]
-            local suit_table = G.C.SUITS[set]
-            local badge_table = suit_table or G.C.SECONDARY_SET[set]
-            if badge_table then
+            local badge_table = ArrowAPI.colors.badge_colours[set]
+
+            if #badge.grad_pos > 1 then
+                for i = 1, math.max(#badge.grad_pos, #badge_table.colours) do
+                    if i <= #badge.grad_pos then
+                        local start_idx = (i - 1) * 3
+                        badge_table.colours[i] = {
+                            badge[start_idx + 1]/255, badge[start_idx + 2]/255, badge[start_idx + 3]/255, 1
+                        }
+                    else
+                        badge_table.colours[i] = nil
+                    end
+                end
+            else
+                badge_table.colours = {{badge[1]/255, badge[2]/255, badge[3]/255, 1}}
                 badge_table[1] = badge[1]/255
                 badge_table[2] = badge[2]/255
                 badge_table[3] = badge[3]/255
                 badge_table[4] = 1
-
-                if suit_table then
-                    G.C.SO_1[1] = badge_table[1]
-                    G.C.SO_1[2] = badge_table[2]
-                    G.C.SO_1[3] = badge_table[3]
-                    G.C.SO_1[4] = badge_table[4]
-                end
             end
 
             for i=1, #palette.current_palette-1 do
@@ -507,20 +529,32 @@ ArrowAPI.colors = {
             end
 
             -- TODO // fix with grad pos
-            local suit_table = G.C.SUITS[set]
-            local badge_table = suit_table or G.C.SECONDARY_SET[set]
-            if badge_table then
-                badge_table[1] = new_palette[#new_palette][1]/255
-                badge_table[2] = new_palette[#new_palette][2]/255
-                badge_table[3] = new_palette[#new_palette][3]/255
-                badge_table[4] = 1
+            local badge = new_palette[#new_palette]
+            local badge_table = ArrowAPI.colors.badge_colours[set]
+            if G.C.SUITS[set] then
+                G.C.SUITS[set] = badge_table
+                G.C.SO_1[set] = badge_table
+            else
+                G.C.SECONDARY_SET[set] = badge_table
+            end
 
-                if suit_table then
-                    G.C.SO_1[1] = badge_table[1]
-                    G.C.SO_1[2] = badge_table[2]
-                    G.C.SO_1[3] = badge_table[3]
-                    G.C.SO_1[4] = badge_table[4]
+            if #badge.grad_pos > 1 then
+                for i = 1, math.max(#badge.grad_pos, #badge_table.colours) do
+                    if i <= #badge.grad_pos then
+                        local start_idx = (i - 1) * 3
+                        badge_table.colours[i] = {
+                            badge[start_idx + 1]/255, badge[start_idx + 2]/255, badge[start_idx + 3]/255, 1
+                        }
+                    else
+                        badge_table.colours[i] = nil
+                    end
                 end
+            else
+                badge_table.colours = {{badge[1]/255, badge[2]/255, badge[3]/255, 1}}
+                badge_table[1] = badge[1]/255
+                badge_table[2] = badge[2]/255
+                badge_table[3] = badge[3]/255
+                badge_table[4] = 1
             end
 
             palette.current_palette = new_palette

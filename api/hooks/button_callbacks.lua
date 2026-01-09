@@ -907,6 +907,16 @@ function G.FUNCS.arrow_grad_box(e)
             table.insert(palette_color, start_idx + 1, 255)
             table.insert(palette_color, start_idx + 1, 255)
 
+            -- if badge color, disable moving palette points
+            if idx == #palette.current_palette then
+                local divisor = #grad_points-1
+                divisor = divisor > 0 and divisor or 1
+                for i = 1, #grad_points do
+                    grad_points[i].pos = (i-1)/divisor
+                    palette_color.grad_pos[i] = grad_points[i].pos
+                end
+            end
+
             set_new_ui_palette(ArrowAPI.palette_ui_config.open_palette.set, idx, insert)
 
             G.CONTROLLER.dragging.target = e.parent.parent.children[1]
@@ -973,12 +983,13 @@ function G.FUNCS.arrow_grad_pointers(e)
                 end
             end
 
-            if not grad_points.selected then
-                e:stop_drag()
-                e.states.drag.is = false
-                G.CONTROLLER.dragging.target = nil
-                return
-            end
+        end
+
+        if not grad_points.selected then
+            e:stop_drag()
+            e.states.drag.is = false
+            G.CONTROLLER.dragging.target = nil
+            return
         end
 
         if cursor_y > 1.25 then
@@ -986,7 +997,6 @@ function G.FUNCS.arrow_grad_pointers(e)
             -- last to maintain the full length of the gradient
             if #grad_points > grad_points.min_points and (grad_points.selected ~= #grad_points or #grad_points == 2) then
                 local grad_idx = grad_points.selected
-
 
                 -- create new grad color and set the rgb to it?
                 local start_idx = (grad_idx - 1) * 3
@@ -1031,7 +1041,16 @@ function G.FUNCS.arrow_grad_pointers(e)
                     angle_config.label_1 = localize('k_label_linear')
                 end
 
-                table.remove(grad_points, grad_points.selected)
+                -- if badge color, disable moving palette points
+                if idx == #palette.current_palette then
+                    local divisor = #grad_points-1
+                    divisor = divisor > 0 and divisor or 1
+                    for i = 1, #grad_points do
+                        grad_points[i].pos = (i-1)/divisor
+                        palette_color.grad_pos[i] = grad_points[i].pos
+                    end
+                end
+
                 play_sound('cardSlide2', 1.2)
             end
 
@@ -1047,10 +1066,15 @@ function G.FUNCS.arrow_grad_pointers(e)
 
         if #grad_points < 2 or grad_points.selected == 1 or grad_points.selected == #grad_points then return end
 
-        grad_points[grad_points.selected].pos = cursor_x
-
         local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set]
         local idx = ArrowAPI.palette_ui_config.open_palette.idx
+
+        if idx == #palette.current_palette then
+            grad_points[grad_points.selected].pos = (grad_points.selected - 1)/(#grad_points - 1)
+        else
+            grad_points[grad_points.selected].pos = cursor_x
+        end
+
         local palette_color
         if ArrowAPI.palette_ui_config.open_palette.current_override then
             palette_color = palette.current_palette[idx].overrides[ArrowAPI.palette_ui_config.open_palette.current_override]
@@ -1059,7 +1083,8 @@ function G.FUNCS.arrow_grad_pointers(e)
             palette_color = palette.current_palette[idx]
         end
 
-        palette_color.grad_pos[grad_points.selected] = cursor_x
+        palette_color.grad_pos[grad_points.selected] = grad_points[grad_points.selected].pos
+
 
         color_sort(grad_points, palette_color, function(a, b) return a.pos < b.pos end)
         for i = 1, #grad_points do
@@ -1500,7 +1525,6 @@ function G.FUNCS.arrow_save_palette(e)
     end
 
     local new_idx = #ArrowAPI.config.saved_palettes[set]+1
-    sendDebugMessage('saving at new index')
     local save_palette = {name = ArrowAPI.palette_ui_config.name_input}
 
     for i = 1, #palette.current_palette do

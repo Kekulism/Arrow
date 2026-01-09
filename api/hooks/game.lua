@@ -114,3 +114,21 @@ function Game:load_profile(_profile)
 
     return ret
 end
+
+local ref_game_update = Game.update
+function Game:update(dt)
+	for k, v in pairs(ArrowAPI.colors.badge_colours) do
+        if #v.colours > 1 and G.TIMERS.REAL > 12 then
+			local timer = G.TIMERS.REAL%4
+			local start_index = math.ceil(timer*#v.colours/4)
+			local end_index = start_index == #v.colours and 1 or start_index+1
+			local start_colour, end_colour = v.colours[start_index], v.colours[end_index]
+			local partial_timer = (timer%(4/#v.colours))*#v.colours/4
+			for i = 1, 4 do
+				v[i] = start_colour[i] + 0.5*(1-math.cos(partial_timer*math.pi))*(end_colour[i]-start_colour[i])
+			end
+		end
+    end
+
+	ref_game_update(self, dt)
+end

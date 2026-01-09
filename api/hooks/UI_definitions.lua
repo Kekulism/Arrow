@@ -1135,7 +1135,7 @@ function arrow_create_rgb_slider(args)
     args.text_scale = args.text_scale or 0.3
     args.min = args.min or 0
     args.max = args.max or 255
-    local startval = args.w * (tonumber(args.ref_table[args.ref_value]) - args.min)/(args.max - args.min)
+    local startval = args.w * ((tonumber(args.ref_table[args.ref_value]) or args.ref_table[args.ref_value]) - args.min)/(args.max - args.min)
 
     return {n=G.UIT.C, config={align = "cm", minw = args.w, focus_args = {type = 'slider'}}, nodes={
         {n=G.UIT.C, config={align = "cm", minh = args.h}, nodes={
@@ -1274,7 +1274,7 @@ function arrow_create_UIBox_palette_menu()
     local tab_buttons = tabs.nodes[1].nodes[2].nodes
     for i = 1, #tab_buttons do
         local set = palette_tabs[i].tab_definition_function_args
-        local tab_colour = G.C.SECONDARY_SET[set] or G.C.SUITS[set] or G.C.RED
+        local tab_colour = ArrowAPI.colors.badge_colours[set] or G.C.RED
         tab_buttons[i].nodes[1].config.colour = tab_colour
         tab_buttons[i].nodes[1].config.minh = tab_buttons[i].nodes[1].config.minh * 0.75
 
