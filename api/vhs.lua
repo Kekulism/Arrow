@@ -64,8 +64,8 @@ ArrowAPI.vhs = {
         end
     end,
 
-    run_tape = function(card, loc_str)
-        card.ability.uses = card.ability.uses + 1
+    run_tape = function(card, loc_str, mod)
+        card.ability.uses = card.ability.uses + (mod or 1)
         if card.ability.uses >= card.ability.runtime then
             ArrowAPI.vhs.destroy_tape(card)
         else

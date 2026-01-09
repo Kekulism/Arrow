@@ -524,6 +524,22 @@ ArrowAPI.game = {
         end }))
     end,
 
+    poker_hand_toggles = {},
+    toggle_poker_hand = function(hand, enabled, source)
+        if not ArrowAPI.game.poker_hand_toggles[hand] then
+            ArrowAPI.game.poker_hand_toggles[hand] = {}
+        end
+
+        if enabled then
+            ArrowAPI.game.poker_hand_toggles[hand][source.unique_val] = true
+            G.GAME.hands[hand].visible = true
+            return
+        end
+
+        ArrowAPI.game.poker_hand_toggles[hand][source.unique_val] = nil
+        G.GAME.hands[hand].visible = next(ArrowAPI.game.poker_hand_toggles[hand])
+    end,
+
     game_globals_funcs = {},
     add_game_globals_func = function(mod, func)
         ArrowAPI.game.game_globals_funcs[#ArrowAPI.game.game_globals_funcs+1] = {key = mod.id, func = func}
