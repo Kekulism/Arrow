@@ -64,15 +64,16 @@ ArrowAPI.vhs = {
         end
     end,
 
-    run_tape = function(card)
+    run_tape = function(card, loc_str)
         card.ability.uses = card.ability.uses + 1
         if card.ability.uses >= card.ability.runtime then
             ArrowAPI.vhs.destroy_tape(card)
         else
             card_eval_status_text(card, 'extra', nil, nil, nil, {
-                message = localize('k_vhs_play'),
+                message = localize(loc_str or 'k_vhs_play'),
                 colour = G.C.VHS,
-                sound = 'tarot1'
+                sound = 'tarot1',
+                delay = 0.45,
             })
         end
     end,

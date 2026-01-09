@@ -15,20 +15,21 @@ local function collect_image_data(set, atlases)
     local colors_per_unit
 
     local color_key
-    local prior_pixel_rows
+    local prior_rows
     local start_idx
 
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
         atlas = SMODS.Atlases[k]
+
         file_data = NFS.newFileData(atlas.full_path)
         local image_data = love.image.newImageData(file_data)
         data_table[k] = image_data
 
         ref_pointer = ffi.cast("uint8_t*", image_data:getFFIPointer())
-        color_width = image_data:getWidth() * 4
-        width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
-        colors_per_unit = width_per_unit * atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
+        color_width = image_data:getWidth() * 4 / G.SETTINGS.GRAPHICS.texture_scaling
+        width_per_unit = atlas.px * 4
+        colors_per_unit = width_per_unit * atlas.py
 
         for _, item in ipairs(v) do
             local item_table = {pos_x = item.pos.x, pos_y = item.pos.y}
@@ -36,15 +37,28 @@ local function collect_image_data(set, atlases)
                 item_table[color.key] = {}
             end
 
-            prior_pixel_rows = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling * item.pos.y
-            start_idx = prior_pixel_rows * color_width + item.pos.x * width_per_unit
+            prior_rows = atlas.py * item.pos.y
+            start_idx = prior_rows * color_width + item.pos.x * width_per_unit
 
             for j = 0, (colors_per_unit - 1), 4 do
-                local true_idx = start_idx + ((j % (width_per_unit)) + (math.floor(j/(width_per_unit)) * color_width))
-                if ref_pointer[true_idx + 3] > 0 then
-                    color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
-                    if item_table[color_key] then
-                        item_table[color_key][#item_table[color_key]+1] = true_idx
+                local row = math.floor(j/width_per_unit)
+                local true_idx = start_idx + ((j % (width_per_unit)) + (row * color_width))
+                if G.SETTINGS.GRAPHICS.texture_scaling > 1 then
+                    -- modifying to check the top left of the four pixels corresponding to the 1x version
+                    local mod_idx = (true_idx + (prior_rows + row) * color_width) * 2
+                    if ref_pointer[mod_idx + 3] > 0 then
+                        color_key = tostring(ref_pointer[mod_idx]..'-'..ref_pointer[mod_idx + 1]..'-'..ref_pointer[mod_idx + 2])
+
+                        if item_table[color_key] then
+                            item_table[color_key][#item_table[color_key]+1] = true_idx
+                        end
+                    end
+                else
+                    if ref_pointer[true_idx + 3] > 0 then
+                        color_key = tostring(ref_pointer[true_idx]..'-'..ref_pointer[true_idx + 1]..'-'..ref_pointer[true_idx + 2])
+                        if item_table[color_key] then
+                            item_table[color_key][#item_table[color_key]+1] = true_idx
+                        end
                     end
                 end
             end
@@ -522,6 +536,7 @@ ArrowAPI.colors = {
         local grad_pos
         local replace_color = {1, 1, 1}
         local idx
+        local mod_idx
         local palette_color
         local palette_key
         local color_list
@@ -537,15 +552,16 @@ ArrowAPI.colors = {
 
         local row_start
         local prev_rows
+        local current_row
 
         local width_per_unit
 
         for k, v in pairs(palette.image_data.atlases) do
             local atlas = SMODS.Atlases[k]
 
-            color_width = v:getWidth() * 4
-            width_per_unit = atlas.px * G.SETTINGS.GRAPHICS.texture_scaling * 4
-            height_per_unit = atlas.py * G.SETTINGS.GRAPHICS.texture_scaling
+            color_width = v:getWidth() * 4 / G.SETTINGS.GRAPHICS.texture_scaling
+            width_per_unit = atlas.px * 4
+            height_per_unit = atlas.py
 
             edit_pointer = ffi.cast("uint8_t*", v:getFFIPointer())
             pixel_map = palette.image_data.pixel_map[k]
@@ -557,8 +573,13 @@ ArrowAPI.colors = {
                     color_list = colors[palette_key]
                     if color_list then
                         palette_color = custom_palette[i].overrides[item] or custom_palette[i]
+                        prev_rows = colors.pos_y * height_per_unit
+                        row_start = colors.pos_x * width_per_unit
+
                         for j = 1, #color_list do
                             idx = color_list[j]
+                            current_row = (math.floor(idx / color_width)) - prev_rows
+
                             replace_color[1] = palette_color[1]
                             replace_color[2] = palette_color[2]
                             replace_color[3] = palette_color[3]
@@ -567,11 +588,8 @@ ArrowAPI.colors = {
                                 angle = palette_color.grad_config.val
                                 grad_pos = palette_color.grad_pos
 
-                                row_start = colors.pos_x * width_per_unit
-                                prev_rows = colors.pos_y * height_per_unit
-
                                 x = (((idx % color_width - row_start) / width_per_unit) - 0.5) * 2
-                                y = (((math.floor(idx / color_width) - prev_rows) / height_per_unit) - 0.5) * -2
+                                y = ((current_row / height_per_unit) - 0.5) * -2
 
                                 if palette_color.grad_config.mode == 'linear' then
                                     -- value between 0 and pi/2 for the coord's x rotation
@@ -604,9 +622,31 @@ ArrowAPI.colors = {
                                 end
                             end
 
-                            edit_pointer[idx] = replace_color[1]
-                            edit_pointer[idx + 1] = replace_color[2]
-                            edit_pointer[idx + 2] = replace_color[3]
+                            if G.SETTINGS.GRAPHICS.texture_scaling == 2 then
+                                mod_idx = (idx + (prev_rows+current_row) * color_width) * 2
+                                edit_pointer[mod_idx] = replace_color[1]
+                                edit_pointer[mod_idx+1] = replace_color[2]
+                                edit_pointer[mod_idx+2] = replace_color[3]
+
+                                mod_idx = mod_idx + 4
+                                edit_pointer[mod_idx] = replace_color[1]
+                                edit_pointer[mod_idx+1] = replace_color[2]
+                                edit_pointer[mod_idx+2] = replace_color[3]
+
+                                mod_idx = mod_idx + color_width * 2
+                                edit_pointer[mod_idx] = replace_color[1]
+                                edit_pointer[mod_idx+1] = replace_color[2]
+                                edit_pointer[mod_idx+2] = replace_color[3]
+
+                                mod_idx = mod_idx - 4
+                                edit_pointer[mod_idx] = replace_color[1]
+                                edit_pointer[mod_idx+1] = replace_color[2]
+                                edit_pointer[mod_idx+2] = replace_color[3]
+                            else
+                                edit_pointer[idx] = replace_color[1]
+                                edit_pointer[idx + 1] = replace_color[2]
+                                edit_pointer[idx + 2] = replace_color[3]
+                            end
                         end
                     end
                 end

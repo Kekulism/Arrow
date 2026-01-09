@@ -86,6 +86,7 @@ local new_calc_flags = {
     'title_front',
     'splash_center',
     'splash_front',
+    'return_card'
 }
 
 for i=1, #new_calc_flags do
@@ -102,6 +103,7 @@ function SMODS.update_context_flags(context, flags)
     if flags.prevent_downside ~= nil then context.prevent_downside = flags.prevent_downside end
     if flags.prevent_expire ~= nil then context.prevent_expire = flags.prevent_expire end
     if flags.blind_hidden ~= nil then context.blind_hidden = flags.blind_hidden end
+    if flags.return_card ~= nil then context.return_card = flags.return_card end
 
     if flags.title_center then context.title_center = context.title_center end
     if flags.title_front then context.title_front = flags.title_front end
@@ -135,8 +137,14 @@ function SMODS.blind_hidden(blind)
 	return hidden
 end
 
+function SMODS.return_to_hand(card, scoring_hand, full_hand, text, poker_hands)
+    local return_to_hand = false
+	local flags = SMODS.calculate_context({return_card_to_hand = true, return_card = return_to_hand, card = card, scoring_hand = scoring_hand, full_hand = full_hand, scoring_name = text, poker_hands = poker_hands})
+    if flags and flags.return_card then return_to_hand = flags.return_card end
+    return return_to_hand
+end
+
 function SMODS.filter_draw(draw_num)
-    sendDebugMessage('calling filter draw')
     local calc_return = {}
     SMODS.calculate_context({
         filter_draw = true,
@@ -152,7 +160,6 @@ function SMODS.filter_draw(draw_num)
     for _, eval in pairs(calc_return) do
         for key, eval2 in pairs(eval) do
             for k, v in pairs(eval2) do
-                sendDebugMessage('evaluating '..k)
                 if k == 'enhancements' or k == 'editions' or k == 'seals' then
                     requirements[k] = requirements[k] or {}
                     for k2, _ in pairs(v) do
@@ -170,8 +177,6 @@ function SMODS.filter_draw(draw_num)
     end
 
     if not next(requirements) then return end
-
-    sendDebugMessage('requiremnets\n'..inspectDepth(requirements))
 
     local offset = 0
 
@@ -210,7 +215,7 @@ SMODS.calculate_individual_effect = function(effect, scored_card, key, amount, f
     local ret = ref_indv_eff(effect, scored_card, key, amount, from_edition)
     if ret then return ret end
 
-    if key == 'prevent_downside' or key == 'prevent_expire' or key == 'blind_hidden' then
+    if key == 'prevent_downside' or key == 'prevent_expire' or key == 'blind_hidden' or key == 'return_card' then
         return key
     end
 

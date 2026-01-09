@@ -191,7 +191,7 @@ ArrowAPI.loading = {
         if item_type ~= 'Deck' and item_type ~= 'Challenge' and item_type ~= 'Edition' then
             local ref_loc_vars = info.loc_vars or function(self, info_queue, card) end
             function info.loc_vars(self, info_queue, card)
-                if info_queue and ArrowAPI.config['enable_ItemCredits'] then
+                if info_queue and ArrowAPI.config['enable_ItemCredits'] and not (card.fake_card or card.fake_tag) then
                     if info.artist then
                         local vars = (type(info.artist) == 'function' and info:artist()) or (type(info.artist) == 'table' and info.artist) or {info.artist}
                         info_queue[#info_queue+1] = {key = "artistcredit_"..#vars, set = "Other", vars = vars }
@@ -201,12 +201,11 @@ ArrowAPI.loading = {
                         local vars = (type(info.va) == 'function' and info:va()) or (type(info.va) == 'table' and info.va) or {info.va}
                         info_queue[#info_queue+1] = {key = "vacredit_"..#vars, set = "Other", vars = vars }
                     end
+                end
 
-
-                    -- add this automatically
-                    if item_type == 'VHS' then
-                        info_queue[#info_queue+1] = {key = "vhs_activation", set = "Other"}
-                    end
+                -- add this automatically
+                if item_type == 'VHS' then
+                    info_queue[#info_queue+1] = {key = "vhs_activation", set = "Other"}
                 end
 
                 local ret = ref_loc_vars(self, info_queue, card) or {}
@@ -215,12 +214,11 @@ ArrowAPI.loading = {
                     ret.key = ret.key..'_detailed'
                 end
 
-
                 -- always supply runtime vars
                 if item_type == 'VHS' then
                     ret.vars = ret.vars or {}
                     local plural = card.ability.runtime-card.ability.uses ~= 1
-                    table.insert(ret.vars, card.ability.runtime-card.ability.uses)
+                    ret.vars[#ret.vars+1] = (card.ability.runtime-card.ability.uses)
                     ret.key = (ret.key or self.key)..(plural and '_plural' or '')
                 end
 
