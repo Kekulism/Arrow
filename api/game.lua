@@ -513,6 +513,7 @@ ArrowAPI.game = {
             colour = colour,
             no_juice = true
         })
+        check_for_unlock({type = 'card_expire', card = card})
     end,
 
     refresh_costs = function()
