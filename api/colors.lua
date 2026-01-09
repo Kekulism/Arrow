@@ -660,14 +660,3 @@ ArrowAPI.colors = {
         collectgarbage('restart')
     end,
 }
-
-local ref_type_colour = get_type_colour
-function get_type_colour(_c, card)
-    local ret = ref_type_colour(_c, card)
-
-    if _c.unlocked and not card.debuff and ArrowAPI.colors.palettes[_c.set] then
-        ret = ArrowAPI.colors.palettes[_c.set][0] or ret
-    end
-
-    return ret
-end

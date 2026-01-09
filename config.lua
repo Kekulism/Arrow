@@ -47,7 +47,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							166,
 							26,
@@ -153,7 +152,6 @@ return {
 					156,
 					1,
 					["overrides"] = {
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							236,
 							45,
@@ -361,7 +359,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							199,
 							122,
@@ -626,7 +623,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							253,
 							162,
@@ -698,7 +694,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_6"] = {
 							53,
 							129,
@@ -753,7 +748,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							255,
 							99,
@@ -1106,7 +1100,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["S_K_3"] = {
 							112,
 							91,
@@ -1626,7 +1619,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							164,
 							118,
@@ -1749,7 +1741,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							233,
 							195,
@@ -1804,7 +1795,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["S_J_4"] = {
 							116,
 							98,
@@ -1896,7 +1886,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["S_Q_6"] = {
 							104,
 							87,
@@ -4262,7 +4251,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["H_J_2"] = {
 							211,
 							36,
@@ -4598,7 +4586,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["H_K_3"] = {
 							240,
 							52,
@@ -4690,7 +4677,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["H_Q_7"] = {
 							199,
 							127,
@@ -4958,7 +4944,6 @@ return {
 								["val"] = 1.5838076797881,
 							},
 						},
-						["changed_flag"] = true,
 						["H_J_2"] = {
 							216,
 							42,
@@ -5094,7 +5079,6 @@ return {
 					29,
 					17,
 					["overrides"] = {
-						["changed_flag"] = true,
 					},
 					["key"] = "240-52-100",
 					["grad_pos"] = {
@@ -5182,7 +5166,6 @@ return {
 								["val"] = 1.5872415463036,
 							},
 						},
-						["changed_flag"] = true,
 						["H_K_3"] = {
 							184,
 							46,
@@ -5251,7 +5234,6 @@ return {
 								["val"] = 1.5877383376686,
 							},
 						},
-						["changed_flag"] = true,
 						["H_K_3"] = {
 							227,
 							43,
@@ -5343,7 +5325,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["H_K_3"] = {
 							255,
 							93,
@@ -5452,7 +5433,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["H_J_7"] = {
 							216,
 							35,
@@ -5564,7 +5544,6 @@ return {
 								["val"] = 1.5872415463036,
 							},
 						},
-						["changed_flag"] = true,
 						["H_J_7"] = {
 							202,
 							217,
@@ -6104,7 +6083,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_J_5"] = {
 							72,
 							88,
@@ -6278,7 +6256,6 @@ return {
 					63,
 					1,
 					["overrides"] = {
-						["changed_flag"] = true,
 						["D_Q_3"] = {
 							240,
 							107,
@@ -6367,7 +6344,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_J_5"] = {
 							83,
 							131,
@@ -6595,7 +6571,6 @@ return {
 					131,
 					1,
 					["overrides"] = {
-						["changed_flag"] = true,
 						["D_K_6"] = {
 							156,
 							165,
@@ -6752,7 +6727,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_K_3"] = {
 							255,
 							217,
@@ -6909,7 +6883,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_J_7"] = {
 							255,
 							231,
@@ -6998,7 +6971,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_Q_2"] = {
 							255,
 							163,
@@ -7274,7 +7246,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_K_3"] = {
 							33,
 							112,
@@ -8018,7 +7989,6 @@ return {
 					127,
 					0,
 					["overrides"] = {
-						["changed_flag"] = true,
 					},
 					["key"] = "240-107-63",
 					["grad_pos"] = {
@@ -8059,7 +8029,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_J_5"] = {
 							255,
 							205,
@@ -8662,7 +8631,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["D_J_3"] = {
 							55,
 							70,
@@ -8714,7 +8682,6 @@ return {
 					166,
 					1,
 					["overrides"] = {
-						["changed_flag"] = true,
 						["D_Q_5"] = {
 							255,
 							205,
@@ -8942,7 +8909,6 @@ return {
 					45,
 					1,
 					["overrides"] = {
-						["changed_flag"] = true,
 						["D_K_3"] = {
 							199,
 							127,
@@ -9216,7 +9182,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 					},
 					["key"] = "28-112-106",
 					["grad_pos"] = {
@@ -9254,7 +9219,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["C_J_7"] = {
 							97,
 							110,
@@ -9462,7 +9426,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["C_K_4"] = {
 							82,
 							137,
@@ -9585,7 +9548,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["C_Q_4"] = {
 							153,
 							112,
@@ -9837,7 +9799,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["C_J_3"] = {
 							149,
 							226,
@@ -9906,7 +9867,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["C_K_4"] = {
 							181,
 							145,
@@ -10029,7 +9989,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["C_K_4"] = {
 							97,
 							122,
@@ -10152,7 +10111,6 @@ return {
 								["val"] = 0,
 							},
 						},
-						["changed_flag"] = true,
 						["C_J_7"] = {
 							117,
 							117,
@@ -10490,7 +10448,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["C_K_7"] = {
 							51,
 							84,
@@ -11187,7 +11144,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["C_J_3"] = {
 							149,
 							226,
@@ -11256,7 +11212,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 					},
 					["key"] = "255-163-0",
 					["grad_pos"] = {
@@ -11512,7 +11467,6 @@ return {
 								["val"] = 1.571,
 							},
 						},
-						["changed_flag"] = true,
 						["C_J_7"] = {
 							99,
 							122,

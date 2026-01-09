@@ -774,6 +774,22 @@ local function set_new_ui_palette(set, color_idx, grad_idx)
         text_config.text.letters[i] = (i <= #display_val) and string.sub(display_val, i, i) or ''
     end
 
+    -- fix the sliders
+    local sliders = {
+        G.OVERLAY_MENU:get_UIE_by_ID('r_slider'),
+        G.OVERLAY_MENU:get_UIE_by_ID('g_slider'),
+        G.OVERLAY_MENU:get_UIE_by_ID('b_slider')
+    }
+    for i = 1, #sliders do
+        G.FUNCS.arrow_rgb_slider(sliders[i], true)
+        -- update text letters
+        local display_str = ArrowAPI.palette_ui_config.display_rgb[i]
+        local text_config = sliders[i].parent.parent.children[3].config.ref_table
+        for i = 1, text_config.max_length do
+            text_config.text.letters[i] = (i <= #display_str) and string.sub(display_str, i, i) or ''
+        end
+    end
+
     if color.grad_config.mode == 'linear' then
         angle_config.point.x = math.cos(color.grad_config.val)
         angle_config.point.y = math.sin(color.grad_config.val)
@@ -1484,6 +1500,7 @@ function G.FUNCS.arrow_save_palette(e)
     end
 
     local new_idx = #ArrowAPI.config.saved_palettes[set]+1
+    sendDebugMessage('saving at new index')
     local save_palette = {name = ArrowAPI.palette_ui_config.name_input}
 
     for i = 1, #palette.current_palette do
@@ -1506,6 +1523,7 @@ function G.FUNCS.arrow_save_palette(e)
     ArrowAPI.config.saved_palettes[set][new_idx] = save_palette
     ArrowAPI.config.saved_palettes[set].saved_index = new_idx
     SMODS.save_mod_config(ArrowAPI)
+    sendDebugMessage('saved index: '..tostring(ArrowAPI.config.saved_palettes[set].saved_index))
 
     local tab_config = ArrowAPI.palette_ui_config.tabs_config
     local tab_contents = G.OVERLAY_MENU:get_UIE_by_ID('tab_contents')
@@ -1520,10 +1538,11 @@ end
 function G.FUNCS.arrow_delete_palette(e)
     -- enable this palette first
     local set = ArrowAPI.palette_ui_config.open_palette.set
-    local idx = ArrowAPI.palette_ui_config.open_palette.idx
-    table.remove(ArrowAPI.config.saved_palettes[set], idx)
+    local idx = ArrowAPI.config.saved_palettes[set].saved_index
+    local new_idx =  idx - 1
 
-    ArrowAPI.colors.use_custom_palette(set, idx - 1)
+    table.remove(ArrowAPI.config.saved_palettes[set], idx)
+    ArrowAPI.colors.use_custom_palette(set, new_idx)
 
     -- kinda have to recreate it
     local tab_config = ArrowAPI.palette_ui_config.tabs_config
@@ -1568,7 +1587,8 @@ function G.FUNCS.arrow_load_palette_preset(args)
 end
 
 G.FUNCS.arrow_toggle_palette_override = function(key)
-    local palette = ArrowAPI.colors.palettes[ArrowAPI.palette_ui_config.open_palette.set].current_palette
+    local set = ArrowAPI.palette_ui_config.open_palette.set
+    local palette = ArrowAPI.colors.palettes[set].current_palette
     local idx = ArrowAPI.palette_ui_config.open_palette.idx
     local palette_color = palette[idx]
     if palette_color.overrides[key] then
@@ -1582,6 +1602,7 @@ G.FUNCS.arrow_toggle_palette_override = function(key)
 
         -- update the palette set for the card that's just been toggled
         ArrowAPI.colors.use_custom_palette(ArrowAPI.palette_ui_config.open_palette.set)
+        set_new_ui_palette(set, idx, ArrowAPI.palette_ui_config.open_palette.grad_idx)
         return false
     else
         local override_table = {grad_pos = copy_table(palette_color.grad_pos), grad_config = copy_table(palette_color.grad_config)}
