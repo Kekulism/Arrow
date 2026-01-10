@@ -138,8 +138,10 @@ ArrowAPI.stands = {
         G.E_MANAGER:add_event(Event({
             func = function()
 
-                ArrowAPI.game.transform_card(stand, stand.ability.evolve_key, true)
-                check_for_unlock({ type = "evolve_stand" })
+                local old_key = stand.config.center.key
+                local new_key = stand.ability.evolve_key
+                ArrowAPI.game.transform_card(stand, new_key, true)
+                check_for_unlock({ type = "evolve_stand", old_key = old_key, new_key = new_key })
 
                 attention_text({
                     text = localize(loc_message or 'k_stand_evolved'),

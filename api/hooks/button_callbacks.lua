@@ -246,7 +246,7 @@ function G.FUNCS.arrow_check_restart(e)
 end
 
 G.FUNCS.arrow_reset_achievements = function(e)
-    local mod = e.ref_mod
+    local mod = e.config.ref_mod
 	local warning_text = e.UIBox:get_UIE_by_ID(mod.id..'_warn')
 	if warning_text.config.colour ~= G.C.WHITE then
 		warning_text:juice_up()

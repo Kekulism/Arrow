@@ -785,10 +785,9 @@ function buildAchievementsTab(mod, current_page)
 
         -- adds unique achievement localization in the same structure as center items
 		local key = loc_vars.key or ach.key..(G.localization.descriptions.Achievements[ach.key..'_hidden'] and not ach.earned and '_hidden' or '')
-		local name_text = localize{type = 'name_text', key = key, set = 'Achievements', vars = loc_vars.vars}
-        sendDebugMessage('name text: '..tostring(name_text))
-        name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars, colours = loc_vars.vars and loc_vars.vars.colours, scale = math.min(0.48, ArrowAPI.ui.calc_scale_fac(name_text))}
-		localize{type = 'descriptions', key = key, set = "Achievements", vars = loc_vars.vars, colours = loc_vars.vars and loc_vars.vars.colours, nodes = desc_nodes, scale = 0.95}
+		local name_text = localize{type = 'name_text', key = key, set = 'Achievements', vars = loc_vars.vars or {}}
+        name_nodes = localize{type = 'name', key = key, set = 'Achievements', vars = loc_vars.vars or {}, colours = loc_vars.vars and loc_vars.vars.colours or {}, scale = math.min(0.48, ArrowAPI.ui.calc_scale_fac(name_text))}
+		localize{type = 'descriptions', key = key, set = "Achievements", vars = loc_vars.vars or {}, colours = loc_vars.vars and loc_vars.vars.colours or {}, nodes = desc_nodes, scale = 0.95}
 
 		local desc = {}
 		for _, desc_row in ipairs(desc_nodes) do
