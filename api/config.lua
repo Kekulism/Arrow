@@ -220,7 +220,6 @@ ArrowAPI.config_tools = {
                     key = key, value = mod.config[key], exclude_from_ui = exclude_from_ui, order = length
                 })
                 mod.ARROW_USE_CONFIG.config_map[key] = length
-                sendDebugMessage('adding config '..key..' at index '..length)
 
                 ArrowAPI.config_tools.sort_config(mod)
                 return

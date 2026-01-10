@@ -61,7 +61,6 @@ ArrowAPI.loading = {
 
 
         for order, v in ipairs(priority_list) do
-            sendDebugMessage('loading list item '..v.key)
             if next(v.items) and ArrowAPI.loading.filter_type(v.key, order) then
                 for i, item in ipairs(v.items) do
                     ArrowAPI.loading.load_item(item, v.key, v.alias, args.config.parent_folder, i, mod, args.config.mod_prefix)

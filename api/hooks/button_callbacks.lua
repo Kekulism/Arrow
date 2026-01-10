@@ -214,6 +214,8 @@ end
 
 
 
+
+
 ---------------------------
 --------------------------- Config
 ---------------------------
@@ -478,6 +480,9 @@ G.FUNCS.tnsmi_toggle_soundpack = function(e)
 end
 
 
+
+
+
 ---------------------------
 --------------------------- Text Input Callbacks
 ---------------------------
@@ -687,9 +692,20 @@ function NUMBER_GET_TEXT()
 end
 
 
+
+
+
 ---------------------------
 --------------------------- Palette widget callbacks
 ---------------------------
+
+local ref_pixel_smoothing = G.FUNCS.change_pixel_smoothing
+G.FUNCS.change_pixel_smoothing = function(args)
+    local ret = ref_pixel_smoothing(args)
+    ArrowAPI.colors.setup_palettes()
+    return ret
+end
+
 
 function update_hex_input(color)
     local new_hex_string = string.upper(tostring(string.format("%02x", color[1])..string.format("%02x", color[2])..string.format("%02x", color[3])))
@@ -1547,7 +1563,6 @@ function G.FUNCS.arrow_save_palette(e)
     ArrowAPI.config.saved_palettes[set][new_idx] = save_palette
     ArrowAPI.config.saved_palettes[set].saved_index = new_idx
     SMODS.save_mod_config(ArrowAPI)
-    sendDebugMessage('saved index: '..tostring(ArrowAPI.config.saved_palettes[set].saved_index))
 
     local tab_config = ArrowAPI.palette_ui_config.tabs_config
     local tab_contents = G.OVERLAY_MENU:get_UIE_by_ID('tab_contents')
@@ -1671,6 +1686,14 @@ G.FUNCS.change_tab = function(e)
     tab_contents.UIBox:recalculate()
 end
 
+
+
+
+
+---------------------------
+--------------------------- Playing card palette changes
+---------------------------
+
 -- Override so that this only affects cards with custom centers instead, since the refresh contrast mode
 -- toggle is kinda useless now
 G.FUNCS.refresh_contrast_mode = function()
@@ -1679,11 +1702,4 @@ G.FUNCS.refresh_contrast_mode = function()
             v:set_sprites(v.config.center)
         end
     end
-end
-
-local ref_pixel_smoothing = G.FUNCS.change_pixel_smoothing
-G.FUNCS.change_pixel_smoothing = function(args)
-    local ret = ref_pixel_smoothing(args)
-    ArrowAPI.colors.setup_palettes()
-    return ret
 end

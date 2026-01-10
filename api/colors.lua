@@ -20,7 +20,6 @@ local function collect_image_data(set, atlases)
 
     for k, v in pairs(atlases) do
         pixel_map[k] = {}
-        sendDebugMessage('trying to access atlas '..k)
         atlas = SMODS.Atlases[k]
 
         file_data = NFS.newFileData(atlas.full_path)
@@ -221,7 +220,6 @@ ArrowAPI.colors = {
                     for collab_key, info in ipairs(G.COLLABS.options[card.suit]) do
                         local deckSkin = SMODS.DeckSkins[info]
 
-                        sendDebugMessage('checking collab '..collab_key)
                         local atlas, pos
                         local pal_map = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[card.suit] or ''] or (deckSkin.palettes or {})[1]
                         local rank_type = false
@@ -230,7 +228,6 @@ ArrowAPI.colors = {
                         end
 
                         if rank_type then
-                            sendDebugMessage('rank type atlas')
                             atlas = pal_map.atlas
                             if type(pal_map.pos_style) == "table" then
                                 if pal_map.pos_style[card.value] then
@@ -255,7 +252,7 @@ ArrowAPI.colors = {
                                 pos = { x = card.pos.x, y = 0}
                             elseif pal_map.pos_style == 'deck' then
                                 pos = card.pos
-                            elseif pal_map.pos_style == 'ranks' or nil then
+                            elseif pal_map.pos_style == 'ranks' then
                                 for j, rank in ipairs(pal_map.ranks) do
                                     if rank == card.value then
                                         pos = { x = j - 1, y = 0}
@@ -274,10 +271,9 @@ ArrowAPI.colors = {
                                 atlases[atlas] = {}
                             end
 
-                            sendDebugMessage('adding skin '..k..'_'..collab_key)
-
-                            atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..collab_key, pos = pos}
-                            items[#items+1] = {key = k..'_'..collab_key, collab_key = collab_key, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
+                            sendDebugMessage(card.suit..' '..collab_key.. ': adding '..k..'_'..atlas)
+                            atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..atlas, pos = pos}
+                            items[#items+1] = {key = k..'_'..atlas, collab_key = atlas, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
                         end
                     end
                 end
