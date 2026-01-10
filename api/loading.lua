@@ -58,20 +58,13 @@ ArrowAPI.loading = {
             else return false end
         end)
 
+
+
         for order, v in ipairs(priority_list) do
+            sendDebugMessage('loading list item '..v.key)
             if next(v.items) and ArrowAPI.loading.filter_type(v.key, order) then
                 for i, item in ipairs(v.items) do
                     ArrowAPI.loading.load_item(item, v.key, v.alias, args.config.parent_folder, i, mod, args.config.mod_prefix)
-                end
-
-                if mod.ARROW_USE_CONFIG and v.key ~= 'SoundPack' then
-                    -- add to ordered config list
-                    local key = 'enable_'..v.key..'s'
-                    if mod.config[key] == nil then
-                        ArrowAPI.config_tools.update_config(mod, key, true, nil)
-                    else
-                        ArrowAPI.config_tools.update_config(mod, key, true, nil, false)
-                    end
                 end
             end
         end
@@ -288,9 +281,9 @@ ArrowAPI.loading = {
         if not ArrowAPI.BATCH_LOAD and mod.ARROW_USE_CONFIG and item_type ~= 'SoundPack' then
             local key = 'enable_'..item_type..'s'
             if mod.config[key] == nil then
-                ArrowAPI.config_tools.update_config(mod, key, true, nil)
+                ArrowAPI.config_tools.update_config(mod, key, true)
             else
-                ArrowAPI.config_tools.update_config(mod, key, true, nil, false)
+                ArrowAPI.config_tools.update_config(mod, key, true, false)
             end
         end
 
@@ -399,13 +392,16 @@ ArrowAPI.loading = {
 
     filter_type = function(item_type, order)
          if (item_type == 'Sleeve' and not CardSleeves) or (item_type == 'Partner' and not Partner_API) then
-            ArrowAPI.config_tools.update_config(SMODS.current_mod, 'enable_'..item_type..'s', nil, nil, true)
+            ArrowAPI.config_tools.update_config(SMODS.current_mod, 'enable_'..item_type..'s', nil, true)
             return false
         else
             local enabled = SMODS.current_mod.config['enable_'..item_type..'s']
-            if enabled == false then return false end
-
-            return true
+            if SMODS.current_mod.ARROW_USE_CONFIG and item_type ~= 'SoundPack' then
+                -- add to ordered config list
+                local key = 'enable_'..item_type..'s'
+                ArrowAPI.config_tools.update_config(SMODS.current_mod, key, enabled, false)
+            end
+            return enabled or false
         end
     end,
 

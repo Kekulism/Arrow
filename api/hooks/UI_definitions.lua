@@ -99,7 +99,7 @@ end
 
 
 ---------------------------
---------------------------- The Creek score modifiers
+--------------------------- Blind special colour modifiers
 ---------------------------
 
 local ref_uibox_blind = create_UIBox_blind_popup
@@ -502,7 +502,6 @@ function G.UIDEF.challenge_description_tab(args)
     return ret
 end
 
-
 local ref_ui_button = UIBox_button
 function UIBox_button(args)
     local ret = ref_ui_button(args)
@@ -649,35 +648,43 @@ function G.UIDEF.deck_artist_popup(center)
     }}
 end
 
+local ref_notify_alert = create_UIBox_notify_alert
 function create_UIBox_notify_alert(key, type)
-    local _c, _atlas
+    local ach
 
     local is_arrow_achievement = false
     if SMODS.Achievements[key] then
-        _c = SMODS.Achievements[key]
-        if _c.original_mod then
-            for _, x in ipairs(_c.original_mod.dependencies or {}) do
+        ach = SMODS.Achievements[key]
+        if ach.original_mod then
+            if SMODS.provided_mods['ArrowAPI'] then
+                for i=1, #SMODS.provided_mods['ArrowAPI'] do
+                    if SMODS.provided_mods['ArrowAPI'][i].mod == ach.original_mod then
+                        is_arrow_achievement = true
+                        break
+                    end
+                end
+            end
+
+            for _, x in ipairs(ach.original_mod.dependencies or {}) do
                 for _, y in ipairs(x) do
                     if y.id == 'ArrowAPI' then
                         is_arrow_achievement = true
                         break
                     end
                 end
-            end
-        end
-        _atlas = G.ASSET_ATLAS[_c.atlas]
-    else
-        _c = G.P_CENTERS[key]
-        _atlas = ((type == 'Joker' or type == 'Voucher') and G.ASSET_ATLAS[type])
-        or (type == 'Back' and G.ASSET_ATLAS['centers']) or G.ASSET_ATLAS['icons']
 
-        local _smods_atlas = _c and ((G.SETTINGS.colourblind_option and _c.hc_atlas or _c.lc_atlas) or _c.atlas)
-        if _smods_atlas then
-            _atlas = G.ASSET_ATLAS[_smods_atlas] or _atlas
+                if is_arrow_achievement then break end
+            end
         end
     end
 
-    local t_s = Sprite(0,0,1.5*(_atlas.px/_atlas.py),1.5,_atlas, _c and _c.pos or {x=3, y=0})
+    if not is_arrow_achievement then
+        return ref_notify_alert(key, type)
+    end
+
+    local _atlas = G.ASSET_ATLAS[ach.atlas]
+
+    local t_s = Sprite(0,0,1.5*(_atlas.px/_atlas.py),1.5,_atlas, ach and ach.pos or {x=3, y=0})
     t_s.states.drag.can = false
     t_s.states.hover.can = false
     t_s.states.collide.can = false
@@ -685,7 +692,7 @@ function create_UIBox_notify_alert(key, type)
     local subtext = type == 'achievement' and localize(G.F_TROPHIES and 'k_trophy' or 'k_achievement') or
         (type == 'Joker' or type == 'Voucher') and localize('k_'..type:lower()) or
         type == 'Back' and localize('k_deck') or
-        _c.set and localize('k_' .. _c.set:lower()) or
+        ach.set and localize('k_' .. ach.set:lower()) or
         'ERROR'
     if key == 'b_challenge' then subtext = localize('k_challenges') end
 
@@ -721,6 +728,7 @@ function create_UIBox_notify_alert(key, type)
             }}
         }}
     }}
+
     return t
 end
 

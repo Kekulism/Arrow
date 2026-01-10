@@ -81,30 +81,30 @@ ArrowAPI.config_tools = {
         end)
 
         default_config = s1 and default_config or {}
-        local overwrite = false
+
         if extra_args then
             for _, v in ipairs(extra_args) do
-                if default_config[v.key] then overwrite = true end
-                default_config[v.key] = (v.default_value == nil and false) or v.default_value
+                local overwrite = false
+                default_config[v.key] = v.default_value or (v.default_value == nil and false)
 
-                local insert_idx = #mod.ARROW_USE_CONFIG
-                if overwrite then
-                    for i = 1, #mod.ARROW_USE_CONFIG do
-                        local config = mod.ARROW_USE_CONFIG[i]
-                        if config.key == v.key then
-                            insert_idx = i
-                            break
-                        end
+                local insert_idx = #mod.ARROW_USE_CONFIG+1
+                for i = 1, #mod.ARROW_USE_CONFIG do
+                    local config = mod.ARROW_USE_CONFIG[i]
+                    if config.key == v.key then
+                        overwrite = true
+                        insert_idx = i
+                        break
                     end
                 end
 
+                local order = overwrite and mod.ARROW_USE_CONFIG[insert_idx].order or insert_idx
                 mod.ARROW_USE_CONFIG[insert_idx] = {
                     key = v.key,
                     value = default_config[v.key],
                     exclude_from_ui = v.exclude_from_ui,
                     before_auto = v.before_auto,
                     after_auto = not v.before_auto,
-                    order = v.order
+                    order = order
                 }
                 mod.ARROW_USE_CONFIG.config_map[v.key] = insert_idx
             end
@@ -198,7 +198,6 @@ ArrowAPI.config_tools = {
         table.sort(mod.ARROW_USE_CONFIG, function(a, b)
             if a.before_auto and not b.before_auto then return true
             elseif b.before_auto and not a.before_auto then return false
-
             elseif not a.after_auto and b.after_auto then return true
             elseif not b.after_auto and a.after_auto then return false
             elseif not a.exclude_from_ui and b.exclude_from_ui then return true
@@ -212,14 +211,16 @@ ArrowAPI.config_tools = {
         end
     end,
 
-    update_config = function(mod, key, value, order, exclude_from_ui)
+    update_config = function(mod, key, value, exclude_from_ui)
         mod.config[key] = value ~= nil and value or mod.config[key]
         if mod.ARROW_USE_CONFIG then
             if not mod.ARROW_USE_CONFIG.config_map[key] then
+                local length = #mod.ARROW_USE_CONFIG+1
                 table.insert(mod.ARROW_USE_CONFIG, {
-                    key = key, value = mod.config[key], exclude_from_ui = exclude_from_ui, order = order
+                    key = key, value = mod.config[key], exclude_from_ui = exclude_from_ui, order = length
                 })
-                mod.ARROW_USE_CONFIG.config_map[key] = #mod.ARROW_USE_CONFIG
+                mod.ARROW_USE_CONFIG.config_map[key] = length
+                sendDebugMessage('adding config '..key..' at index '..length)
 
                 ArrowAPI.config_tools.sort_config(mod)
                 return
@@ -227,7 +228,6 @@ ArrowAPI.config_tools = {
 
             local index = mod.ARROW_USE_CONFIG.config_map[key]
             mod.ARROW_USE_CONFIG[index].value = value ~= nil and value or mod.ARROW_USE_CONFIG[index].value
-            mod.ARROW_USE_CONFIG[index].order = order ~= nil and order or mod.ARROW_USE_CONFIG[index].order
             if exclude_from_ui then
                 mod.ARROW_USE_CONFIG[index].exclude_from_ui = exclude_from_ui ~= nil and exclude_from_ui or mod.ARROW_USE_CONFIG[index].exclude_from_ui
             end

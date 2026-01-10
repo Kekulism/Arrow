@@ -80,12 +80,12 @@ G.ARGS.LOC_COLOURS['showdown2'] = G.C.BLIND.SHOWDOWN_COL_2
 
 local includes = {
 	-- data types
+    'config',
 	'loading',
 	'loc',
 	'sound',
 	'compat',
 	'math',
-	'config',
 	'logging',
 	'string',
 	'table',

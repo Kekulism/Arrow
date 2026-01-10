@@ -529,6 +529,7 @@ ArrowAPI.ui = {
             local counts = {left = 0, right = 0}
 
             for i, v in ipairs(mod.ARROW_USE_CONFIG) do
+                sendDebugMessage('config option '..v.key..' hidden from ui: '..tostring(v.exclude_from_ui))
                 if not v.exclude_from_ui then
                     local column = counts.right < counts.left and 'right' or 'left'
                     local nodes = column == 'right' and right_settings.nodes or left_settings.nodes
@@ -636,15 +637,26 @@ end
 local ref_ach_tab = buildAchievementsTab
 function buildAchievementsTab(mod, current_page)
     local is_arrow_mod = SMODS.provided_mods['ArrowAPI'] or false
-    for _, x in ipairs(mod.dependencies or {}) do
-        for _, y in ipairs(x) do
-            if y.id == 'ArrowAPI' then
+
+    if SMODS.provided_mods['ArrowAPI'] then
+        for i=1, #SMODS.provided_mods['ArrowAPI'] do
+            if SMODS.provided_mods['ArrowAPI'][i].mod == mod then
                 is_arrow_mod = true
                 break
             end
         end
+    end
 
-        if is_arrow_mod then break end
+    if not is_arrow_mod then
+        for _, x in ipairs(mod.dependencies or {}) do
+            for _, y in ipairs(x) do
+                if y.id == 'ArrowAPI' then
+                    is_arrow_mod = true
+                    break
+                end
+            end
+            if is_arrow_mod then break end
+        end
     end
 
     if not is_arrow_mod then
