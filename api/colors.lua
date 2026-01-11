@@ -260,20 +260,17 @@ ArrowAPI.colors = {
                                         end
                                     end
                                 end
-                            else
-                                atlas = "arrow_"..string.lower(card.suit)
-                                pos = card.pos
-                            end
 
-                            if not card_map[k][atlas] then
-                                card_map[k][atlas] = true
+                                if not card_map[k][atlas] then
+                                    card_map[k][atlas] = true
 
-                                if not atlases[atlas] then
-                                    atlases[atlas] = {}
+                                    if not atlases[atlas] then
+                                        atlases[atlas] = {}
+                                    end
+
+                                    atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..atlas, pos = pos}
+                                    items[#items+1] = {key = k..'_'..atlas, collab_key = atlas, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
                                 end
-
-                                atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..atlas, pos = pos}
-                                items[#items+1] = {key = k..'_'..atlas, collab_key = atlas, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
                             end
                         end
                     end
