@@ -221,59 +221,60 @@ ArrowAPI.colors = {
                         local deckSkin = SMODS.DeckSkins[info]
 
                         local atlas, pos
-                        local pal_map = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[card.suit] or ''] or (deckSkin.palettes or {})[1]
-                        local rank_type = false
-                        for j = 1, #pal_map.ranks do
-                            if pal_map.ranks[j] == card.value then rank_type = true break end
-                        end
+                        local palettes = deckSkin.palette_map or deckSkin.palettes
+                        for _, pal in pairs(palettes) do
+                            local rank_type = false
+                            for j = 1, #pal.ranks do
+                                if pal.ranks[j] == card.value then rank_type = true break end
+                            end
 
-                        if rank_type then
-                            atlas = pal_map.atlas
-                            if type(pal_map.pos_style) == "table" then
-                                if pal_map.pos_style[card.value] then
-                                    if pal_map.pos_style[card.value].atlas then
-                                        atlas = pal_map.pos_style[card.value].atlas
+                            if rank_type then
+                                atlas = pal.atlas
+                                if type(pal.pos_style) == "table" then
+                                    if pal.pos_style[card.value] then
+                                        if pal.pos_style[card.value].atlas then
+                                            atlas = pal.pos_style[card.value].atlas
+                                        end
+                                        if pal.pos_style[card.value].pos then
+                                            pos = pal.pos_style[card.value].pos
+                                        end
+                                    elseif pal.pos_style.fallback_style then
+                                        if pal.pos_style.fallback_style == 'collab' then
+                                            pos = G.COLLABS.pos[card.value]
+                                        elseif pal.pos_style.fallback_style == 'suit' then
+                                            pos = { x = card.pos.x, y = 0}
+                                        elseif pal.pos_style.fallback_style == 'deck' then
+                                            pos = card.pos
+                                        end
                                     end
-                                    if pal_map.pos_style[card.value].pos then
-                                        pos = pal_map.pos_style[card.value].pos
-                                    end
-                                elseif pal_map.pos_style.fallback_style then
-                                    if pal_map.pos_style.fallback_style == 'collab' then
-                                        pos = G.COLLABS.pos[card.value]
-                                    elseif pal_map.pos_style.fallback_style == 'suit' then
-                                        pos = { x = card.pos.x, y = 0}
-                                    elseif pal_map.pos_style.fallback_style == 'deck' then
-                                        pos = card.pos
+                                elseif pal.pos_style == 'collab' then
+                                    pos = G.COLLABS.pos[card.value]
+                                elseif pal.pos_style == 'suit' then
+                                    pos = { x = card.pos.x, y = 0}
+                                elseif pal.pos_style == 'deck' then
+                                    pos = card.pos
+                                elseif pal.pos_style == 'ranks' then
+                                    for j, rank in ipairs(pal.ranks) do
+                                        if rank == card.value then
+                                            pos = { x = j - 1, y = 0}
+                                        end
                                     end
                                 end
-                            elseif pal_map.pos_style == 'collab' then
-                                pos = G.COLLABS.pos[card.value]
-                            elseif pal_map.pos_style == 'suit' then
-                                pos = { x = card.pos.x, y = 0}
-                            elseif pal_map.pos_style == 'deck' then
+                            else
+                                atlas = "arrow_"..string.lower(card.suit)
                                 pos = card.pos
-                            elseif pal_map.pos_style == 'ranks' then
-                                for j, rank in ipairs(pal_map.ranks) do
-                                    if rank == card.value then
-                                        pos = { x = j - 1, y = 0}
-                                    end
+                            end
+
+                            if not card_map[k][atlas] then
+                                card_map[k] = {[atlas] = true}
+
+                                if not atlases[atlas] then
+                                    atlases[atlas] = {}
                                 end
+
+                                atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..atlas, pos = pos}
+                                items[#items+1] = {key = k..'_'..atlas, collab_key = atlas, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
                             end
-                        else
-                            atlas = "arrow_"..string.lower(card.suit)
-                            pos = card.pos
-                        end
-
-                        if not card_map[k][atlas] then
-                            card_map[k] = {[atlas] = true}
-
-                            if not atlases[atlas] then
-                                atlases[atlas] = {}
-                            end
-
-                            sendDebugMessage(card.suit..' '..collab_key.. ': adding '..k..'_'..atlas)
-                            atlases[atlas][#atlases[atlas]+1] = {key = k..'_'..atlas, pos = pos}
-                            items[#items+1] = {key = k..'_'..atlas, collab_key = atlas, item_key = k, rank = card.value, table = 'CARDS', front_atlas = atlas, front_pos = pos, set = 'Card'}
                         end
                     end
                 end
