@@ -217,7 +217,7 @@ ArrowAPI.colors = {
                 if not card.no_collection and card.suit == set
                 and (not card.original_mod or (card.original_mod.optional_features or {}).arrow_palettes) then
                     card_map[k] = {}
-                    for collab_key, info in ipairs(G.COLLABS.options[card.suit]) do
+                    for _, info in ipairs(G.COLLABS.options[card.suit]) do
                         local deckSkin = SMODS.DeckSkins[info]
 
                         local atlas, pos
@@ -266,7 +266,7 @@ ArrowAPI.colors = {
                             end
 
                             if not card_map[k][atlas] then
-                                card_map[k] = {[atlas] = true}
+                                card_map[k][atlas] = true
 
                                 if not atlases[atlas] then
                                     atlases[atlas] = {}
