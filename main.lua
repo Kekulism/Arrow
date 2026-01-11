@@ -177,7 +177,7 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
 		["Hearts"] = {
             {
                 {
-                    174, 27, 67, 1,
+                    194, 34, 77, 1,
                     ["overrides"] = {
                         ["H_Q_collab_BUG_1"] = { 150, 99, 28, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["H_J_collab_AU_1"] = { 211, 36, 81, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
@@ -187,7 +187,7 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
                         ["H_K_collab_BUG_1"] = { 177, 111, 11, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["H_J_collab_CR_1"] = { 192, 52, 88, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["H_Q_collab_AU_1"] = { 211, 36, 81, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
-                    }, ["grad_pos"] = { 0, }, ["key"] = "174-27-67", ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, },
+                    }, ["grad_pos"] = { 0, }, ["key"] = "194-34-77", ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, },
                 },
                 { 240, 52, 100, 1, ["overrides"] = { }, ["grad_pos"] = { 0, }, ["key"] = "240-52-100", ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                 {
@@ -250,7 +250,7 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
                         ["H_Q_collab_AU_1"] = { 216, 42, 31, 216, 42, 31, 166, 21, 12, 166, 21, 12, ["grad_pos"] = { 0, 0.2, 0.8, 1, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 1.571, }, },
                         ["H_Q_collab_CR_1"] = { 145, 73, 73, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["H_J_collab_CR_1"] = { 176, 25, 16, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
-                    }, ["grad_pos"] = { 0, }, ["key"] = "174-27-67", ["grad_config"] = { ["pos"] = { 0, 0, }, ["mode"] = "linear", ["val"] = 0, },
+                    }, ["grad_pos"] = { 0, }, ["key"] = "194-34-77", ["grad_config"] = { ["pos"] = { 0, 0, }, ["mode"] = "linear", ["val"] = 0, },
                 },
                 { 248, 59, 47, 248, 59, 47, 208, 29, 17, 208, 29, 17, ["overrides"] = { ["changed_flag"] = true, }, ["grad_pos"] = { 0, 0.2, 0.8, 1, }, ["key"] = "240-52-100", ["grad_config"] = { ["pos"] = { 0, 0, }, ["mode"] = "linear", ["val"] = 1.571, }, },
                 { 255, 99, 103, 255, 99, 103, 220, 77, 81, 220, 77, 81,
@@ -494,7 +494,7 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
                         ["D_J_collab_C7_1"] = { 124, 89, 73, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["D_Q_collab_C7_1"] = { 238, 186, 100, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["D_K_collab_C7_1"] = { 79, 99, 103, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
-                    }, ["grad_pos"] = { 0, }, ["key"] = "141-79-29", ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, },
+                    }, ["grad_pos"] = { 0, }, ["key"] = "149-83-29", ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, },
                 },
                 { 204, 87, 27, 1,
                     ["overrides"] = {
@@ -623,7 +623,7 @@ ArrowAPI.config_tools.use_default_config(ArrowAPI, {
                         ["D_K_collab_EG_1"] = { 240, 107, 63, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["D_K_collab_SV_1"] = { 199, 127, 0, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
                         ["D_J_collab_SV_1"] = { 199, 127, 0, 1, ["grad_pos"] = { 0, }, ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, }, },
-                    }, ["grad_pos"] = { 0, }, ["key"] = "141-79-29", ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, },
+                    }, ["grad_pos"] = { 0, }, ["key"] = "149-83-29", ["grad_config"] = { ["pos"] = { 1, 0, }, ["mode"] = "linear", ["val"] = 0, },
                 },
                 { 232, 131, 6, 232, 131, 6, 186, 104, 4, 186, 104, 4,
                     ["overrides"] = {

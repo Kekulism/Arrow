@@ -627,15 +627,7 @@ end
 
 
 function G.UIDEF.deck_artist_popup(center)
-    local vars = {}
-    local mod = center.original_mod or center.mod
-    if type(center.artist) == 'table' then
-        for i, v in ipairs(center.artist) do
-            vars[i] = ArrowAPI.credits[mod.id][v]
-        end
-    else
-        vars[1] = ArrowAPI.credits[mod.id][center.artist]
-    end
+    local vars = type(center.artist) == 'table' and center.artist or {center.artist}
 
     local info_nodes = {}
     localize{type = 'descriptions', key = "artistcredit_"..#vars, set = "Other", vars = vars, nodes = info_nodes}
