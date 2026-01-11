@@ -9,6 +9,7 @@ SMODS.Shader({key = 'arrow_vhs', custom_path = arrow_path, path = 'vhs.fs', pref
 SMODS.Atlas({ key = 'arrow_stand_noise', custom_path = arrow_path, path = 'noise.png',  px = 128, py = 128, prefix_config = false})
 SMODS.Atlas({ key = 'arrow_stand_gradient', custom_path = arrow_path, path = 'gradient.png', px = 64, py = 64, prefix_config = false})
 SMODS.Atlas({ key = 'arrow_blackspine', custom_path = arrow_path, path = 'blackspine.png', px = 71, py = 95, prefix_config = false})
+SMODS.Shader({ key = 'vhs', custom_path = arrow_path, path = 'vhs.fs', prefix_config = false })
 
 
 
@@ -169,7 +170,6 @@ SMODS.DrawStep {
                 local stand_scale_mod = 0
                 G.SHADERS['arrow_stand_mask']:send("scale_mod",scale_mod)
                 G.SHADERS['arrow_stand_mask']:send("rotate_mod",rotate_mod)
-                G.SHADERS['arrow_stand_mask']:send("output_scale",1+stand_scale_mod)
                 G.SHADERS['arrow_stand_mask']:send("vertex_scale_mod", self.config.center.config.vertex_scale_mod or 1.0)
                 G.SHADERS['arrow_stand_mask']:send("shadow_strength", self.config.center.config.stand_shadow or 0.33)
 
@@ -266,8 +266,6 @@ SMODS.DrawStep:take_ownership('stickers', {
 ---------------------------
 --------------------------- VHS slide shader
 ---------------------------
-
-SMODS.Shader({ key = 'vhs', path = 'vhs.fs' })
 
 local slide_mod = 12
 local slide_out_delay = 0.05

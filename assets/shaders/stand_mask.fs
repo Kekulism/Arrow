@@ -18,14 +18,12 @@ extern MY_HIGHP_OR_MEDIUMP vec4 burn_colour_2;
 
 extern MY_HIGHP_OR_MEDIUMP float scale_mod;
 extern MY_HIGHP_OR_MEDIUMP float rotate_mod;
-// should be the inverse of the scale factor used for the canvas size
-extern MY_HIGHP_OR_MEDIUMP number output_scale;
 
 extern number vertex_scale_mod = 1.0;
 extern MY_HIGHP_OR_MEDIUMP float shadow_strength = 0.33;
 
-#define MASK_OFFSET vec2(0.4, 0.0) // mask frame is 0.4 units away from the soul frame (normalised)
-#define BASE_OFFSET vec2(-0.2, 0.0) // base frame is -0.2 units away from the soul frame (normalised)
+#define BASE_OFFSET -1
+#define MASK_OFFSET 1 // mask frame is +2 units away from the base frame (normalised)
 
 vec4 mask_layer(vec4 layer, float mask) {
     return vec4(layer.rgb, min(layer.a, mask));
@@ -42,7 +40,7 @@ vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
     float t = time * 10.0 + 2003.;
     vec2 floored_uv = (floor((uv*texture_details.ba)))/max(texture_details.b, texture_details.a);
     vec2 uv_scaled_centered = (floored_uv - 0.5) * 2.3 * max(texture_details.b, texture_details.a);
-    
+
     vec2 field_part1 = uv_scaled_centered + 50.*vec2(sin(-t / 143.6340), cos(-t / 99.4324));
     vec2 field_part2 = uv_scaled_centered + 50.*vec2(cos( t / 53.1532),  cos( t / 61.4532));
     vec2 field_part3 = uv_scaled_centered + 50.*vec2(sin(-t / 87.53218), sin(-t / 49.0000));
@@ -84,14 +82,15 @@ vec4 soul_move(Image tex, vec2 uv, vec2 uv_min, vec2 uv_max) {
     // apply rotation
     float cos_angle = cos(rotate_mod);
     float sin_angle = sin(rotate_mod);
-    mat2 rotation_matrix = mat2(cos_angle, -sin_angle, 
+    mat2 rotation_matrix = mat2(cos_angle, -sin_angle,
                                 sin_angle, cos_angle);
     centred_normalized_uv *= rotation_matrix;
 
     vec2 transformed_uv = centred_normalized_uv * uv_size + uv_centre; // translate uv back and un-normalise
 
+
     // clip to bounds
-    float epsilon = 0.0001;
+    float epsilon = 0.01;
     if (transformed_uv.x < (uv_min.x - epsilon) || transformed_uv.x > (uv_max.x + epsilon) ||
         transformed_uv.y < (uv_min.y - epsilon) || transformed_uv.y > (uv_max.y + epsilon))
     {
@@ -104,14 +103,18 @@ vec4 soul_move(Image tex, vec2 uv, vec2 uv_min, vec2 uv_max) {
 }
 
 vec4 draw_shadow(Image tex, vec2 uv,  vec2 uv_min, vec2 uv_max, vec2 screen_coords, float shadow_strength) {
+
     vec2 light_screen_pos = vec2(0.5, 2.0) * love_ScreenSize.xy; // light origin, seems to be top-middle off screen a bit (but need to invert y because shadow length is inverted for some reason)
     vec2 screen_offset = (screen_coords - light_screen_pos) * vec2(-1.0); // mirror shadow because Balatro shadows work weird
     vec2 uv_offset = screen_offset / love_ScreenSize.xy;
-    vec2 shadow_uv_offset = uv_offset * scale_mod * 0.33; // controls shadow length 
+
+    vec2 shadow_uv_offset = uv_offset * scale_mod * 0.03; // controls shadow length
     vec2 shadow_origin_uv = uv - shadow_uv_offset; // soul uv with shadow offset
 
+    float x_scale = uv_max.x - uv_min.x;
+
     vec4 shadow_caster_color = soul_move(tex, shadow_origin_uv, uv_min, uv_max); // move shadow with the soul layer
-    vec4 mask_at_origin = Texel(tex, shadow_origin_uv + MASK_OFFSET + shadow_uv_offset); // have to add back in the shadow_uv_offset to get the correct mask coords
+    vec4 mask_at_origin = Texel(tex, vec2(shadow_origin_uv.x + x_scale * MASK_OFFSET + shadow_uv_offset.x, shadow_origin_uv.y)); // have to add back in the shadow_uv_offset to get the correct mask coords
     float effective_caster_alpha = mask_layer(shadow_caster_color, mask_at_origin.r).a; // masked shadow alpha
 
     float final_shadow_alpha = effective_caster_alpha * shadow_strength;
@@ -121,22 +124,27 @@ vec4 draw_shadow(Image tex, vec2 uv,  vec2 uv_min, vec2 uv_max, vec2 screen_coor
 
 vec4 effect(vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords)
 {
-    vec2 centre = vec2(0.5, 0.5);
-    vec2 scaled_texture_coords = (texture_coords - centre) / output_scale + centre; // scale the entire uv to counter edge clipping
+    vec2 dissolve_uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
 
-    vec2 dissolve_uv = (((scaled_texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
+    float x_scale = (texture_details.b)/image_details.x;
+    float y_scale = (texture_details.a)/image_details.y;
 
-    vec2 soul_min = vec2(0.4, 0.0); // bottom left position of the soul frame relative to image origin (normalised)
-    vec2 soul_max = vec2(0.6, 1.0); // top right position of the soul frame relative to image origin (normalised)
+    float local_x_origin = x_scale*texture_details.x;
+    float frame_origin = x_scale * (texture_details.x - 1);
+    float local_y_origin = y_scale*texture_details.y;
+    float max_y = local_y_origin + y_scale;
 
-    vec4 soul = soul_move(texture, scaled_texture_coords, soul_min, soul_max); // texture coords already offset for soul layer (i.e. starts at 0.4)
-    vec4 mask = Texel(texture, scaled_texture_coords + MASK_OFFSET); // mask colour
+    vec2 soul_min = vec2(local_x_origin, local_y_origin); // bottom left position of the soul frame relative to image origin (normalised)
+    vec2 soul_max = vec2(local_x_origin + x_scale, max_y); // top right position of the soul frame relative to image origin (normalised)
+
+    vec4 soul = soul_move(texture, texture_coords, soul_min, soul_max);
+    vec4 mask = Texel(texture, vec2(texture_coords.x + x_scale * MASK_OFFSET, texture_coords.y)); // mask colour
 
     if (shadow_strength > 0) {
-        vec4 base_color = Texel(texture, scaled_texture_coords + BASE_OFFSET); // base colour
+        vec4 base_color = Texel(texture, vec2(texture_coords.x + x_scale * BASE_OFFSET, texture_coords.y)); // base colour
         vec4 shadow_layer = draw_shadow(
-            texture, 
-            scaled_texture_coords, 
+            texture,
+            texture_coords,
             soul_min,
             soul_max,
             screen_coords,
@@ -147,19 +155,19 @@ vec4 effect(vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords)
         // this is because it would overlap with the default card shadow and make a darker double-shadow
         shadow_layer = vec4(shadow_layer.rgb, min(shadow_layer.a, base_color.a));
 
-        // factor for mixing the shadow and soul layers 
+        // factor for mixing the shadow and soul layers
         // we want it to ramp up quickly as the soul alpha gets higher, thus squaring the alpha
         // any soul alpha value above √2 - 1 will cause the shadow to not be drawn underneath
         float blend_alpha = min(pow(1. + soul.a, 2) - 1., 1.);
-        
+
         vec3 soul_with_shadow = mix(shadow_layer.rgb, soul.rgb, blend_alpha);
         soul = vec4(soul_with_shadow, max(soul.a, shadow_layer.a));
     }
 
     soul = mask_layer(soul, mask.r);
-    
+
     // required for dissolve fx
-    return dissolve_mask(soul*colour, scaled_texture_coords, dissolve_uv);
+    return dissolve_mask(soul*colour, texture_coords, dissolve_uv);
 }
 
 extern MY_HIGHP_OR_MEDIUMP vec2 mouse_screen_pos;
