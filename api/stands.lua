@@ -94,6 +94,8 @@ SMODS.ConsumableType {
 
 --- Helper functions for Stands
 ArrowAPI.stands = {
+    hue_mod = 0,
+
     --- Gets the leftmost stand in the consumable slots
     --- @return Card | nil # The first Stand in the consumables slot, or nil if you have no Stands
     get_leftmost_stand = function()
@@ -193,11 +195,30 @@ ArrowAPI.stands = {
         }))
     end,
 
+    shift_aura_colors = function(stand)
+        if not G.GAME.stand_hue_mod or G.GAME.stand_hue_mod == 0 then return end
+
+        local col_1 = HEX(stand.config.center.config.aura_colors[1])
+        sendDebugMessage('color 1: {'..tostring(col_1[1])..', '..tostring(col_1[2])..', '..tostring(col_1[3])..'}')
+
+        local shifted_1 = ArrowAPI.colors.hue_shift({col_1[1], col_1[2], col_1[3]}, G.GAME.stand_hue_mod)
+        stand.ability.aura_colors[1] = {shifted_1[1], shifted_1[2], shifted_1[3], col_1[4]}
+
+        local col_2 = HEX(stand.config.center.config.aura_colors[2])
+        sendDebugMessage('color 1: {'..tostring(col_2[1])..', '..tostring(col_2[2])..', '..tostring(col_2[3])..'}')
+        local shifted_2 = ArrowAPI.colors.hue_shift({col_2[1], col_2[2], col_2[3]}, G.GAME.stand_hue_mod)
+        stand.ability.aura_colors[2] = {shifted_2[1], shifted_2[2], shifted_2[3], col_2[4]}
+    end,
+
     --- Sets relevant sprites for stand auras and overlays (if applicable)
     --- @param stand Card Balatro card table representing a Stand
     set_stand_sprites = function(stand)
         -- add stand aura
         if stand.ability.aura_colors and #stand.ability.aura_colors == 2 then
+            stand.ability.aura_colors[1] = SMODS.Gradients[stand.ability.aura_colors[1]] or HEX(stand.ability.aura_colors[1])
+            stand.ability.aura_colors[2] = SMODS.Gradients[stand.ability.aura_colors[2]] or HEX(stand.ability.aura_colors[2])
+            ArrowAPI.stands.shift_aura_colors(stand)
+
             stand.no_shadow = true
             G.ASSET_ATLAS['arrow_stand_noise'].image:setWrap('repeat', 'repeat', 'clamp')
 

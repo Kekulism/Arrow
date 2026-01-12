@@ -1,6 +1,7 @@
 local arrow_path = ArrowAPI.path..(ArrowAPI.custom_path or '')
 SMODS.Shader({ key = 'arrow_stand_aura', custom_path = arrow_path, path = 'stand_aura.fs', prefix_config = false })
 SMODS.Shader({ key = 'arrow_stand_mask', custom_path = arrow_path, path = 'stand_mask.fs', prefix_config = false })
+SMODS.Shader({ key = 'arrow_stand_hue', custom_path = arrow_path, path = 'stand_hue.fs', prefix_config = false })
 SMODS.Shader({key = 'arrow_ui_poly', custom_path = arrow_path, path = 'ui_poly.fs', prefix_config = false})
 SMODS.Shader({key = 'arrow_rgb_slider', custom_path = arrow_path, path = 'rgb_slider.fs', prefix_config = false})
 SMODS.Shader({key = 'arrow_button_grad', custom_path = arrow_path, path = 'button_grad.fs', prefix_config = false})
@@ -92,10 +93,19 @@ SMODS.DrawStep {
             local aura_spread = (flare_ease * 0.04) + self.ability.aura_spread
 
             -- colors
-            local outline_color = SMODS.Gradients[self.ability.aura_colors[1]] or HEX(self.ability.aura_colors[1])
-            outline_color[4] = outline_color[4] * flare_ease
-            local base_color = SMODS.Gradients[self.ability.aura_colors[2]] or HEX(self.ability.aura_colors[2])
-            base_color[4] = base_color[4] * flare_ease
+            local outline_color = {
+                self.ability.aura_colors[1][1],
+                self.ability.aura_colors[1][2],
+                self.ability.aura_colors[1][3],
+                self.ability.aura_colors[1][4] * flare_ease,
+            }
+
+            local base_color = {
+                self.ability.aura_colors[2][1],
+                self.ability.aura_colors[2][2],
+                self.ability.aura_colors[2][3],
+                self.ability.aura_colors[2][4] * flare_ease,
+            }
 
             -- default tilt behavior
             local cursor_pos = {}
@@ -157,6 +167,16 @@ SMODS.DrawStep:take_ownership('floating_sprite', {
     end,
 }, true)
 
+local function unique_lerp(hash_string)
+    local hash = 5381  -- Seed value
+    for i = 1, #hash_string do
+        local char = string.byte(hash_string, i)
+        hash = ((hash * 32) + hash + char) % 2^15  -- Wrap to 16-bit integer
+    end
+
+    return hash / (2^15)
+end
+
 SMODS.DrawStep {
     key = 'arrow_stand_mask',
     prefix_config = {key = {mod = false}},
@@ -166,6 +186,12 @@ SMODS.DrawStep {
             local scale_mod = (self.config.center.stand_scale_mod or 1)*0.07 + (self.config.center.stand_scale_mod or 1)*0.02*math.sin(1.8*G.TIMERS.REAL)
             local rotate_mod = 0.05*math.sin(1.219*G.TIMERS.REAL) + 0.00*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
 
+            local hue_mod = G.GAME.stand_hue_mod or 0
+            if hue_mod ~= 0 then
+                hue_mod = (G.GAME.stand_hue_mod + (unique_lerp(self.config.center.key) * 360) + 50) % 360
+            end
+
+
             if self.ability.stand_mask then
                 local stand_scale_mod = 0
                 G.SHADERS['arrow_stand_mask']:send("scale_mod",scale_mod)
@@ -173,10 +199,13 @@ SMODS.DrawStep {
                 G.SHADERS['arrow_stand_mask']:send("vertex_scale_mod", self.config.center.config.vertex_scale_mod or 1.0)
                 G.SHADERS['arrow_stand_mask']:send("shadow_strength", self.config.center.config.stand_shadow or 0.33)
 
+
+                G.SHADERS['arrow_stand_mask']:send('hue_mod', hue_mod)
                 self.children.floating_sprite:draw_shader('arrow_stand_mask', nil, nil, nil, self.children.center, -stand_scale_mod)
             else
-                self.children.floating_sprite:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
-                self.children.floating_sprite:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+                G.SHADERS['arrow_stand_hue']:send('hue_mod', hue_mod)
+                self.children.floating_sprite:draw_shader('arrow_stand_hue', 0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+                self.children.floating_sprite:draw_shader('arrow_stand_hue', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
             end
 
             if self.edition then
@@ -274,7 +303,31 @@ local width_factor = 0.1
 local old_center_ds = SMODS.DrawSteps.center.func
 SMODS.DrawStep:take_ownership('center', {
     func = function(self, layer)
-        if self.ability.set ~= 'VHS' then
+        if self.ability.set == 'Stand' then
+            if not self.config.center.discovered and not self.config.center.demo and not self.bypass_discovery_center then
+                return old_center_ds(self, layer)
+            end
+
+            --Draw the main part of the card
+            if (self.edition and self.edition.negative and (not self.delay_edition or self.delay_edition.negative)) then
+                self.children.center:draw_shader('negative', nil, self.ARGS.send_to_shader)
+            elseif not self:should_draw_base_shader() then
+                -- Don't render base dissolve shader.
+            elseif not self.greyed then
+                local hue_mod = G.GAME.stand_hue_mod or 0
+                if hue_mod ~= 0 then
+                    hue_mod = (G.GAME.stand_hue_mod + unique_lerp(self.config.center.key) * 360) % 360
+                end
+                G.SHADERS['arrow_stand_hue']:send('hue_mod', hue_mod)
+                self.children.center:draw_shader('arrow_stand_hue')
+            end
+
+            local center = self.config.center
+            if center.draw and type(center.draw) == 'function' then
+                center:draw(self, layer)
+            end
+
+        elseif self.ability.set ~= 'VHS' then
             return old_center_ds(self, layer)
         end
     end

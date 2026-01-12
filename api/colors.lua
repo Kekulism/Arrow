@@ -384,6 +384,37 @@ ArrowAPI.colors = {
         background_table.contrast = args.contrast - background_table.contrast
     end,
 
+    hue_shift = function(color, hue_mod)
+        local k_rgb_to_yprime = {0.299, 0.587, 0.114}
+        local g_rgb_to_i = {0.596, -0.275, -0.321}
+        local k_rgb_to_q = {0.212, -0.523, 0.311}
+
+        local k_yiq_to_r = {1.0, 0.956, 0.621}
+        local k_yiq_to_g = {1.0, -0.272, -0.647}
+        local k_yiq_to_b = {1.0, -1.107, 1.704}
+
+        -- dot products
+        local yprime = color[1] * k_rgb_to_yprime[1] + color[2] * k_rgb_to_yprime[2] + color[3] * k_rgb_to_yprime[3]
+        local i = color[1] * g_rgb_to_i[1] + color[2] * g_rgb_to_i[2] + color[3] * g_rgb_to_i[3]
+        local q = color[1] * k_rgb_to_q[1] + k_rgb_to_q[2] * k_rgb_to_q[2] + color[3] * k_rgb_to_q[3]
+
+        local hue = math.atan2(q, i)
+        local chroma = math.sqrt(i * i + q * q)
+
+        hue = hue + hue_mod
+
+        q = chroma * math.sin(hue)
+        i = chroma * math.cos(hue)
+
+        local y_iq = {yprime, i, q}
+
+        return {
+            (y_iq[1] * k_yiq_to_r[1] + y_iq[2] * k_yiq_to_r[2] + y_iq[3] * k_yiq_to_r[3]),
+            (y_iq[1] * k_yiq_to_g[1] + y_iq[2] * k_yiq_to_g[2] + y_iq[3] * k_yiq_to_g[3]),
+            (y_iq[1] * k_yiq_to_b[1] + y_iq[2] * k_yiq_to_b[2] + y_iq[3] * k_yiq_to_b[3]),
+        }
+    end,
+
     use_custom_palette = function(set, saved_index, bypass_last)
         local palette = ArrowAPI.colors.palettes[set]
         if set == 'Background' then
@@ -510,7 +541,7 @@ ArrowAPI.colors = {
             custom_palette = ArrowAPI.config.saved_palettes[set][saved_index]
             local new_palette = {name = custom_palette.name}
 
-            for i = 1, #palette.default_palette do
+            for i = 1, #palette.default_palette-1 do
                 local default = palette.default_palette[i]
                 local cust_color = custom_palette[i]
                 local palette_table = {
@@ -527,7 +558,6 @@ ArrowAPI.colors = {
                 new_palette[i] = palette_table
             end
 
-            -- TODO // fix with grad pos
             local badge = new_palette[#new_palette]
             local badge_table = ArrowAPI.colors.badge_colours[set]
             if G.C.SUITS[set] then

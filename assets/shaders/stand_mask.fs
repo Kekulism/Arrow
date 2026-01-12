@@ -6,6 +6,7 @@
     #define MY_HIGHP_OR_MEDIUMP mediump
 #endif
 
+extern  MY_HIGHP_OR_MEDIUMP float hue_mod;
 extern MY_HIGHP_OR_MEDIUMP number dissolve;
 extern MY_HIGHP_OR_MEDIUMP number time;
 // (sprite_pos_x, sprite_pos_y, sprite_width, sprite_height) [not normalized]
@@ -27,6 +28,31 @@ extern MY_HIGHP_OR_MEDIUMP float shadow_strength = 0.33;
 
 vec4 mask_layer(vec4 layer, float mask) {
     return vec4(layer.rgb, min(layer.a, mask));
+}
+
+vec3 hue_shift(vec3 color, float hue_adjust){
+    const vec3 kRGBToYPrime = vec3 (0.299, 0.587, 0.114);
+    const vec3 kRGBToI = vec3 (0.596, -0.275, -0.321);
+    const vec3 kRGBToQ = vec3 (0.212, -0.523, 0.311);
+
+    const vec3  kYIQToR = vec3 (1.0, 0.956, 0.621);
+    const vec3  kYIQToG = vec3 (1.0, -0.272, -0.647);
+    const vec3  kYIQToB = vec3 (1.0, -1.107, 1.704);
+
+    float YPrime = dot(color, kRGBToYPrime);
+    float I = dot(color, kRGBToI);
+    float Q = dot(color, kRGBToQ);
+    float hue = atan(Q, I);
+    float chroma  = sqrt(I * I + Q * Q);
+
+    hue += hue_adjust;
+
+    Q = chroma * sin (hue);
+    I = chroma * cos (hue);
+
+    vec3 yIQ = vec3(YPrime, I, Q);
+
+    return vec3(dot(yIQ, kYIQToR), dot(yIQ, kYIQToG), dot(yIQ, kYIQToB));
 }
 
 vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
@@ -165,6 +191,10 @@ vec4 effect(vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords)
     }
 
     soul = mask_layer(soul, mask.r);
+
+    if (soul.a > 0.0 && (abs(hue_mod) > 0.01)) {
+        soul = vec4(hue_shift(soul.rgb, hue_mod), soul.a);
+    }
 
     // required for dissolve fx
     return dissolve_mask(soul*colour, texture_coords, dissolve_uv);

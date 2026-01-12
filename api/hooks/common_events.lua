@@ -236,3 +236,41 @@ function check_for_unlock(args)
 
     return ret
 end
+
+local function unique_lerp(hash_string)
+    local hash = 5381  -- Seed value
+    for i = 1, #hash_string do
+        local char = string.byte(hash_string, i)
+        hash = ((hash * 32) + hash + char) % 2^15  -- Wrap to 16-bit integer
+    end
+
+    return hash / (2^15)
+end
+
+local ref_ease_ante = ease_ante
+function ease_ante(mod)
+    local ret = ref_ease_ante(mod)
+
+    --[[
+    G.E_MANAGER:add_event(Event({
+        trigger = 'immediate',
+        func = function()
+            if G.GAME.round_resets.ante <= 1 then G.GAME.stand_hue_mod = 0 return end
+
+            local new_hue_mod = pseudorandom('arrow_stand_hue'..G.GAME.round_resets.ante, 1, 360)
+            G.GAME.stand_hue_mod = new_hue_mod
+
+            for _, v in pairs(G.I.CARD) do
+                if v.ability and v.ability.set == 'Stand' then
+                    sendDebugMessage('new unique val: '..unique_lerp(v.config.center.key))
+                    ArrowAPI.stands.shift_aura_colors(v)
+                end
+            end
+
+            return true
+        end
+    }))
+    --]]
+
+    return ret
+end
