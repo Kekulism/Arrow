@@ -58,9 +58,11 @@ function Card:say_quip(iter, not_first, def_speed, voice)
     end
     self.last_said = new_said
 
-    if voice and SMODS.Sounds[voice] then
+    sendDebugMessage('voice key: '..tostring(voice))
+
+    if voice then
         play_sound(voice)
-    else
+    elseif voice ~= false then
         play_sound('voice'..new_said, speed * (math.random() * 0.2 + 1), 0.5)
     end
 
@@ -71,7 +73,7 @@ function Card:say_quip(iter, not_first, def_speed, voice)
         blocking = false,
         delay = 0.13 * delay_mult,
         func = function()
-            self:say_quip(iter-1, true, def_speed)
+            self:say_quip(iter-1, true, def_speed, false)
         return true
     end}), 'tutorial')
 end
