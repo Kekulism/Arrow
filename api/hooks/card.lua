@@ -225,7 +225,7 @@ function Card:set_sprites(center, front)
             end
         end
 
-        if not has_rank then
+        if not has_rank or (not palette.artist and not deckskin.artist) then
             self.artist = nil
             return ret
         end
