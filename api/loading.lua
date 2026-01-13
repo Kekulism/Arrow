@@ -344,27 +344,24 @@ ArrowAPI.loading = {
                 end
             end
 
-            if not credits then return SMODS.DeckSkin(args) end
+            if not credits or not args.artist then return SMODS.DeckSkin(args) end
 
-            for _, v in ipairs(args.palettes or {}) do
-                local artist_table = type(v.artist) == 'table' and v.artist or {v.artist}
-                for _, artists in pairs(artist_table) do
-                    local names = (artists) == 'table' and artists or {artists}
-                    for _, name in ipairs(names) do
-                        local found_contrib = false
-                        for i = #credits, 1, -1 do
-                            if credits[i].name == name then
-                                found_contrib = true
-                                credits[i][#credits[i]+1] = {
-                                    key = v.key,
-                                    item_type = 'DeckSkin'
-                                }
-                            end
+            for rank, artists in pairs(args.artist) do
+                local names = (artists) == 'table' and artists or {artists}
+                for _, name in ipairs(names) do
+                    local found_contrib = false
+                    for i = #credits, 1, -1 do
+                        if credits[i].name == name then
+                            found_contrib = true
+                            credits[i][#credits[i]+1] = {
+                                key = args.key..'_'..rank,
+                                item_type = 'DeckSkin'
+                            }
                         end
+                    end
 
-                        if not found_contrib then
-                            table.insert(credits, {name = name, name_colour = G.C.UI.TEXT_LIGHT, name_scale = 1})
-                        end
+                    if not found_contrib then
+                        table.insert(credits, {name = name, name_colour = G.C.UI.TEXT_LIGHT, name_scale = 1})
                     end
                 end
             end

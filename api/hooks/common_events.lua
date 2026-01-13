@@ -251,13 +251,12 @@ local ref_ease_ante = ease_ante
 function ease_ante(mod)
     local ret = ref_ease_ante(mod)
 
-    --[[
     G.E_MANAGER:add_event(Event({
         trigger = 'immediate',
         func = function()
             if G.GAME.round_resets.ante <= 1 then G.GAME.stand_hue_mod = 0 return end
 
-            local new_hue_mod = pseudorandom('arrow_stand_hue'..G.GAME.round_resets.ante, 1, 360)
+            local new_hue_mod = pseudorandom('arrow_stand_hue'..G.GAME.round_resets.ante)
             G.GAME.stand_hue_mod = new_hue_mod
 
             for _, v in pairs(G.I.CARD) do
@@ -270,7 +269,6 @@ function ease_ante(mod)
             return true
         end
     }))
-    --]]
 
     return ret
 end

@@ -13,29 +13,47 @@ extern bool shadow;
 extern MY_HIGHP_OR_MEDIUMP vec4 burn_colour_1;
 extern MY_HIGHP_OR_MEDIUMP vec4 burn_colour_2;
 
-vec3 hue_shift(vec3 color, float hue_adjust){
-    const vec3 kRGBToYPrime = vec3 (0.299, 0.587, 0.114);
-    const vec3 kRGBToI = vec3 (0.596, -0.275, -0.321);
-    const vec3 kRGBToQ = vec3 (0.212, -0.523, 0.311);
+number hue(number s, number t, number h)
+{
+	number hs = mod(h, 1.)*6.;
+	if (hs < 1.) return (t-s) * hs + s;
+	if (hs < 3.) return t;
+	if (hs < 4.) return (t-s) * (4.-hs) + s;
+	return s;
+}
 
-    const vec3  kYIQToR = vec3(1.0, 0.956, 0.621);
-    const vec3  kYIQToG = vec3(1.0, -0.272, -0.647);
-    const vec3  kYIQToB = vec3(1.0, -1.107, 1.704);
+vec4 RGB(vec4 c)
+{
+	if (c.y == 0.)
+		return vec4(vec3(c.z), c.a);
 
-    float YPrime = dot(color, kRGBToYPrime);
-    float I = dot(color, kRGBToI);
-    float Q = dot(color, kRGBToQ);
-    float hue = atan(Q, I);
-    float chroma  = sqrt(I * I + Q * Q);
+	number t = (c.z < .5) ? c.y*c.z + c.z : -c.y*c.z + (c.y+c.z);
+	number s = 2.0 * c.z - t;
+	return vec4(hue(s,t,c.x + 1./3.), hue(s,t,c.x), hue(s,t,c.x - 1./3.), c.w);
+}
 
-    hue += hue_adjust;
+vec4 HSL(vec4 c)
+{
+	number low = min(c.r, min(c.g, c.b));
+	number high = max(c.r, max(c.g, c.b));
+	number delta = high - low;
+	number sum = high+low;
 
-    Q = chroma * sin (hue);
-    I = chroma * cos (hue);
+	vec4 hsl = vec4(.0, .0, .5 * sum, c.a);
+	if (delta == .0)
+		return hsl;
 
-    vec3 yIQ = vec3(YPrime, I, Q);
+	hsl.y = (hsl.z < .5) ? delta / sum : delta / (2.0 - sum);
 
-    return vec3(dot(yIQ, kYIQToR), dot(yIQ, kYIQToG), dot(yIQ, kYIQToB));
+	if (high == c.r)
+		hsl.x = (c.g - c.b) / delta;
+	else if (high == c.g)
+		hsl.x = (c.b - c.r) / delta + 2.0;
+	else
+		hsl.x = (c.r - c.g) / delta + 4.0;
+
+	hsl.x = mod(hsl.x / 6., 1.);
+	return hsl;
 }
 
 vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
@@ -81,8 +99,9 @@ vec4 effect( vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords
     MY_HIGHP_OR_MEDIUMP vec4 tex = Texel( texture, texture_coords);
     MY_HIGHP_OR_MEDIUMP vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
 
-    if (tex.a > 0.0 && (abs(hue_mod) > 0.01)) {
-        tex = vec4(hue_shift(tex.rgb, hue_mod), tex.a);
+    if (tex.a > 0.0 && (abs(hue_mod) > 0.0001)) {
+        vec4 hsl = HSL(tex);
+        tex = RGB(vec4(mod(hsl.x + hue_mod, 1), hsl.y, hsl.z, hsl.a));
     }
 
     if (!shadow &&  dissolve > 0.01){

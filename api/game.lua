@@ -559,6 +559,7 @@ ArrowAPI.game.add_game_globals_func(ArrowAPI, function(run_start)
         G.GAME.modifiers.max_stands = G.GAME.modifiers.max_stands or 1
         G.GAME.modifiers.consumable_selection_mod = G.GAME.modifiers.consumable_selection_mod or 0
         G.GAME.arrow_last_upgraded_hand = {}
+        G.GAME.stand_hue_mod = 0
     end
 
     G.GAME.shop_dollars_spent = 0

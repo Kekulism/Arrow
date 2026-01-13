@@ -198,13 +198,13 @@ ArrowAPI.stands = {
     shift_aura_colors = function(stand)
         if not G.GAME.stand_hue_mod or G.GAME.stand_hue_mod == 0 then return end
 
-        local col_1 = HEX(stand.config.center.config.aura_colors[1])
+        local col_1 = stand.config.center.config.aura_colors[1]
         sendDebugMessage('color 1: {'..tostring(col_1[1])..', '..tostring(col_1[2])..', '..tostring(col_1[3])..'}')
 
         local shifted_1 = ArrowAPI.colors.hue_shift({col_1[1], col_1[2], col_1[3]}, G.GAME.stand_hue_mod)
         stand.ability.aura_colors[1] = {shifted_1[1], shifted_1[2], shifted_1[3], col_1[4]}
 
-        local col_2 = HEX(stand.config.center.config.aura_colors[2])
+        local col_2 = stand.config.center.config.aura_colors[2]
         sendDebugMessage('color 1: {'..tostring(col_2[1])..', '..tostring(col_2[2])..', '..tostring(col_2[3])..'}')
         local shifted_2 = ArrowAPI.colors.hue_shift({col_2[1], col_2[2], col_2[3]}, G.GAME.stand_hue_mod)
         stand.ability.aura_colors[2] = {shifted_2[1], shifted_2[2], shifted_2[3], col_2[4]}
@@ -220,7 +220,7 @@ ArrowAPI.stands = {
             ArrowAPI.stands.shift_aura_colors(stand)
 
             stand.no_shadow = true
-            G.ASSET_ATLAS['arrow_stand_noise'].image:setWrap('repeat', 'repeat', 'clamp')
+            G.ASSET_ATLAS['arrow_noise'].image:setWrap('repeat', 'repeat', 'clamp')
 
             local blank_atlas = G.ASSET_ATLAS[stand.ability.evolved and 'arrow_stand_blank_evolved' or 'arrow_stand_blank']
             local aura_scale_x = blank_atlas.px / stand.children.center.atlas.px

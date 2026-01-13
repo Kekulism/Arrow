@@ -541,7 +541,7 @@ ArrowAPI.colors = {
             custom_palette = ArrowAPI.config.saved_palettes[set][saved_index]
             local new_palette = {name = custom_palette.name}
 
-            for i = 1, #palette.default_palette-1 do
+            for i = 1, #palette.default_palette do
                 local default = palette.default_palette[i]
                 local cust_color = custom_palette[i]
                 local palette_table = {

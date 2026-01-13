@@ -7,11 +7,9 @@ SMODS.Shader({key = 'arrow_rgb_slider', custom_path = arrow_path, path = 'rgb_sl
 SMODS.Shader({key = 'arrow_button_grad', custom_path = arrow_path, path = 'button_grad.fs', prefix_config = false})
 SMODS.Shader({key = 'arrow_palette_outline', custom_path = arrow_path, path = 'palette_outline.fs', prefix_config = false})
 SMODS.Shader({key = 'arrow_vhs', custom_path = arrow_path, path = 'vhs.fs', prefix_config = false})
-SMODS.Atlas({ key = 'arrow_stand_noise', custom_path = arrow_path, path = 'noise.png',  px = 128, py = 128, prefix_config = false})
+SMODS.Atlas({ key = 'arrow_noise', custom_path = arrow_path, path = 'noise.png',  px = 128, py = 128, prefix_config = false})
 SMODS.Atlas({ key = 'arrow_stand_gradient', custom_path = arrow_path, path = 'gradient.png', px = 64, py = 64, prefix_config = false})
 SMODS.Atlas({ key = 'arrow_blackspine', custom_path = arrow_path, path = 'blackspine.png', px = 71, py = 95, prefix_config = false})
-SMODS.Shader({ key = 'vhs', custom_path = arrow_path, path = 'vhs.fs', prefix_config = false })
-
 
 
 
@@ -118,7 +116,7 @@ SMODS.DrawStep {
             G.SHADERS['arrow_stand_aura']:send('step_size', {0.021, 0.021})
             G.SHADERS['arrow_stand_aura']:send('time', G.TIMERS.REAL)
             G.SHADERS['arrow_stand_aura']:send('aura_rate', 1)
-            G.SHADERS['arrow_stand_aura']:send('noise_tex', G.ASSET_ATLAS['arrow_stand_noise'].image)
+            G.SHADERS['arrow_stand_aura']:send('noise_tex', G.ASSET_ATLAS['arrow_noise'].image)
             G.SHADERS['arrow_stand_aura']:send('gradient_tex', G.ASSET_ATLAS['arrow_stand_gradient'].image)
             G.SHADERS['arrow_stand_aura']:send('outline_color', outline_color)
             G.SHADERS['arrow_stand_aura']:send('base_color', base_color)
@@ -188,7 +186,7 @@ SMODS.DrawStep {
 
             local hue_mod = G.GAME.stand_hue_mod or 0
             if hue_mod ~= 0 then
-                hue_mod = (G.GAME.stand_hue_mod + (unique_lerp(self.config.center.key) * 360) + 50) % 360
+                hue_mod = G.GAME.stand_hue_mod + unique_lerp(self.config.center.key)
             end
 
 
@@ -316,7 +314,7 @@ SMODS.DrawStep:take_ownership('center', {
             elseif not self.greyed then
                 local hue_mod = G.GAME.stand_hue_mod or 0
                 if hue_mod ~= 0 then
-                    hue_mod = (G.GAME.stand_hue_mod + unique_lerp(self.config.center.key) * 360) % 360
+                    hue_mod = G.GAME.stand_hue_mod + unique_lerp(self.config.center.key)
                 end
                 G.SHADERS['arrow_stand_hue']:send('hue_mod', hue_mod)
                 self.children.center:draw_shader('arrow_stand_hue')

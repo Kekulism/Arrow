@@ -210,10 +210,21 @@ function Card:set_sprites(center, front)
 
     if front and G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]
     and SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]] then
-        local deckSkin = SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]]
-        if deckSkin.outdated then return ret end
-        local palette = deckSkin.palette_map and deckSkin.palette_map[G.SETTINGS.colour_palettes[front.suit] or ''] or (deckSkin.palettes or {})[1]
-        self.artist = type(palette.artist) == 'table' and palette.artist[front.value] or palette.artist
+        local deckskin = SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]]
+        if deckskin.outdated then return ret end
+
+        local palette = deckskin.palette_map and deckskin.palette_map[G.SETTINGS.colour_palettes[front.suit] or ''] or (deckskin.palettes or {})[1]
+        local has_rank = false
+        for i=1, #palette.ranks do
+            if palette.ranks[i] == front.value then
+                has_rank = true
+                break
+            end
+        end
+
+        if not has_rank then return ret end
+
+        self.artist = palette.artist[front.value] or deckskin.artist[front.value]
     end
 end
 
