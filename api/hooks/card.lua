@@ -211,7 +211,10 @@ function Card:set_sprites(center, front)
     if front and G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]
     and SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]] then
         local deckskin = SMODS.DeckSkins[G.SETTINGS.CUSTOM_DECK.Collabs[front.suit]]
-        if deckskin.outdated then return ret end
+        if deckskin.outdated then
+            self.artist = nil
+            return ret
+        end
 
         local palette = deckskin.palette_map and deckskin.palette_map[G.SETTINGS.colour_palettes[front.suit] or ''] or (deckskin.palettes or {})[1]
         local has_rank = false
@@ -222,10 +225,17 @@ function Card:set_sprites(center, front)
             end
         end
 
-        if not has_rank then return ret end
+        if not has_rank then
+            self.artist = nil
+            return ret
+        end
 
         self.artist = palette.artist[front.value] or deckskin.artist[front.value]
+        return ret
     end
+
+    self.artist = nil
+    return ret
 end
 
 
