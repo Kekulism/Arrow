@@ -1,5 +1,3 @@
-SMODS.Atlas({key = 'arrow_mystery', atlas_table = "ANIMATION_ATLAS", custom_path = ArrowAPI.path..(ArrowAPI.custom_path or ''), path = "blinds/mystery.png", px = 34, py = 34, frames = 21, prefix_config = false })
-
 ---------------------------
 --------------------------- Maggie Speech Bubble Support
 ---------------------------
