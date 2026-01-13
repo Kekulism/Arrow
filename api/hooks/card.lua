@@ -46,7 +46,7 @@ function Card:say_quip(iter, not_first, def_speed, voice)
                 if self.children.quip then
                     self.children.quip.states.visible = true
                 end
-                self:say_quip(iter, true, def_speed)
+                self:say_quip(iter, true, def_speed, voice)
             return true
         end}))
         return
@@ -62,7 +62,7 @@ function Card:say_quip(iter, not_first, def_speed, voice)
 
     if voice then
         play_sound(voice)
-    elseif voice ~= false then
+    else
         play_sound('voice'..new_said, speed * (math.random() * 0.2 + 1), 0.5)
     end
 
@@ -73,7 +73,7 @@ function Card:say_quip(iter, not_first, def_speed, voice)
         blocking = false,
         delay = 0.13 * delay_mult,
         func = function()
-            self:say_quip(iter-1, true, def_speed, false)
+            self:say_quip(iter-1, true, def_speed, voice)
         return true
     end}), 'tutorial')
 end
