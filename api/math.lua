@@ -1,6 +1,8 @@
 --- Custom math functions used by ArrowAPI
 ArrowAPI.math = {
     --- Creates a hashed number based on a string input, primarily for shaders
+    --- @param input string a string seed value, equivalent to calling with pseudoseed()
+    --- @return number hash
     hash_string = function(input)
         local hash = 5381  -- Seed value
         for i = 1, #input do
@@ -55,9 +57,9 @@ ArrowAPI.math = {
     --- @return number # Factorial of n
     fact = function(n)
         if n <= 0 then
-        return 1
+            return 1
         else
-        return n * ArrowAPI.math.fact(n-1)
+            return n * ArrowAPI.math.fact(n-1)
         end
     end
 }

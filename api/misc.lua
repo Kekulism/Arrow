@@ -1,5 +1,5 @@
 ArrowAPI.misc = {
-    --- Sets the fronts of all current playing cards
+    --- Sets the fronts of all currently instanced playing cards
     --- @param juice boolean bool to juice playing cards
     set_fronts = function(juice)
         for _, v in pairs(G.I.CARD) do
@@ -118,6 +118,9 @@ ArrowAPI.misc = {
         end
     end,
 
+    --- Adds colors to G.ARGS.LOC_COLOURS, used for localization text formatting
+    --- Use this in place of hooking loc_colour()
+    --- @param args table A table of colors with string keys, forced to lowercase by the function
     add_colors = function(args)
         if not G.ARGS.LOC_COLOURS then loc_colour() end
         for k, v in pairs(args) do
@@ -126,6 +129,11 @@ ArrowAPI.misc = {
         end
     end,
 
+    --- Predicts the resulting color in a gradient after delay seconds
+    --- Used internally to support gradient transitions when a boss background color uses a gradient
+    --- @param grad SMODS.Gradient Gradient object
+    --- @param delay number Delay in seconds
+    --- @return table predicted_color
     predict_gradient = function(grad, delay)
         if #grad.colours < 2 then return end
         local timer = (G.TIMERS.REAL + (delay or 0))%grad.cycle
@@ -146,6 +154,10 @@ ArrowAPI.misc = {
         return ret
     end,
 
+    --- Calls the calculate function on all SMODS.Mod objects during the title screen
+    --- Primarily used internally for contexts changing splash screen and title screen cards
+    --- @param context table
+    --- @return table return effect table equivalent to SMODS.calculate_context()
     title_calculate = function(context)
         SMODS.push_to_context_stack(context, "utils.lua : SMODS.calculate_context")
         local mods = {}

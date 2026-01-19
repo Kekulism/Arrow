@@ -1,5 +1,11 @@
 ArrowAPI.loc = {
     loc_text_funcs = {},
+
+    --- Adds a process_loc_text function to ArrowAPI's internal list
+    --- Primarily used for when ArrowAPI is embedded into other mods to prevent
+    --- one declaration from quashing another
+    --- @param mod SMODS.Mod Mod object
+    --- @param func function Default SMODS.process_loc_text function
     add_loc_text_func = function(mod, func)
         ArrowAPI.loc.loc_text_funcs[#ArrowAPI.loc.loc_text_funcs+1] = {key = mod.id, func = func}
     end

@@ -75,6 +75,8 @@ TNSMI.SoundPack = SMODS.GameObject:extend ({
     end,
 })
 
+--- Internal function to save current sundpacks in TNSMI.config.loaded_packs
+--- And then set all replace-sounds in priority order
 function TNSMI.save_soundpacks()
     -- resets all existing replace sounds
     local replace_map = TNSMI.config.loaded_packs.replace_map or {}

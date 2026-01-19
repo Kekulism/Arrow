@@ -55,6 +55,7 @@ ArrowAPI.ui = {
     --- Dynamically creates a scale factor based on the size of a text string
     --- @param text string Single-line text string
     --- @param size number | nil size of text, defaults to 0.9
+    --- @return number scale_fac
     calc_scale_fac = function(text, size)
         size = size or 0.9
         local font = G.LANG.font
@@ -147,6 +148,14 @@ ArrowAPI.ui = {
     end,
 
     --- Allows Modded Legendaries to show ????? unlock descriptions, but shows the joker_locked_legendary msg on the unlock notifications
+    --- Takes essentially the same arguments as SMODS.Center.generate_ui()
+    --- @param self table
+    --- @param info_queue table
+    --- @param card table
+    --- @param desc_nodes table
+    --- @param specific_vars table
+    --- @param full_UI_table table
+    --- @param key string
     generate_legendary_desc = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table, key)
         key = key or card.config.center.key
         if card.area and card.area == G.jokers or (card.config.center.discovered or card.bypass_discovery_center) then
@@ -160,7 +169,7 @@ ArrowAPI.ui = {
         end
     end,
 
-    -- Stores badge colors under mod.id keys
+    --- Stores badge colors under mod.id keys
     badge_colors = {
         ArrowAPI = {
             co_rlm = HEX('FFFFFF'),
@@ -330,6 +339,7 @@ ArrowAPI.ui = {
 
     --- Procedurally creates the credits tab UI tree for a given mod
     --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config_tools.use_credits()
+    --- @return function # Returns the appropriate credits function to be called with SMODS.current_mod.credits_tab
     create_credits_tab = function(mod)
         local ref_table = {}
         for i=1, #ArrowAPI.credits[mod.id] do
@@ -522,6 +532,7 @@ ArrowAPI.ui = {
 
     --- Procedurally creates the config tab UI tree for a given mod
     --- @param mod SMODS.Mod|table SMODS.Mod object that has been flagged by ArrowAPI.config_tools.use_config()
+    --- @return function # Returns appropriate function to be used with SMODS.current_mod.config_tab
     create_config_tab = function(mod)
         return function()
             local left_settings = { n = G.UIT.C, config = { align = "tm" }, nodes = {} }

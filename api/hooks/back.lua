@@ -1,7 +1,6 @@
 
 local ref_back_ui = Back.generate_UI
 function Back:generate_UI(other, ui_scale, min_dims, challenge, ...)
-    sendDebugMessage('generate back UI')
     if self.effect.center.artist and not Galdur then
         local ret = ref_back_ui(self, other, ui_scale, min_dims, challenge, ...)
 

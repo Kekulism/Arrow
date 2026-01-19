@@ -23,6 +23,10 @@ function pseudoseed(key, predict_seed, ...)
 end
 
 ArrowAPI.pseudorandom = {
+    --- Sets the pseudorandom system to predict mode. All pseudorandom calls until predict mode is set to false
+    --- are set in a different table, allowing seeds to be predicted ahead of time
+    --- @param bool boolean
+    --- @return boolean # Current predict mode state
     set_predict_mode = function(bool)
         G.GAME.pseudorandom.predict_mode = bool or false
         G.GAME.pseudorandom.predicts = {}

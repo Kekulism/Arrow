@@ -21,6 +21,13 @@ function level_up_hand(card, hand, instant, amount)
     return ret
 end
 
+--- A wrapper for level_up_hand that allows you to send a single context for multiple hand level ups
+--- in order to centralize visual feedback from I.E. jokers
+--- @param card Card | table
+--- @param hand string
+--- @param instant boolean
+--- @param amount number
+--- @param bypass_context boolean
 function level_up_hand_bypass(card, hand, instant, amount, bypass_context)
     ArrowAPI.bypass_level_up_context = bypass_context
     local ret = level_up_hand(card, hand, instant, amount)
@@ -52,6 +59,11 @@ end
 --- General card helpers
 ArrowAPI.game = {
 
+    --- Wrapper to check for multiple cards with SMODS.find_card
+    --- @param tbl table A list of card keys
+    --- @param amount number The minimum amount of cards needed to return true
+    --- @param count_debuffed boolean
+    --- @return boolean # True if the player has met the minimum subset of found cards
     have_multiple_jokers = function(tbl, amount, count_debuffed)
         local found = 0
         for _, v in ipairs(tbl) do
@@ -196,6 +208,12 @@ ArrowAPI.game = {
         return discovered, count
     end,
 
+    --- Creates an arbitary extra blind tracked in G.GAME.arrow_extra_blinds
+    --- Extra blinds call the exact same functions as main blinds with minor differences
+    --- @param blind_source table A card or blind that is the source of this object, typically to handle visual feedback
+    --- @param blind_type table Blind prototype information in G.P_BLINDS
+    --- @param skip_set_blind boolean Used when setting an extra blind from load or in the shop
+    --- @return table new_extra_blind Returns the instanced blind object of the extra blind, equivalent to G.GAME.blind
     create_extra_blind = function(blind_source, blind_type, skip_set_blind)
         if not G.GAME then return end
         local new_extra_blind = arrow_init_extra_blind(0, 0, 0, 0, blind_source)
@@ -221,6 +239,9 @@ ArrowAPI.game = {
         return new_extra_blind
     end,
 
+    --- Removes all extra blinds associated with a given blind_source
+    --- @param blind_source table
+    --- @return boolean # returns true if any blind was removed
     remove_extra_blinds = function(blind_source)
         if not G.GAME then return end
         local removed = false
@@ -295,6 +316,10 @@ ArrowAPI.game = {
         end
     end,
 
+    --- Sets the global consumable selection modifier
+    --- Any instanced cards and all created cards until the modifier is changed
+    --- will have their max_highlighted property changed
+    --- @param mod number
     consumable_selection_mod = function(mod)
         G.GAME.modifiers.consumable_selection_mod = G.GAME.modifiers.consumable_selection_mod or 0
         for _, v in pairs(G.I.CARD) do
@@ -307,8 +332,8 @@ ArrowAPI.game = {
     end,
 
     --- Sets the game over state outside of dedicated game over conditions
-    --- @param win boolean | nil Whether to win or lose, default is lose
-    --- @param instant boolean | nil Delay game over in an event
+    --- @param win boolean | nil Whether to win or lose. Defaults to false
+    --- @param instant boolean | nil Delay game over in an event. Defaults to false
     game_over = function(win, instant)
         if instant then
             game_over_handler(win)
@@ -338,7 +363,11 @@ ArrowAPI.game = {
         return true
     end,
 
-
+    --- Checks a hand table for the presence of a table of ranks
+    --- @param hand table A list of Balatro Card objects, I.E. `context.full_hand`
+    --- @param ranks table A list of rank keys
+    --- @param require_all boolean Defaults to false
+    --- @return boolean # Returns true of hand contains at least one rank or all ranks if specified
     hand_contains_ranks = function(hand, ranks, require_all)
         require_all = require_all or false
         local found = {}
@@ -366,8 +395,10 @@ ArrowAPI.game = {
     end,
 
     --- Returns a random tag based on a provided tag type
-    --- @param type string | nil supported types are 'joker', 'booster', or 'any'. Joker is default
-    --- @param seed string | nil random seed string, uses 'freejokertag' by default
+    --- @param type string | nil supported types are 'joker', 'booster', or 'any'. Defaults to 'joker'
+    --- @param seed string | nil random seed string. Defaults to 'freejokertag'
+    --- @return string key The key of the tag returned
+    --- @return table tag_color A color corresponding to each tag
     get_tag_by_type = function(type, seed)
         type = type or 'joker'
         seed = seed or 'freejokertag'
@@ -389,6 +420,10 @@ ArrowAPI.game = {
 	    return key, G.C.TAGS[key] or G.C.IMPORTANT
     end,
 
+    --- Returns hand(s) that meet a specified metric
+    --- @param mode string Defaults to 'lowest'. 'lowest' gets the lowest level, 'highest' gets highest level
+    --- @return number bar A value that fits the specified metric
+    --- @return table pool A pool of all hands that tie for the specified metric
     get_hand_level_metric = function(mode)
         mode = mode or 'lowest'
         local bar = (mode == 'lowest' and math.huge or 0)
@@ -406,6 +441,10 @@ ArrowAPI.game = {
         return bar, pool
     end,
 
+    --- Custom wrapper for Black Hole like multi-hand level ups
+    --- @param card Card | table source card for the level up
+    --- @param hands table A list of hand keys to level up
+    --- @param amount number Defaults to 1. If set to 0, all hands are set to Lv. 1
     batch_level_up = function(card, hands, amount)
         amount = amount or 1
         G.GAME.arrow_last_upgraded_hand = {}
@@ -481,6 +520,10 @@ ArrowAPI.game = {
         SMODS.calculate_context({hand_upgraded = true, upgraded = hands, amount = amount})
     end,
 
+    --- Custom wrapper for card expiration functionality I.E. food jokers
+    --- @param card Card | table the card to expire
+    --- @param loc_string string A feedback string when the card vanishes, defaults to 'k_eaten_ex'
+    --- @param colour table A color table for the message, defaults to G.C.FILTER
     card_expire = function(card, loc_string, colour)
         loc_string = loc_string or 'k_eaten_ex'
         colour = colour or G.C.FILTER
@@ -516,6 +559,7 @@ ArrowAPI.game = {
         check_for_unlock({type = 'card_expire', card = card})
     end,
 
+    --- Calls Card:set_cost() on all instanced cards
     refresh_costs = function()
          G.E_MANAGER:add_event(Event({func = function()
             for k, v in pairs(G.I.CARD) do
@@ -526,6 +570,12 @@ ArrowAPI.game = {
     end,
 
     poker_hand_toggles = {},
+
+    --- Toggles a specified poker hand manually. Used for Poker Hands that are only unlocked under certain conditions,
+    --- rather than being made visible when played
+    --- @param hand string Poker Hand string key
+    --- @param enabled boolean
+    --- @param source Card | table The source to toggle. A hand will not be made invisible again until all its sources are toggled
     toggle_poker_hand = function(hand, enabled, source)
         if not ArrowAPI.game.poker_hand_toggles[hand] then
             ArrowAPI.game.poker_hand_toggles[hand] = {}
@@ -542,11 +592,23 @@ ArrowAPI.game = {
     end,
 
     game_globals_funcs = {},
+
+    --- Adds a game globals func to ArrowAPI's internal list
+    --- Primarily used for when ArrowAPI is embedded into other mods to prevent
+    --- one declaration from quashing another
+    --- @param mod SMODS.Mod Mod object
+    --- @param func function Default SMODS.reset_game_globals function with one argument ('run_start')
     add_game_globals_func = function(mod, func)
         ArrowAPI.game.game_globals_funcs[#ArrowAPI.game.game_globals_funcs+1] = {key = mod.id, func = func}
     end,
 
     reset_keys_funcs = {},
+
+    --- Adds a reset keys func to ArrowAPI's internal list
+    --- Primarily used for when ArrowAPI is embedded into other mods to prevent
+    --- one declaration from quashing another
+    --- @param mod SMODS.Mod Mod object
+    --- @param func function Default SMODS.reset_ability_keys function
     add_reset_keys_func = function(mod, func)
         ArrowAPI.game.reset_keys_funcs[#ArrowAPI.game.reset_keys_funcs+1] = {key = mod.id, func = func}
     end,

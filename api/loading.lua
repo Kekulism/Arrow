@@ -71,6 +71,8 @@ ArrowAPI.loading = {
     end,
 
     --- Load an item definition using SMODS
+    --- Supports SMODS.Center and all inherited types, SMODS.Blind, SMODS.Achievement, SMODS.Challenge
+    --- TNSMI.SoundPack, Sleeves, and Partners
     --- @param file_key string file name to load within the "Items" directory, excluding file extension
     --- @param item_type string SMODS item type (such as Joker, Consumable, Deck, etc)
     --- @param alias string | nil SMODS type alias (I.E. Decks are SMODS['Back'])
@@ -333,7 +335,7 @@ ArrowAPI.loading = {
     end,
 
     --- Simple wrapper for SMODS.DeckSkin to automatically table card credits
-    ---
+    --- @param args table Same arguments table as SMODS.DeckSkin
     load_deckskin = function(args)
         if SMODS.current_mod.ARROW_USE_CREDITS then
             local credits = nil
@@ -370,6 +372,10 @@ ArrowAPI.loading = {
         return SMODS.DeckSkin(args)
     end,
 
+    --- Filters an item based on mod or config dependencies, essentially circumventing the internal SMODS dependencies.
+    --- Automatically called from ArrowAPI.loading.load_item/batch_load()
+    --- @param item table SMODS arguments table for SMODS.Center, SMODS.Blind, etc
+    --- @return boolean # Returns true if item is not filtered out
     filter_item = function(item)
         if item.dependencies then
             for k, _ in pairs(item.dependencies.config or {}) do
@@ -386,7 +392,11 @@ ArrowAPI.loading = {
         return true
     end,
 
-    filter_type = function(item_type, order)
+    --- Filters an item based on whether its config is toggled or if required mods are enabled and updates its current config state
+    --- Automatically called from ArrowAPI.loading.load_item/batch_load()
+    --- @param item_type string Item type string, such as 'Joker', 'Consumable', 'Partner', 'Soundpack', etc
+    --- @return boolean # True if this item is not filtered out
+    filter_type = function(item_type)
          if (item_type == 'Sleeve' and not CardSleeves) or (item_type == 'Partner' and not Partner_API) then
             ArrowAPI.config_tools.update_config(SMODS.current_mod, 'enable_'..item_type..'s', nil, true)
             return false
@@ -402,7 +412,10 @@ ArrowAPI.loading = {
     end,
 
     --- Returns whether an SMODS.ConsumableType has any added items, excluding items set as no_collection
+    --- Used automatically to flag items such as Stands and VHS tapes to be disabled by ArrowAPI.loading.disable_empty()
+    --- if no mods register any item definitions
     --- @param set string Set string for a ConsumableType
+    --- @return boolean # Returns true if items have been added to the set
     consumeable_has_items = function(set)
         if set == 'Stand' then
             return not not (#G.P_CENTER_POOLS['StandPool'] > 0 or #G.P_CENTER_POOLS['EvolvedPool'] > 0)
@@ -411,6 +424,7 @@ ArrowAPI.loading = {
         return #G.P_CENTER_POOLS[set] > 0
     end,
 
+    --- Disables an item type on startup if it contains no items. Used for custom item types Stand and VHS Tape
     disable_empty = function()
         if not ArrowAPI.startup_item_check then
             local disable_map = {}

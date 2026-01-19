@@ -195,6 +195,9 @@ ArrowAPI.stands = {
         }))
     end,
 
+    --- Shifts the aura colors of a given stand based on the current G.GAME.stand_hue_mod
+    --- and the ArrowAPI.colors.hue_shift() function
+    --- @param stand Card | table Instanced Stand object
     shift_aura_colors = function(stand)
         if not G.GAME.stand_hue_mod or G.GAME.stand_hue_mod == 0 then return end
 

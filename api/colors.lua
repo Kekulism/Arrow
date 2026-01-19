@@ -1,6 +1,8 @@
 local ffi = require("ffi")
 
-
+--- Caches the default image_data for all given palette sets
+--- @param set string The key for a given palette set
+--- @param atlases table a table of atlases collected in ArrowAPI.colors.setup_palettes()
 local function collect_image_data(set, atlases)
     collectgarbage('stop')
     local data_table = {}
@@ -113,6 +115,8 @@ end
 ArrowAPI.colors = {
     badge_colours = {},
 
+    --- Palette tables for ArrowAPI, universal across mods
+    --- the "Background" table is handled differently from the rest
     palettes = {
         Background = {},
         Spectral = {},
@@ -125,7 +129,7 @@ ArrowAPI.colors = {
     },
 
     --- Caches the default image_data for all given palette sets
-    --- @param set_list table | nil List of set keys for card types, i.e. "Tarot", "Planet"
+    --- @param set_list table | nil List of set keys for card types, i.e. "Tarot", "Planet", default to a specified list
     setup_palettes = function(set_list)
         local s1, default_config = pcall(function()
             return load(NFS.read(ArrowAPI.path..('config.lua')), ('=[SMODS %s "default_config"]'):format(ArrowAPI.id))()
@@ -356,7 +360,11 @@ ArrowAPI.colors = {
         end
     end,
 
+    --- Instantly sets a background color to a new color, rather than easing
+    --- @param background_table Background table to change. Defaults to G.C.BACKGROUND
+    --- @param args table Same table as passed into ease_background_color_blind
     set_background_color = function(background_table, args)
+        background_table = background_table or G.C.BACKGROUND
         local color_c = args.special_colour or args.new_colour
         local color_l = args.new_colour
         local color_d = args.tertiary_colour or args.new_colour
@@ -384,6 +392,10 @@ ArrowAPI.colors = {
         background_table.contrast = args.contrast - background_table.contrast
     end,
 
+    --- Performs a chroma hue shift on a given color
+    --- @param color table
+    --- @param hue_mod number A hue value from 0 to 360
+    --- @return table shifted_color
     hue_shift = function(color, hue_mod)
         local k_rgb_to_yprime = {0.299, 0.587, 0.114}
         local g_rgb_to_i = {0.596, -0.275, -0.321}
@@ -415,6 +427,10 @@ ArrowAPI.colors = {
         }
     end,
 
+    --- Sets all saved palette atlases in a given set to use a current value
+    --- @param set string Set string key
+    --- @param saved_index integer The integer of the saved palette. If nil, will update the current palette for that set
+    --- @param bypass_last boolean If set to false, ignores the requirement that a palette color must have set a changed flag to be updated
     use_custom_palette = function(set, saved_index, bypass_last)
         local palette = ArrowAPI.colors.palettes[set]
         if set == 'Background' then
