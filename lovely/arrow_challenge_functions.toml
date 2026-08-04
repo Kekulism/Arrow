@@ -157,7 +157,7 @@ times = 1
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
-pattern = '''if G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then'''
+pattern = '''if not G.GAME.won and G.GAME.round_resets.ante >= G.GAME.win_ante and G.GAME.blind_on_deck == 'Boss' then'''
 position = "at"
 payload = '''local prevent_win = false
 local ch = G.CHALLENGES[get_challenge_int_from_id(G.GAME.challenge or -1)]
@@ -168,7 +168,7 @@ if ch and ch.gameover and G.GAME.round_resets.ante == G.GAME.win_ante then
     end
     prevent_win = lose or ch.gameover.endgame_type == 'prevent'
 end
-if not prevent_win and G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then'''
+if not prevent_win and G.GAME.round_resets.ante == G.GAME.win_ante and G.GAME.blind:get_type() == 'Boss' then -- arrow patch tag'''
 match_indent = true
 times = 1
 

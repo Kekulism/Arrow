@@ -49,6 +49,8 @@ local seal_text = {
 	}
 }
 
+G.localization.descriptions.Challenge = {}
+
 ArrowAPI.loc.add_loc_text_func(ArrowAPI, function()
     ---------------------------
     --------------------------- Labels
